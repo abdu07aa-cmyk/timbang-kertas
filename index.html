@@ -1,285 +1,614 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Penjualan Daging</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>📦 GUDANGKU - Leader System</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+    body {
+      background: #f0f2f5;
+      padding: 12px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .header {
+      background: #2c3e50;
+      color: white;
+      padding: 20px;
+      border-radius: 20px 20px 0 0;
+      margin-bottom: 2px;
+    }
+    .header h1 { font-size: 24px; }
+    .header p { opacity: 0.9; font-size: 14px; }
+    
+    .stats {
+      background: white;
+      padding: 15px;
+      border-radius: 0 0 20px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: #7f8c8d;
+    }
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .card-title {
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-left: 4px solid #3498db;
+      padding-left: 12px;
+    }
 
-<style>
-html, body{
-  margin:0;
-  padding:0;
-  height:85%;
-}
+    .form-group {
+      margin-bottom: 15px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    input, select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 14px;
+      font-size: 15px;
+      background: white;
+    }
+    input:focus, select:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+    
+    .btn {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 16px;
+      width: 100%;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-success { background: #27ae60; }
+    .btn-warning { background: #f39c12; }
+    .btn-danger { background: #e74c3c; }
 
-body{
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#16a34a,#22c55e);
-}
-.container{
-  min-height:100svh;   /* full tinggi layar HP */
-  width:100%;
-  background:#fff;
-  padding:16px;
-  box-sizing:border-box;
-}
-h2{text-align:center;margin-bottom:16px;}
-label{font-weight:bold;margin-top:10px;display:block;}
-input,select{
-  width:100%;
-  padding:12px;
-  margin-top:6px;
-  border-radius:10px;
-  border:1px solid #cbd5e1;
-  font-size:16px;
-}
-.readonly{background:#e5e7eb;font-weight:bold;}
-button{
-  width:100%;
-  margin-top:16px;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  background:#16a34a;
-  color:#fff;
-  font-size:16px;
-}
-button.secondary{background:#0ea5e9;}
-button.wa{background:#25D366;}
+    .box-container {
+      background: #f8f9fa;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border-left: 4px solid #3498db;
+    }
+    .box-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #27ae60;
+      width: 0%;
+    }
+    .progress-fill.warning { background: #f39c12; }
+    .progress-fill.danger { background: #e74c3c; }
 
-table{
-  width:100%;
-  margin-top:20px;
-  border-collapse:collapse;
-  font-size:14px;
-}
-th,td{
-  border:1px solid #e5e7eb;
-  padding:8px 10px;
-  text-align:center;
-  white-space:nowrap;
-}
-th{background:#f1f5f9;}
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th {
+      background: #f8f9fa;
+      padding: 12px 5px;
+      color: #2c3e50;
+    }
+    td {
+      padding: 10px 5px;
+      border-bottom: 1px solid #eee;
+      text-align: center;
+    }
+    .badge {
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-danger { background: #f8d7da; color: #721c24; }
 
-.aksi{display:flex;gap:6px;justify-content:center;}
-.btn-edit{background:#facc15;border:none;padding:6px 10px;border-radius:8px;}
-.btn-hapus{background:#ef4444;color:#fff;border:none;padding:6px 10px;border-radius:8px;}
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .col {
+      flex: 1;
+    }
 
-@media(max-width:768px){
-  table{display:block;overflow-x:auto;}
-}
-</style>
+    .tab {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+    }
+    .tab button {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: #e0e0e0;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab button.active {
+      background: #3498db;
+      color: white;
+    }
+  </style>
 </head>
 <body>
-
 <div class="container">
-<h2>Penjualan Daging</h2>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>📦 GUDANGKU</h1>
+    <p>Leader: [Nama Anda] | Anggota: 1 orang</p>
+  </div>
 
-<label>Tanggal</label>
-<input type="date" id="tanggal">
+  <!-- STATS CEPAT -->
+  <div class="stats">
+    <div class="stat-item">
+      <div class="stat-value" id="totalItem">0</div>
+      <div class="stat-label">Total Item</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="totalBox">0</div>
+      <div class="stat-label">Total Box</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="warningStok">0</div>
+      <div class="stat-label">Hampir Habis</div>
+    </div>
+  </div>
 
-<label>Nama</label>
-<input type="text" id="nama">
+  <!-- TAB MENU -->
+  <div class="tab">
+    <button class="active" onclick="showTab('masuk')">➕ Barang Masuk</button>
+    <button onclick="showTab('keluar')">📤 Barang Keluar</button>
+    <button onclick="showTab('stok')">📋 Lihat Stok</button>
+  </div>
 
-<label>Jenis Daging</label>
-<select id="jenis" onchange="setHarga()">
-<option value="">-- Pilih --</option>
-<option>DAGING SEMUR</option>
-<option>DAGING RENDANG</option>
-<option>TETELAN</option>
-<option>LAMUR</option>
-<option>ATI</option>
-<option>TUNJANG</option>
-<option>IGA</option>
-<option>BUNTUT</option>
-<option>DAGING KEPALA</option>
-<option>PARU</option>
-</select>
+  <!-- PANEL BARANG MASUK -->
+  <div id="panelMasuk" class="card">
+    <div class="card-title">➕ TAMBAH STOK BARU</div>
+    
+    <div class="form-group">
+      <label>Pilih Jenis Filter</label>
+      <select id="namaBarang">
+        <option value="">-- Pilih --</option>
+        <option value="FILTER BROWN KSS 33">FILTER BROWN KSS 33 (max 1.560/box)</option>
+        <option value="FILTER BROWN KSS 40">FILTER BROWN KSS 40 (max 1.560/box)</option>
+        <option value="FILTER BROWN KSS 50">FILTER BROWN KSS 50 (max 1.560/box)</option>
+        <option value="FILTER BROWN 1 1/4 33">FILTER BROWN 1 1/4 33 (max 2.520/box)</option>
+        <option value="FILTER BROWN 1 1/4 40">FILTER BROWN 1 1/4 40 (max 2.520/box)</option>
+        <option value="FILTER BROWN 1 1/4 50">FILTER BROWN 1 1/4 50 (max 2.520/box)</option>
+        <option value="FILTER WHITE KSS 33">FILTER WHITE KSS 33 (max 1.560/box)</option>
+        <option value="FILTER WHITE KSS 40">FILTER WHITE KSS 40 (max 1.560/box)</option>
+        <option value="FILTER WHITE KSS 50">FILTER WHITE KSS 50 (max 1.560/box)</option>
+        <option value="FILTER WHITE 1 1/4 33">FILTER WHITE 1 1/4 33 (max 2.520/box)</option>
+        <option value="FILTER WHITE 1 1/4 40">FILTER WHITE 1 1/4 40 (max 2.520/box)</option>
+        <option value="FILTER WHITE 1 1/4 50">FILTER WHITE 1 1/4 50 (max 2.520/box)</option>
+        <option value="MAGNET">MAGNET</option>
+        <option value="PLAT">PLAT</option>
+        <option value="SISIPAN 1 1/4">SISIPAN 1 1/4</option>
+        <option value="SISIPAN KSS">SISIPAN KSS</option>
+        <option value="DISPLAY">DISPLAY</option>
+      </select>
+    </div>
 
-<label>Harga / Kg</label>
-<input type="text" id="harga" class="readonly" readonly>
+    <div class="row">
+      <div class="col">
+        <div class="form-group">
+          <label>Rak Utama</label>
+          <select id="rakUtama">
+            <option value="A">Rak A</option>
+            <option value="B">Rak B</option>
+            <option value="C">Rak C</option>
+          </select>
+        </div>
+      </div>
+      <div class="col">
+        <div class="form-group">
+          <label>Nomor Box</label>
+          <input type="number" id="nomorBox" min="1" value="1">
+        </div>
+      </div>
+    </div>
 
-<label>Berat (Kg)</label>
-<input type="number" id="berat" step="0.01" oninput="hitungTotal()">
+    <div class="form-group">
+      <label>Jumlah Masuk</label>
+      <input type="number" id="jumlahMasuk" min="1" placeholder="Contoh: 1560">
+    </div>
 
-<label>Total</label>
-<input type="text" id="total" class="readonly" readonly>
+    <button class="btn btn-success" onclick="tambahStok()">✅ SIMPAN KE BOX</button>
+    <p style="font-size: 12px; color: #666; margin-top: 10px; text-align: center;">
+      *Satu box maksimal 1.560 untuk KSS, 2.520 untuk 1 1/4
+    </p>
+  </div>
 
-<button onclick="simpan()">Simpan</button>
-<button class="secondary" onclick="exportExcel()">Export Excel</button>
-<button class="wa" onclick="shareWA()">Share WhatsApp</button>
+  <!-- PANEL BARANG KELUAR (awal hidden) -->
+  <div id="panelKeluar" class="card" style="display: none;">
+    <div class="card-title">📤 AMBIL BARANG</div>
+    
+    <div class="form-group">
+      <label>Cari Barang (Kode/Nama)</label>
+      <input type="text" id="cariBarangKeluar" placeholder="Ketik kode atau nama..." onkeyup="cariBarangUntukKeluar()">
+    </div>
 
-<table>
-<thead>
-<tr>
-<th>Tanggal</th><th>Nama</th><th>Jenis</th><th>Kg</th><th>Total</th><th>Aksi</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
+    <div id="daftarBoxKeluar">
+      <!-- Akan diisi javascript -->
+      <p style="color: #999; text-align: center; padding: 20px;">Ketik untuk mencari barang</p>
+    </div>
+  </div>
+
+  <!-- PANEL LIHAT STOK (awal hidden) -->
+  <div id="panelStok" class="card" style="display: none;">
+    <div class="card-title">📋 STOK PER BOX</div>
+    
+    <div class="form-group">
+      <input type="text" id="cariStok" placeholder="Cari barang..." onkeyup="tampilkanStok()">
+    </div>
+
+    <div id="listStok">
+      <!-- Akan diisi javascript -->
+    </div>
+  </div>
+
+  <!-- RIWAYAT 10 TERAKHIR -->
+  <div class="card">
+    <div class="card-title">📜 RIWAYAT 10 TERAKHIR</div>
+    <table>
+      <thead>
+        <tr><th>Waktu</th><th>Kegiatan</th><th>Jumlah</th></tr>
+      </thead>
+      <tbody id="riwayatTable"></tbody>
+    </table>
+  </div>
 </div>
 
 <script>
-const { createClient } = supabase;
-const db = createClient(
-  'https://gnpjzhwbjeidabxdturx.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY'
-);
+  // DATA STORAGE
+  let gudang = JSON.parse(localStorage.getItem('gudangLeader')) || [];
+  let riwayat = JSON.parse(localStorage.getItem('riwayatLeader')) || [];
 
-const hargaDaging={
-  "DAGING SEMUR":125000,
-  "DAGING RENDANG":145000,
-  "TETELAN":90000,
-  "LAMUR":55000,
-  "ATI":75000,
-  "TUNJANG":80000,
-  "IGA":70000,
-  "BUNTUT":80000,
-  "DAGING KEPALA":115000,
-  "PARU":85000
-};
-
-let editId=null;
-
-function setHarga(){
-  harga.value=jenis.value?hargaDaging[jenis.value].toLocaleString('id-ID'):'';
-  hitungTotal();
-}
-
-function hitungTotal(){
-  if(!jenis.value||!berat.value) return total.value='';
-  total.value=(hargaDaging[jenis.value]*berat.value).toLocaleString('id-ID');
-}function tampilTanggal(t){
-  if(!t) return '-';
-
-  // FORMAT BARU: yyyy-mm-dd
-  if(t.includes('-')){
-    const d = new Date(t + 'T00:00:00');
-    if(isNaN(d)) return '-';
-    return String(d.getDate()).padStart(2,'0') + '/' +
-           String(d.getMonth()+1).padStart(2,'0') + '/' +
-           d.getFullYear();
+  // KAPASITAS PER BOX
+  function getKapasitas(namaBarang) {
+    if (namaBarang.includes('KSS')) return 1560;
+    if (namaBarang.includes('1 1/4')) return 2520;
+    return 999999; // untuk item non-filter
   }
 
-  // FORMAT LAMA: ddmmyyyy
-  if(t.length === 8 && !isNaN(t)){
-    return t.slice(0,2) + '/' + t.slice(2,4) + '/' + t.slice(4);
+  // GENERATE KODE OTOMATIS
+  function generateKode(namaBarang) {
+    if (namaBarang.includes('BROWN KSS 33')) return 'FBK33';
+    if (namaBarang.includes('BROWN KSS 40')) return 'FBK40';
+    if (namaBarang.includes('BROWN KSS 50')) return 'FBK50';
+    if (namaBarang.includes('BROWN 1 1/4 33')) return 'FB133';
+    if (namaBarang.includes('BROWN 1 1/4 40')) return 'FB140';
+    if (namaBarang.includes('BROWN 1 1/4 50')) return 'FB150';
+    if (namaBarang.includes('WHITE KSS 33')) return 'FWK33';
+    if (namaBarang.includes('WHITE KSS 40')) return 'FWK40';
+    if (namaBarang.includes('WHITE KSS 50')) return 'FWK50';
+    if (namaBarang.includes('WHITE 1 1/4 33')) return 'FW133';
+    if (namaBarang.includes('WHITE 1 1/4 40')) return 'FW140';
+    if (namaBarang.includes('WHITE 1 1/4 50')) return 'FW150';
+    if (namaBarang.includes('MAGNET')) return 'MGN';
+    if (namaBarang.includes('PLAT')) return 'PLT';
+    if (namaBarang.includes('SISIPAN 1 1/4')) return 'SS125';
+    if (namaBarang.includes('SISIPAN KSS')) return 'SSKSS';
+    if (namaBarang.includes('DISPLAY')) return 'DSP';
+    return 'XXX';
   }
 
-  return '-';
-}
-
-async function simpan(){
-  if(!tanggal.value||!nama.value||!jenis.value||!berat.value){
-    alert('Lengkapi data');
-    return;
-  }
-
-  const payload={
-    tanggal:tanggal.value,
-    nama:nama.value,
-    jenis:jenis.value,
-    berat:berat.value,
-    harga:hargaDaging[jenis.value],
-    total:hargaDaging[jenis.value]*berat.value
+  // FUNGSI TAB
+  window.showTab = function(tab) {
+    document.querySelectorAll('.tab button').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    document.getElementById('panelMasuk').style.display = tab === 'masuk' ? 'block' : 'none';
+    document.getElementById('panelKeluar').style.display = tab === 'keluar' ? 'block' : 'none';
+    document.getElementById('panelStok').style.display = tab === 'stok' ? 'block' : 'none';
+    
+    if (tab === 'stok') tampilkanStok();
+    if (tab === 'keluar') cariBarangUntukKeluar();
   };
 
-  if(editId){
-    await db.from('penjualan_daging').update(payload).eq('id',editId);
-    editId=null;
-  }else{
-    await db.from('penjualan_daging').insert([payload]);
+  // TAMBAH STOK (DENGAN CEK KAPASITAS)
+  window.tambahStok = function() {
+    let nama = document.getElementById('namaBarang').value;
+    let rak = document.getElementById('rakUtama').value;
+    let box = document.getElementById('nomorBox').value;
+    let jumlah = parseInt(document.getElementById('jumlahMasuk').value);
+    
+    if (!nama || !rak || !box || !jumlah) {
+      alert('Harap isi semua data!');
+      return;
+    }
+
+    let kode = generateKode(nama);
+    let kapasitas = getKapasitas(nama);
+    let lokasi = `${rak}${box}`; // Contoh: A1, B2, C3
+
+    // Cek apakah box ini sudah ada
+    let existingBox = gudang.find(x => x.lokasi === lokasi && x.kode === kode);
+    
+    if (existingBox) {
+      // Cek kapasitas
+      if (existingBox.stok + jumlah > kapasitas) {
+        alert(`⚠️ Box ${lokasi} hanya muat ${kapasitas}!\nSisa ruang: ${kapasitas - existingBox.stok}`);
+        return;
+      }
+      existingBox.stok += jumlah;
+      tambahRiwayat('MASUK', `${nama} ke ${lokasi}`, jumlah);
+    } else {
+      // Box baru
+      if (jumlah > kapasitas) {
+        alert(`⚠️ Box baru maksimal ${kapasitas}!`);
+        return;
+      }
+      gudang.push({
+        id: Date.now() + Math.random(),
+        nama: nama,
+        kode: kode,
+        lokasi: lokasi,
+        stok: jumlah,
+        kapasitas: kapasitas
+      });
+      tambahRiwayat('BOX BARU', `${nama} di ${lokasi}`, jumlah);
+    }
+
+    // Reset form
+    document.getElementById('namaBarang').value = '';
+    document.getElementById('jumlahMasuk').value = '';
+    
+    simpanData();
+    updateStats();
+    alert('✅ Stok berhasil ditambahkan!');
+  };
+
+  // AMBIL BARANG (KELUAR)
+  window.ambilBarang = function(boxId) {
+    let box = gudang.find(x => x.id == boxId);
+    if (!box) return;
+    
+    let jumlahAmbil = prompt(`Berapa ${box.nama} yang diambil? (Stok: ${box.stok})`, "1");
+    if (!jumlahAmbil) return;
+    
+    jumlahAmbil = parseInt(jumlahAmbil);
+    if (isNaN(jumlahAmbil) || jumlahAmbil <= 0) {
+      alert('Jumlah tidak valid');
+      return;
+    }
+    
+    if (jumlahAmbil > box.stok) {
+      alert(`Stok tidak cukup! Hanya tersisa ${box.stok}`);
+      return;
+    }
+    
+    box.stok -= jumlahAmbil;
+    
+    // Jika stok 0, hapus box
+    if (box.stok === 0) {
+      gudang = gudang.filter(x => x.id != boxId);
+      tambahRiwayat('KELUAR (BOX HABIS)', `${box.nama} dari ${box.lokasi}`, jumlahAmbil);
+    } else {
+      tambahRiwayat('KELUAR', `${box.nama} dari ${box.lokasi}`, jumlahAmbil);
+    }
+    
+    simpanData();
+    updateStats();
+    cariBarangUntukKeluar(); // Refresh panel keluar
+    alert('✅ Barang berhasil diambil!');
+  };
+
+  // CARI BARANG UNTUK KELUAR
+  window.cariBarangUntukKeluar = function() {
+    let keyword = document.getElementById('cariBarangKeluar').value.toLowerCase();
+    let container = document.getElementById('daftarBoxKeluar');
+    
+    let hasil = gudang.filter(x => 
+      x.nama.toLowerCase().includes(keyword) || 
+      x.kode.toLowerCase().includes(keyword)
+    );
+    
+    if (hasil.length === 0) {
+      container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">❌ Barang tidak ditemukan</p>';
+      return;
+    }
+    
+    let html = '';
+    hasil.forEach(box => {
+      let persen = (box.stok / box.kapasitas) * 100;
+      let statusClass = persen < 20 ? 'danger' : (persen < 50 ? 'warning' : 'success');
+      
+      html += `
+        <div class="box-container">
+          <div class="box-header">
+            <span>📦 ${box.nama}</span>
+            <span>${box.kode}</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 13px;">
+            <span>📍 ${box.lokasi}</span>
+            <span>Stok: ${box.stok} / ${box.kapasitas}</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill ${statusClass}" style="width: ${persen}%;"></div>
+          </div>
+          <button class="btn btn-warning" style="padding:10px; margin-top:8px;" 
+                  onclick="ambilBarang(${box.id})">📤 Ambil dari box ini</button>
+        </div>
+      `;
+    });
+    
+    container.innerHTML = html;
+  };
+
+  // TAMPILKAN STOK
+  window.tampilkanStok = function() {
+    let keyword = document.getElementById('cariStok').value.toLowerCase();
+    let container = document.getElementById('listStok');
+    
+    let hasil = gudang.filter(x => 
+      x.nama.toLowerCase().includes(keyword) || 
+      x.kode.toLowerCase().includes(keyword)
+    );
+    
+    if (hasil.length === 0) {
+      container.innerHTML = '<p style="color:#999; text-align:center; padding:20px;">📭 Tidak ada stok</p>';
+      return;
+    }
+    
+    // Kelompokkan per kode untuk total
+    let totalPerKode = {};
+    hasil.forEach(box => {
+      if (!totalPerKode[box.kode]) {
+        totalPerKode[box.kode] = {
+          nama: box.nama,
+          total: 0,
+          boxes: []
+        };
+      }
+      totalPerKode[box.kode].total += box.stok;
+      totalPerKode[box.kode].boxes.push(box);
+    });
+    
+    let html = '';
+    for (let kode in totalPerKode) {
+      let group = totalPerKode[kode];
+      html += `
+        <div style="background: #f0f7ff; border-radius: 16px; padding: 12px; margin-bottom: 15px;">
+          <div style="font-weight: 700; margin-bottom: 8px;">${group.nama}</div>
+          <div style="font-size: 20px; color: #2c3e50; margin-bottom: 10px;">Total: ${group.total}</div>
+      `;
+      
+      group.boxes.forEach(box => {
+        let persen = (box.stok / box.kapasitas) * 100;
+        let badge = box.stok <= 10 ? '<span class="badge badge-danger">⚠️ Segera restok</span>' : '';
+        
+        html += `
+          <div style="background: white; border-radius: 12px; padding: 10px; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>📍 Box ${box.lokasi}</span>
+              <span>${box.stok} pcs ${badge}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${persen}%;"></div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+    }
+    
+    container.innerHTML = html;
+  };
+
+  // TAMBAH RIWAYAT
+  function tambahRiwayat(jenis, keterangan, jumlah) {
+    riwayat.unshift({
+      waktu: new Date().toLocaleString('id-ID'),
+      jenis: jenis,
+      keterangan: keterangan,
+      jumlah: jumlah
+    });
+    
+    // Simpan maksimal 50 riwayat
+    if (riwayat.length > 50) riwayat.pop();
   }
 
-  resetForm();
-  loadData();
-}
-
-function resetForm(){
-  tanggal.value=nama.value=jenis.value=berat.value=harga.value=total.value='';
-}
-
-async function loadData(){
-  const {data}=await db
-    .from('penjualan_daging')
-    .select('*')
-    .order('tanggal',{ascending:false}); // WEB: terbaru di atas
-
-  const tb=document.getElementById('tbody');
-  tb.innerHTML='';
-  data.forEach(d=>{
-    tb.innerHTML+=`
-    <tr>
-      <td>${tampilTanggal(d.tanggal)}</td>
-      <td>${d.nama}</td>
-      <td>${d.jenis}</td>
-      <td>${d.berat}</td>
-      <td>Rp ${d.total.toLocaleString('id-ID')}</td>
-      <td class="aksi">
-        <button class="btn-edit" onclick="edit(${d.id},'${d.tanggal}','${d.nama}','${d.jenis}',${d.berat})">Edit</button>
-        <button class="btn-hapus" onclick="hapus(${d.id})">Hapus</button>
-      </td>
-    </tr>`;
-  });
-}
-
-function edit(id,tgl,nm,jns,brt){
-  editId=id;
-  tanggal.value=tgl;
-  nama.value=nm;
-  jenis.value=jns;
-  setHarga();
-  berat.value=brt;
-  hitungTotal();
-}
-
-async function hapus(id){
-  if(confirm('Hapus data ini?')){
-    await db.from('penjualan_daging').delete().eq('id',id);
-    loadData();
+  // TAMPILKAN RIWAYAT
+  function tampilRiwayat() {
+    let tbody = document.getElementById('riwayatTable');
+    tbody.innerHTML = '';
+    
+    riwayat.slice(0, 10).forEach(r => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${r.waktu}</td>
+          <td>${r.keterangan}</td>
+          <td>${r.jumlah}</td>
+        </tr>
+      `;
+    });
+    
+    if (riwayat.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Belum ada riwayat</td></tr>';
+    }
   }
-}
 
-function exportExcel(){
-  let rows=[...document.querySelectorAll('#tbody tr')].map(tr=>{
-    const td=tr.querySelectorAll('td');
-    const [d,m,y]=td[0].innerText.split('/');
-    return {
-      Tanggal: new Date(`${y}-${m}-${d}`), // DATE asli Excel
-      Nama: td[1].innerText,
-      Jenis: td[2].innerText,
-      Kg: Number(td[3].innerText),
-      Total: Number(td[4].innerText.replace(/[^\d]/g,''))
-    };
-  });
+  // UPDATE STATS
+  function updateStats() {
+    document.getElementById('totalItem').innerText = gudang.length;
+    document.getElementById('totalBox').innerText = gudang.length;
+    
+    let warning = gudang.filter(x => x.stok <= 10).length;
+    document.getElementById('warningStok').innerText = warning;
+  }
 
-  rows = rows.reverse(); // EXCEL: terbaru di bawah
+  // SIMPAN DATA
+  function simpanData() {
+    localStorage.setItem('gudangLeader', JSON.stringify(gudang));
+    localStorage.setItem('riwayatLeader', JSON.stringify(riwayat));
+    updateStats();
+    tampilRiwayat();
+  }
 
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols']=[{wch:12},{wch:20},{wch:18},{wch:8},{wch:14}];
-
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Penjualan');
-  XLSX.writeFile(wb, 'penjualan_daging.xlsx');
-}
-
-function shareWA(){
-  const r=document.querySelector('#tbody tr');
-  if(!r) return;
-  const t=r.querySelectorAll('td');
-  const msg=`Penjualan Daging
-Tanggal: ${t[0].innerText}
-Nama: ${t[1].innerText}
-Jenis: ${t[2].innerText}
-Kg: ${t[3].innerText}
-Total: ${t[4].innerText}`;
-  window.open('https://wa.me/?text='+encodeURIComponent(msg));
-}
-
-loadData();
+  // INITIAL LOAD
+  updateStats();
+  tampilRiwayat();
 </script>
 </body>
 </html>
