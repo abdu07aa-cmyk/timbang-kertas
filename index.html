@@ -344,8 +344,9 @@
     <h2>🔐 GUDANG PRO</h2>
     <p style="color: #666; margin-bottom: 24px;">Sistem Manajemen Gudang Aman</p>
     
-    <input type="text" id="loginUsername" class="login-input" placeholder="Username" value="leader">
-    <input type="password" id="loginPassword" class="login-input" placeholder="Password" value="admin123">
+    <!-- 🔐 SUDAH DIHAPUS VALUE DEFAULTNYA -->
+    <input type="text" id="loginUsername" class="login-input" placeholder="Username">
+    <input type="password" id="loginPassword" class="login-input" placeholder="Password">
     
     <select id="loginRole" class="login-input">
       <option value="leader">Leader (Akses Penuh)</option>
@@ -353,7 +354,7 @@
     </select>
     
     <button class="login-btn" onclick="handleLogin()">MASUK</button>
-    <p style="font-size: 12px; color: #999; margin-top: 16px;">Demo: leader/admin123 • staff/staff123</p>
+    <!-- Teks demo dihapus karena sudah tidak relevan -->
   </div>
 
   <!-- MAIN APP (HIDDEN AWAL) -->
@@ -531,8 +532,8 @@
   <script>
     (function() {
       // ================= KONFIGURASI SUPABASE =================
-      const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co'; // GANTI DENGAN URL ANDA
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY'; // GANTI DENGAN ANON KEY ANDA
+      const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
 
       // Inisialisasi Supabase
       const { createClient } = supabase;
@@ -545,10 +546,10 @@
       let currentUser = null;
       let backupData = '';
 
-      // Data users (dalam produksi sebaiknya pakai Supabase Auth)
+      // 🔐 PASSWORD SUDAH DIGANTI - GUNAKAN YANG INI
       const users = {
-        leader: { password: 'admin123', role: 'leader', name: 'Leader Utama' },
-        staff: { password: 'staff123', role: 'staff', name: 'Staff Gudang' }
+        leader: { password: '365478!', role: 'leader', name: 'Jaiz Capster' },
+        staff: { password: 'dhevock!', role: 'staff', name: 'M Purnomo' }
       };
 
       // ================= FUNGSI LOGIN =================
@@ -579,6 +580,9 @@
 
           // Catat login
           addLog('🔐 Login', `${currentUser.name} (${currentUser.role})`);
+          
+          // Simpan session
+          localStorage.setItem('gudangSession', JSON.stringify(currentUser));
         } else {
           alert('Username atau password salah!');
         }
@@ -586,6 +590,7 @@
 
       window.logout = function() {
         currentUser = null;
+        localStorage.removeItem('gudangSession');
         document.getElementById('loginScreen').style.display = 'block';
         document.getElementById('mainApp').style.display = 'none';
         addLog('🔓 Logout', 'User keluar');
@@ -1169,6 +1174,7 @@
               <h4 style="margin-bottom:12px;">👥 Manajemen User</h4>
               <p>Leader: akses penuh</p>
               <p>Staff: hanya input & ambil</p>
+              <p style="font-size:12px; color:#666;">Username: leader/staff</p>
             </div>
 
             <div style="margin-bottom:16px;">
@@ -1198,7 +1204,7 @@
       window.resetAllData = async function() {
         if (!cekAkses('leader')) return;
         
-        if (!await showConfirm('⚠️⚠️⚠️ PERINGATAN! Ini akan MENGHAPUS SEMUA DATA. Ketik "RESET" untuk konfirmasi:')) return;
+        if (!await showConfirm('⚠️⚠️⚠️ PERINGATAN! Ini akan MENGHAPUS SEMUA DATA. Lanjutkan?')) return;
         
         const confirmText = prompt('Ketik "RESET" untuk konfirmasi penghapusan total:');
         if (confirmText !== 'RESET') return alert('Dibatalkan');
@@ -1215,8 +1221,7 @@
         }
       };
 
-      // ================= INISIALISASI =================
-      // Cek session (localStorage sederhana)
+      // ================= CEK SESSION SAAT LOAD =================
       const savedSession = localStorage.getItem('gudangSession');
       if (savedSession) {
         try {
@@ -1230,18 +1235,6 @@
           localStorage.removeItem('gudangSession');
         }
       }
-
-      // Simpan session saat login
-      window.saveSession = function() {
-        localStorage.setItem('gudangSession', JSON.stringify(currentUser));
-      };
-
-      // Override handleLogin untuk simpan session
-      const originalLogin = window.handleLogin;
-      window.handleLogin = function() {
-        originalLogin();
-        if (currentUser) saveSession();
-      };
     })();
   </script>
 </body>
