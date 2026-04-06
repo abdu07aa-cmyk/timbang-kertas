@@ -48,4 +48,23 @@
 {"po":"89.03.26.PRP","tanggal":"31/03/2026","brand":"BVC","jenis":"HOLDER L","paper":"","size":"109 MM","order":36},
 
 {"po":"98.03.26.ZPD","tanggal":"31/03/2026","brand":"NORTHERN ILLISION","jenis":"FILTER 30","paper":"","size":"109 MM","order":700}
+
+{
+"po":"57.02.26.ZIZ",
+"brand":"ZIZZLE",
+"jenis":"FILTER 30",
+"size":"80 MM",
+"order":21660,
+"masuk":0,
+"kirim":0
+},
+{
+"po":"57.02.26.ZIZ",
+"brand":"ZIZZLE",
+"jenis":"STICKER FILTER",
+"size":"80 MM",
+"order":21660,
+"masuk":0,
+"kirim":0
+}
 ]
