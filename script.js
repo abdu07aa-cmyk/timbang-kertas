@@ -32,10 +32,14 @@ html+=`<h3>PO : ${po}</h3>
 grouped[po].forEach(d=>{
 
 let sisa=d.order-d.kirim
+if(sisa<0) sisa=0
 
 let status="PROSES"
 
-if(d.kirim>=d.order) status="SELESAI"
+if(d.kirim==0) status="BELUM KIRIM"
+else if(d.kirim<d.order) status="PROSES"
+else if(d.kirim==d.order) status="SELESAI"
+else if(d.kirim>d.order) status="STOCK LEBIH"
 
 html+=`
 <tr>
