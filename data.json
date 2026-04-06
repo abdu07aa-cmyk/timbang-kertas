@@ -1,82 +1,51 @@
-fetch('data.json')
-.then(res => res.json())
-.then(data => {
+[
+{"po":"57.02.26.ZIZ","tanggal":"20/02/2026","brand":"ZIZZLE","jenis":"FILTER 30","paper":"","size":"80 MM","order":21660,"masuk":0,"kirim":0},
+{"po":"57.02.26.ZIZ","tanggal":"20/02/2026","brand":"ZIZZLE","jenis":"STICKER FILTER","paper":"","size":"80 MM","order":21660,"masuk":0,"kirim":0},
 
-let grouped={};
+{"po":"70.02.26.LUME","tanggal":"25/02/2026","brand":"LUME","jenis":"FILTER 26","paper":"","size":"83 MM","order":518400,"masuk":0,"kirim":0},
 
-data.forEach((item,i)=>{
-if(!grouped[item.po]) grouped[item.po]=[];
-item.id=i
-grouped[item.po].push(item)
-})
+{"po":"66.02.26.LUME","tanggal":"24/02/2026","brand":"LUME","jenis":"BOOKLET","paper":"33 LEAVES","size":"1 1/4","order":69120,"masuk":0,"kirim":0},
+{"po":"66.02.26.LUME","tanggal":"24/02/2026","brand":"LUME","jenis":"DISPLAY","paper":"33 LEAVES","size":"1 1/4","order":2880,"masuk":0,"kirim":0},
+{"po":"66.02.26.LUME","tanggal":"24/02/2026","brand":"LUME","jenis":"FILTER PRINTED","paper":"33 LEAVES","size":"1 1/4","order":69120,"masuk":0,"kirim":0},
+{"po":"66.02.26.LUME","tanggal":"24/02/2026","brand":"LUME","jenis":"MAGNET","paper":"33 LEAVES","size":"1 1/4","order":69120,"masuk":0,"kirim":0},
+{"po":"66.02.26.LUME","tanggal":"24/02/2026","brand":"LUME","jenis":"PLAT","paper":"33 LEAVES","size":"1 1/4","order":69120,"masuk":0,"kirim":0},
 
-render()
+{"po":"53.02.26.SBN","tanggal":"09/03/2026","brand":"SAINT BURN","jenis":"FILTER 30","paper":"","size":"109 MM","order":4200,"masuk":0,"kirim":0},
 
-function render(){
+{"po":"78.03.26.GST","tanggal":"12/03/2026","brand":"SEEDS BANK","jenis":"BOOKLET","paper":"33 LEAVES","size":"KSS","order":10000,"masuk":0,"kirim":0},
+{"po":"78.03.26.GST","tanggal":"12/03/2026","brand":"SEEDS BANK","jenis":"DISPLAY","paper":"33 LEAVES","size":"KSS","order":400,"masuk":0,"kirim":0},
 
-let html=""
+{"po":"78.03.26.GST","tanggal":"12/03/2026","brand":"KAYA","jenis":"BOOKLET","paper":"40 LEAVES","size":"1 1/4","order":5000,"masuk":0,"kirim":0},
+{"po":"78.03.26.GST","tanggal":"12/03/2026","brand":"KAYA","jenis":"DISPLAY","paper":"40 LEAVES","size":"1 1/4","order":200,"masuk":0,"kirim":0},
 
-for(let po in grouped){
+{"po":"83.03.26.PRP","tanggal":"11/03/2026","brand":"DESTINATION HWY","jenis":"FILTER 30","paper":"","size":"109 MM","order":3240,"masuk":0,"kirim":0},
+{"po":"83.03.26.PRP","tanggal":"11/03/2026","brand":"DESTINATION HWY","jenis":"TRAPEZOID","paper":"","size":"109 MM","order":1080,"masuk":0,"kirim":0},
+{"po":"83.03.26.PRP","tanggal":"11/03/2026","brand":"DESTINATION HWY","jenis":"DISPLAY","paper":"","size":"109 MM","order":36,"masuk":0,"kirim":0},
+{"po":"83.03.26.PRP","tanggal":"11/03/2026","brand":"DESTINATION HWY","jenis":"HOLDER M","paper":"","size":"109 MM","order":36,"masuk":0,"kirim":0},
 
-html+=`<h3>PO : ${po}</h3>
-<table>
-<tr>
-<th>Jenis</th>
-<th>Order</th>
-<th>Masuk</th>
-<th>Kirim</th>
-<th>Sisa</th>
-<th>Status</th>
-</tr>`
+{"po":"76.03.26.ZPD","tanggal":"03/03/2026","brand":"MEDICINE CABINET","jenis":"BOOKLET","paper":"33 LEAVES","size":"1 1/4","order":40000,"masuk":0,"kirim":0},
+{"po":"76.03.26.ZPD","tanggal":"03/03/2026","brand":"MEDICINE CABINET","jenis":"DISPLAY","paper":"33 LEAVES","size":"1 1/4","order":1600,"masuk":0,"kirim":0},
 
-grouped[po].forEach(d=>{
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"BOOKLET","paper":"33 LEAVES","size":"KSS","order":1000,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"DISPLAY","paper":"33 LEAVES","size":"KSS","order":40,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"FILTER BROWN","paper":"33 LEAVES","size":"KSS","order":1000,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"MAGNET","paper":"33 LEAVES","size":"KSS","order":1000,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"PLAT","paper":"33 LEAVES","size":"KSS","order":1000,"masuk":0,"kirim":0},
 
-let sisa=d.order-d.kirim
-if(sisa<0) sisa=0
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"BOOKLET","paper":"33 LEAVES","size":"1 1/4","order":1000,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"DISPLAY","paper":"33 LEAVES","size":"1 1/4","order":40,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"FILTER BROWN","paper":"33 LEAVES","size":"1 1/4","order":1000,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"MAGNET","paper":"33 LEAVES","size":"1 1/4","order":1000,"masuk":0,"kirim":0},
+{"po":"92.03.26.ZPD","tanggal":"19/03/2026","brand":"RHYTHM","jenis":"PLAT","paper":"33 LEAVES","size":"1 1/4","order":1000,"masuk":0,"kirim":0},
 
-let status="PROSES"
+{"po":"96.03.26.ZPD","tanggal":"31/03/2026","brand":"STASH","jenis":"BOOKLET","paper":"33 LEAVES","size":"1 1/4","order":1500,"masuk":0,"kirim":0},
+{"po":"96.03.26.ZPD","tanggal":"31/03/2026","brand":"STASH","jenis":"DISPLAY","paper":"33 LEAVES","size":"1 1/4","order":60,"masuk":0,"kirim":0},
+{"po":"96.03.26.ZPD","tanggal":"31/03/2026","brand":"STASH","jenis":"FILTER BROWN","paper":"33 LEAVES","size":"1 1/4","order":1500,"masuk":0,"kirim":0},
 
-if(d.kirim==0) status="BELUM KIRIM"
-else if(d.kirim<d.order) status="PROSES"
-else if(d.kirim==d.order) status="SELESAI"
-else if(d.kirim>d.order) status="STOCK LEBIH"
+{"po":"89.03.26.PRP","tanggal":"31/03/2026","brand":"BVC","jenis":"FILTER 30","paper":"","size":"109 MM","order":3240,"masuk":0,"kirim":0},
+{"po":"89.03.26.PRP","tanggal":"31/03/2026","brand":"BVC","jenis":"TRAPEZOID","paper":"","size":"109 MM","order":1080,"masuk":0,"kirim":0},
+{"po":"89.03.26.PRP","tanggal":"31/03/2026","brand":"BVC","jenis":"DISPLAY","paper":"","size":"109 MM","order":36,"masuk":0,"kirim":0},
+{"po":"89.03.26.PRP","tanggal":"31/03/2026","brand":"BVC","jenis":"HOLDER L","paper":"","size":"109 MM","order":36,"masuk":0,"kirim":0},
 
-html+=`
-<tr>
-<td>${d.jenis}</td>
-<td>${d.order}</td>
-
-<td>
-<input type="number" value="${d.masuk}" 
-onchange="updateMasuk(${d.id},this.value)">
-</td>
-
-<td>
-<input type="number" value="${d.kirim}" 
-onchange="updateKirim(${d.id},this.value)">
-</td>
-
-<td>${sisa}</td>
-<td>${status}</td>
-
-</tr>`
-})
-
-html+="</table>"
-}
-
-document.getElementById("poList").innerHTML=html
-
-}
-
-window.updateMasuk=function(id,val){
-data[id].masuk=parseInt(val)||0
-render()
-}
-
-window.updateKirim=function(id,val){
-data[id].kirim=parseInt(val)||0
-render()
-}
-
-})
+{"po":"98.03.26.ZPD","tanggal":"31/03/2026","brand":"NORTHERN ILLISION","jenis":"FILTER 30","paper":"","size":"109 MM","order":700,"masuk":0,"kirim":0}
+]
