@@ -1,18 +1,59 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Monitor PO</title>
-<link rel="stylesheet" href="style.css">
+<title>Simulasi Rute Tercepat dan Terdekat</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #fff; margin: 20px; }
+  h1 { text-align: center; }
+  svg { border: 1px solid #ccc; display: block; margin: 20px auto; }
+  .node { stroke: black; stroke-width: 2; }
+  .start { fill: green; }
+  .end { fill: red; }
+  .stop { fill: black; }
+  .route { fill: none; stroke-width: 4; }
+  .label { font-size: 12px; text-anchor: middle; }
+</style>
 </head>
-
 <body>
 
-<h2>Monitor Purchase Order</h2>
+<h1>Simulasi Rute Tercepat dan Terdekat</h1>
 
-<div id="poList"></div>
+<svg width="800" height="600">
+  <!-- Titik -->
+  <circle cx="100" cy="300" r="10" class="node start"/>
+  <text x="100" y="290" class="label">A</text>
 
-<script src="script.js"></script>
+  <circle cx="700" cy="300" r="10" class="node end"/>
+  <text x="700" y="290" class="label">B</text>
+
+  <circle cx="250" cy="200" r="8" class="node stop"/>
+  <text x="250" y="190" class="label">C1</text>
+
+  <circle cx="250" cy="400" r="8" class="node stop"/>
+  <text x="250" y="420" class="label">C2</text>
+
+  <circle cx="450" cy="200" r="8" class="node stop"/>
+  <text x="450" y="190" class="label">C3</text>
+
+  <circle cx="450" cy="400" r="8" class="node stop"/>
+  <text x="450" y="420" class="label">C4</text>
+
+  <circle cx="550" cy="300" r="8" class="node stop"/>
+  <text x="550" y="290" class="label">C5</text>
+
+  <!-- Jalur -->
+  <path d="M100,300 L250,200 L450,200 L700,300" class="route" stroke="blue"/>
+  <path d="M100,300 L250,200 L450,400 L700,300" class="route" stroke="red"/>
+  <path d="M100,300 L250,400 L450,400 L700,300" class="route" stroke="green"/>
+  <path d="M100,300 L250,400 L450,200 L700,300" class="route" stroke="orange"/>
+  <path d="M100,300 L250,200 L450,400 L550,300 L700,300" class="route" stroke="purple"/>
+
+  <!-- Label jarak/waktu (contoh) -->
+  <text x="175" y="195" class="label">3 km / 5 mnt</text>
+  <text x="350" y="200" class="label">2 km / 4 mnt</text>
+  <text x="525" y="300" class="label">1.5 km / 3 mnt</text>
+</svg>
 
 </body>
 </html>
