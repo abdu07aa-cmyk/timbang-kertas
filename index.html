@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Simulasi 45 Jalur Rute</title>
+<title>Simulasi 45 Jalur Acak</title>
 <style>
   body { font-family: Arial, sans-serif; background: #fff; margin: 20px; }
   h1 { text-align: center; }
@@ -17,17 +17,20 @@
 </head>
 <body>
 
-<h1>Simulasi Rute Tercepat dan Terdekat (45 Jalur)</h1>
+<h1>Simulasi 45 Jalur Acak (2 Masuk ke B)</h1>
 
 <svg width="1000" height="700">
   <!-- Titik -->
   <circle cx="100" cy="350" r="10" class="node start"/>
   <text x="100" y="340" class="label">A</text>
 
-  <circle cx="900" cy="350" r="10" class="node end"/>
-  <text x="900" y="340" class="label">B</text>
+  <circle cx="900" cy="250" r="10" class="node end"/>
+  <text x="900" y="240" class="label">B1</text>
 
-  <!-- Titik pemberhentian C1 - C15 contoh (bisa tambah) -->
+  <circle cx="900" cy="450" r="10" class="node end"/>
+  <text x="900" y="460" class="label">B2</text>
+
+  <!-- Titik pemberhentian C1-C15 -->
   <circle cx="250" cy="150" r="8" class="node stop"/><text x="250" y="140" class="label">C1</text>
   <circle cx="250" cy="250" r="8" class="node stop"/><text x="250" y="240" class="label">C2</text>
   <circle cx="250" cy="350" r="8" class="node stop"/><text x="250" y="340" class="label">C3</text>
@@ -46,16 +49,20 @@
   <circle cx="700" cy="450" r="8" class="node stop"/><text x="700" y="440" class="label">C14</text>
   <circle cx="700" cy="550" r="8" class="node stop"/><text x="700" y="540" class="label">C15</text>
 
-  <!-- 5 Jalur keluar dari A (contoh) -->
-  <path d="M100,350 L250,150 L500,150 L700,150 L900,350" class="route" stroke="blue"/>
-  <path d="M100,350 L250,250 L500,250 L700,250 L900,350" class="route" stroke="red"/>
-  <path d="M100,350 L250,350 L500,350 L700,350 L900,350" class="route" stroke="green"/>
-  <path d="M100,350 L250,450 L500,450 L700,450 L900,350" class="route" stroke="orange"/>
-  <path d="M100,350 L250,550 L500,550 L700,550 L900,350" class="route" stroke="purple"/>
+  <!-- 5 Jalur keluar dari A dengan pola acak -->
+  <path d="M100,350 L250,150 L500,150 L700,150 L900,250" class="route" stroke="blue"/>
+  <path d="M100,350 L250,250 L500,250 L700,350 L900,450" class="route" stroke="red"/>
+  <path d="M100,350 L250,350 L500,450 L700,450 L900,450" class="route" stroke="green"/>
+  <path d="M100,350 L250,450 L500,350 L700,250 L900,250" class="route" stroke="orange"/>
+  <path d="M100,350 L250,550 L500,550 L700,550 L900,450" class="route" stroke="purple"/>
 
-  <!-- Contoh tambahan jalur agar total 45 jalur -->
-  <!-- Kamu bisa menyalin pola path di atas dan ubah titik pemberhentian -->
-  <!-- Misal: A → C1 → C6 → C11 → B, dll hingga 45 jalur -->
+  <!-- Jalur tambahan untuk mencapai total ~45 jalur -->
+  <!-- Misal beberapa kombinasi acak node → B1/B2 -->
+  <path d="M100,350 L250,150 L500,250 L700,350 L900,250" class="route" stroke="#888"/>
+  <path d="M100,350 L250,250 L500,350 L700,450 L900,450" class="route" stroke="#666"/>
+  <path d="M100,350 L250,350 L500,150 L700,250 L900,250" class="route" stroke="#444"/>
+  <path d="M100,350 L250,450 L500,550 L700,350 L900,450" class="route" stroke="#222"/>
+  <!-- Tambahkan pola jalur acak lain hingga total 45 jalur -->
 </svg>
 
 </body>
