@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Simulasi 45 Jalur Acak</title>
+<title>Simulasi 83 Jalur Interaktif</title>
 <style>
   body { font-family: Arial, sans-serif; background: #fff; margin: 20px; }
   h1 { text-align: center; }
@@ -11,59 +11,80 @@
   .start { fill: green; }
   .end { fill: red; }
   .stop { fill: black; }
-  .route { fill: none; stroke-width: 2; opacity: 0.7; }
+  .route { fill: none; stroke-width: 2; opacity: 0.5; cursor: pointer; transition: opacity 0.2s; }
+  .route:hover { opacity: 1; stroke-width: 3; }
   .label { font-size: 10px; text-anchor: middle; }
+  #info { text-align: center; margin-top: 10px; font-weight: bold; }
 </style>
 </head>
 <body>
 
-<h1>Simulasi 45 Jalur Acak (2 Masuk ke B)</h1>
+<h1>Simulasi 83 Jalur Interaktif</h1>
+<div id="info">Hover atau klik jalur untuk info</div>
 
-<svg width="1000" height="700">
-  <!-- Titik -->
-  <circle cx="100" cy="350" r="10" class="node start"/>
-  <text x="100" y="340" class="label">A</text>
+<svg width="1000" height="700" id="svgCanvas"></svg>
 
-  <circle cx="900" cy="250" r="10" class="node end"/>
-  <text x="900" y="240" class="label">B1</text>
+<script>
+const nodes = {
+  "A": [100, 350],
+  "B": [900, 350],
+  "C1": [250, 150], "C2": [250, 250], "C3": [250, 350], "C4": [250, 450], "C5": [250, 550],
+  "C6": [500, 150], "C7": [500, 250], "C8": [500, 350], "C9": [500, 450], "C10": [500, 550],
+  "C11": [700, 150], "C12": [700, 250], "C13": [700, 350], "C14": [700, 450], "C15": [700, 550]
+};
 
-  <circle cx="900" cy="450" r="10" class="node end"/>
-  <text x="900" y="460" class="label">B2</text>
+const svg = document.getElementById("svgCanvas");
 
-  <!-- Titik pemberhentian C1-C15 -->
-  <circle cx="250" cy="150" r="8" class="node stop"/><text x="250" y="140" class="label">C1</text>
-  <circle cx="250" cy="250" r="8" class="node stop"/><text x="250" y="240" class="label">C2</text>
-  <circle cx="250" cy="350" r="8" class="node stop"/><text x="250" y="340" class="label">C3</text>
-  <circle cx="250" cy="450" r="8" class="node stop"/><text x="250" y="440" class="label">C4</text>
-  <circle cx="250" cy="550" r="8" class="node stop"/><text x="250" y="540" class="label">C5</text>
+// Tambahkan node ke SVG
+for (const [name, [x,y]] of Object.entries(nodes)) {
+  const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+  circle.setAttribute("cx", x);
+  circle.setAttribute("cy", y);
+  circle.setAttribute("r", 10);
+  circle.setAttribute("class", "node " + (name=="A"?"start": name=="B"?"end":"stop"));
+  svg.appendChild(circle);
 
-  <circle cx="500" cy="150" r="8" class="node stop"/><text x="500" y="140" class="label">C6</text>
-  <circle cx="500" cy="250" r="8" class="node stop"/><text x="500" y="240" class="label">C7</text>
-  <circle cx="500" cy="350" r="8" class="node stop"/><text x="500" y="340" class="label">C8</text>
-  <circle cx="500" cy="450" r="8" class="node stop"/><text x="500" y="440" class="label">C9</text>
-  <circle cx="500" cy="550" r="8" class="node stop"/><text x="500" y="540" class="label">C10</text>
+  const text = document.createElementNS("http://www.w3.org/2000/svg","text");
+  text.setAttribute("x", x);
+  text.setAttribute("y", y-10);
+  text.setAttribute("class","label");
+  text.textContent = name;
+  svg.appendChild(text);
+}
 
-  <circle cx="700" cy="150" r="8" class="node stop"/><text x="700" y="140" class="label">C11</text>
-  <circle cx="700" cy="250" r="8" class="node stop"/><text x="700" y="240" class="label">C12</text>
-  <circle cx="700" cy="350" r="8" class="node stop"/><text x="700" y="340" class="label">C13</text>
-  <circle cx="700" cy="450" r="8" class="node stop"/><text x="700" y="440" class="label">C14</text>
-  <circle cx="700" cy="550" r="8" class="node stop"/><text x="700" y="540" class="label">C15</text>
+// Generate 83 jalur acak
+const stops = Object.keys(nodes).filter(n=>n!=="A" && n!=="B");
+const colors = ["blue","red","green","orange","purple","#888","#666","#444","#222","#555"];
+const routes = [];
 
-  <!-- 5 Jalur keluar dari A dengan pola acak -->
-  <path d="M100,350 L250,150 L500,150 L700,150 L900,250" class="route" stroke="blue"/>
-  <path d="M100,350 L250,250 L500,250 L700,350 L900,450" class="route" stroke="red"/>
-  <path d="M100,350 L250,350 L500,450 L700,450 L900,450" class="route" stroke="green"/>
-  <path d="M100,350 L250,450 L500,350 L700,250 L900,250" class="route" stroke="orange"/>
-  <path d="M100,350 L250,550 L500,550 L700,550 L900,450" class="route" stroke="purple"/>
+for (let i=0;i<83;i++){
+  const pathNodes = ["A"];
+  const len = Math.floor(Math.random()*3)+3; // 3-5 titik per jalur
+  for(let j=0;j<len;j++){
+    pathNodes.push(stops[Math.floor(Math.random()*stops.length)]);
+  }
+  pathNodes.push("B");
+  routes.push(pathNodes);
+}
 
-  <!-- Jalur tambahan untuk mencapai total ~45 jalur -->
-  <!-- Misal beberapa kombinasi acak node → B1/B2 -->
-  <path d="M100,350 L250,150 L500,250 L700,350 L900,250" class="route" stroke="#888"/>
-  <path d="M100,350 L250,250 L500,350 L700,450 L900,450" class="route" stroke="#666"/>
-  <path d="M100,350 L250,350 L500,150 L700,250 L900,250" class="route" stroke="#444"/>
-  <path d="M100,350 L250,450 L500,550 L700,350 L900,450" class="route" stroke="#222"/>
-  <!-- Tambahkan pola jalur acak lain hingga total 45 jalur -->
-</svg>
+// Tambahkan jalur ke SVG
+routes.forEach((pathNodes, idx)=>{
+  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+  const d = "M"+pathNodes.map(n=>nodes[n].join(",")).join(" L");
+  path.setAttribute("d", d);
+  path.setAttribute("stroke", colors[idx % colors.length]);
+  path.setAttribute("class","route");
+  path.addEventListener("mouseover", ()=>{document.getElementById("info").textContent = pathNodes.join(" → ");});
+  path.addEventListener("mouseout", ()=>{document.getElementById("info").textContent = "Hover atau klik jalur untuk info";});
+  path.addEventListener("click", ()=>{ 
+    document.querySelectorAll(".route").forEach(r=>r.setAttribute("opacity",0.5));
+    path.setAttribute("opacity",1);
+    path.setAttribute("stroke-width",4);
+    document.getElementById("info").textContent = "Dipilih: "+pathNodes.join(" → ");
+  });
+  svg.appendChild(path);
+});
+</script>
 
 </body>
 </html>
