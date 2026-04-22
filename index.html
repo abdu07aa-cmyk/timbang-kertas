@@ -107,10 +107,10 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ==================== GANTI DENGAN CREDENTIALS PROJECT ANDA ====================
-    const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';  // GANTI!
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';  // GANTI!
-    // ==============================================================================
+    // ==================== CREDENTIALS ANDA ====================
+    const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
+    // ===========================================================
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -207,11 +207,11 @@
             if(error) throw error;
             let totalData = count || 0;
             let totalPages = Math.ceil(totalData / rowsPerPage);
-            if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="8">Tidak ada数据</td></tr>'; document.getElementById('pagination').innerHTML = ''; return; }
+            if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="8">Tidak ada data</td></tr>'; document.getElementById('pagination').innerHTML = ''; return; }
             tbody.innerHTML = "";
             for(let i=0; i<data.length; i++) {
                 let d = data[i];
-                tbody.innerHTML += `<tr><td>${start+i+1}</td><td>${d.tanggal||''}</td><td>${d.no_po||'-'}</td><td>${d.brand||'-'}</td><td>${(d.size_kertas||'').substring(0,8)}</td><td>${d.gsm}</td><td>${d.jenis_box||''}</td><td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td></tr>`;
+                tbody.innerHTML += `<tr><td style="text-align:center">${start+i+1}</td><td>${d.tanggal||''}</td><td>${d.no_po||'-'}</td><td>${d.brand||'-'}</td><td>${(d.size_kertas||'').substring(0,8)}</td><td>${d.gsm}</td><td>${d.jenis_box||''}</td><td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td></tr>`;
             }
             let pagHtml = '';
             for(let i=1; i<=totalPages; i++) pagHtml += `<button onclick="goToPage(${i})" class="${i===currentPage?'active-page-btn':''}">${i}</button>`;
