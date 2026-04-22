@@ -1,90 +1,398 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Simulasi 83 Jalur Interaktif</title>
-<style>
-  body { font-family: Arial, sans-serif; background: #fff; margin: 20px; }
-  h1 { text-align: center; }
-  svg { border: 1px solid #ccc; display: block; margin: 20px auto; }
-  .node { stroke: black; stroke-width: 2; }
-  .start { fill: green; }
-  .end { fill: red; }
-  .stop { fill: black; }
-  .route { fill: none; stroke-width: 2; opacity: 0.5; cursor: pointer; transition: opacity 0.2s; }
-  .route:hover { opacity: 1; stroke-width: 3; }
-  .label { font-size: 10px; text-anchor: middle; }
-  #info { text-align: center; margin-top: 10px; font-weight: bold; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Aplikasi Timbangan Kertas</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: #e0e7ff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 1.6rem;
+            margin-top: 0;
+            color: #1e3a8a;
+            text-align: center;
+        }
+        h2 {
+            font-size: 1.2rem;
+            margin: 0 0 15px 0;
+            color: #1e40af;
+            border-left: 5px solid #3b82f6;
+            padding-left: 12px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-top: 12px;
+            margin-bottom: 5px;
+            color: #1e293b;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #f8fafc;
+        }
+        .row-2 {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .row-2 > div {
+            flex: 1;
+            min-width: 120px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .result-box {
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 16px;
+            margin-top: 20px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #cbd5e1;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #0f3b2c;
+        }
+        .selisih {
+            font-weight: bold;
+            color: #b91c1c;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        th, td {
+            border: 1px solid #cbd5e1;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background: #e2e8f0;
+        }
+        .btn-hapus {
+            background: #ef4444;
+            padding: 6px 10px;
+            font-size: 0.7rem;
+            margin-top: 10px;
+        }
+        .btn-hapus:hover {
+            background: #dc2626;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #475569;
+            margin-top: 20px;
+        }
+        @media (max-width: 500px) {
+            body { padding: 12px; }
+            .row-2 { flex-direction: column; gap: 0; }
+        }
+    </style>
 </head>
 <body>
+<div class="container">
+    <div class="card">
+        <h1>📦 TIMBANG KERTAS 1 BOX</h1>
 
-<h1>Simulasi 83 Jalur Interaktif</h1>
-<div id="info">Hover atau klik jalur untuk info</div>
+        <label>📅 Tanggal</label>
+        <input type="date" id="tanggal" value="2026-04-22">
 
-<svg width="1000" height="700" id="svgCanvas"></svg>
+        <label>🏷️ Brand (manual)</label>
+        <input type="text" id="brand" placeholder="Contoh: Sinar Dunia, PaperOne, dll">
+
+        <label>📏 Size Kertas</label>
+        <select id="size">
+            <option value="SINGLE 36X69">SINGLE 36X69</option>
+            <option value="1 1/4 44X78">1 1/4 44X78</option>
+            <option value="KS 54X97">KS 54X97</option>
+            <option value="KSS 44X108">KSS 44X108</option>
+            <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
+            <option value="SKS 54X108">SKS 54X108</option>
+            <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
+            <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
+        </select>
+
+        <div class="row-2">
+            <div>
+                <label>📄 GSM</label>
+                <input type="number" id="gsm" placeholder="13 / 14 / 20 / 35" step="1" value="13">
+            </div>
+            <div>
+                <label>📑 Jumlah Leaves</label>
+                <input type="number" id="leaves" placeholder="32-60" value="32">
+            </div>
+        </div>
+
+        <label>📦 Jenis Box</label>
+        <select id="jenisBox">
+            <option value="White">White (0.90 kg)</option>
+            <option value="White New">White New (0.80 kg)</option>
+            <option value="Grey">Grey (1.25 kg)</option>
+            <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
+        </select>
+
+        <label>📦 Berat TIMBANG 1 Box (kg) - real hasil timbang</label>
+        <input type="number" id="beratTimbangReal" step="0.01" placeholder="Contoh: 2.45">
+
+        <label>📚 Jumlah Layer / Pembatas (1 layer = 6.18 gram)</label>
+        <input type="number" id="jumlahLayer" step="1" value="0" placeholder="0">
+
+        <button id="hitungBtn">✅ HITUNG & SIMPAN</button>
+    </div>
+
+    <!-- Hasil Perhitungan -->
+    <div class="card" id="hasilCard" style="display: none;">
+        <h2>📊 HASIL PERHITUNGAN</h2>
+        <div class="result-box">
+            <div class="result-item"><strong>Berat Kertas (Rumus):</strong> <span id="beratRumus">0</span> kg</div>
+            <div class="result-item"><strong>Berat Box:</strong> <span id="beratBox">0</span> kg</div>
+            <div class="result-item"><strong>Berat Layer (6.18 gr x jumlah):</strong> <span id="beratLayer">0</span> kg</div>
+            <div class="result-item total"><strong>📌 TOTAL RUMUS (Kertas+Box+Layer):</strong> <span id="totalRumus">0</span> kg</div>
+            <div class="result-item"><strong>⚖️ Berat TIMBANG Real (input Anda):</strong> <span id="timbangRealDisplay">0</span> kg</div>
+            <div class="result-item selisih"><strong>🔄 SELISIH (Real - Rumus):</strong> <span id="selisih">0</span> kg</div>
+        </div>
+    </div>
+
+    <!-- Riwayat -->
+    <div class="card">
+        <h2>📜 RIWAYAT TIMBANG</h2>
+        <div style="overflow-x: auto;">
+            <table id="riwayatTable">
+                <thead>
+                    <tr><th>Tanggal</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Box</th><th>Layer</th><th>Timbang Real(kg)</th><th>Rumus Total(kg)</th><th>Selisih(kg)</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="10" style="text-align:center;">Belum ada data</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <button id="hapusRiwayatBtn" class="btn-hapus">🗑️ Hapus Semua Riwayat</button>
+    </div>
+    <footer>Database rumus sesuai data kertas yang diberikan | Layer = 6.18 gram per lembar pembatas</footer>
+</div>
 
 <script>
-const nodes = {
-  "A": [100, 350],
-  "B": [900, 350],
-  "C1": [250, 150], "C2": [250, 250], "C3": [250, 350], "C4": [250, 450], "C5": [250, 550],
-  "C6": [500, 150], "C7": [500, 250], "C8": [500, 350], "C9": [500, 450], "C10": [500, 550],
-  "C11": [700, 150], "C12": [700, 250], "C13": [700, 350], "C14": [700, 450], "C15": [700, 550]
-};
+    // ======================= DATABASE BERAT RUMUS KERTAS (berdasarkan data Anda) =======================
+    // Format: key = "SIZE|GSM|LEAVES" -> berat dalam kg (BERDASARKAN RUMUS dari tabel Anda)
+    const beratRumusDB = {
+        // SINGLE 36X69 13 GSM
+        "SINGLE 36X69|13|32": 1.03, "SINGLE 36X69|13|33": 1.07, "SINGLE 36X69|13|40": 1.29, "SINGLE 36X69|13|50": 1.61, "SINGLE 36X69|13|51": 1.65, "SINGLE 36X69|13|60": 1.94,
+        // SINGLE 36X69 14 GSM
+        "SINGLE 36X69|14|32": 1.11, "SINGLE 36X69|14|33": 1.15, "SINGLE 36X69|14|40": 1.39, "SINGLE 36X69|14|50": 1.74, "SINGLE 36X69|14|51": 1.77, "SINGLE 36X69|14|60": 2.09,
+        // 1 1/4 44X78 13 GSM
+        "1 1/4 44X78|13|32": 1.43, "1 1/4 44X78|13|33": 1.47, "1 1/4 44X78|13|40": 1.78, "1 1/4 44X78|13|50": 2.23,
+        // 1 1/4 44X78 14 GSM
+        "1 1/4 44X78|14|32": 1.54, "1 1/4 44X78|14|33": 1.59, "1 1/4 44X78|14|35": 1.68, "1 1/4 44X78|14|40": 1.92, "1 1/4 44X78|14|42": 2.02, "1 1/4 44X78|14|50": 2.40, "1 1/4 44X78|14|51": 2.45, "1 1/4 44X78|14|52": 2.50,
+        // CLEAR PAPER 1 1/4 44X78 35 GSM
+        "CLEAR PAPER 1 1/4 44X78|35|50": 4.80,
+        // KS 54X97 14 GSM
+        "KS 54X97|14|32": 2.35, "KS 54X97|14|33": 2.42, "KS 54X97|14|40": 2.93, "KS 54X97|14|50": 3.67,
+        // KS 54X97 20 GSM
+        "KS 54X97|20|32": 3.35, "KS 54X97|20|33": 3.46, "KS 54X97|20|40": 4.19, "KS 54X97|20|50": 5.24,
+        // KSS 44X108 13 GSM
+        "KSS 44X108|13|32": 1.98, "KSS 44X108|13|33": 2.04, "KSS 44X108|13|40": 2.47, "KSS 44X108|13|50": 3.09,
+        // KSS 44X108 14 GSM
+        "KSS 44X108|14|33": 2.20, "KSS 44X108|14|35": 2.33, "KSS 44X108|14|40": 2.66, "KSS 44X108|14|42": 2.79, "KSS 44X108|14|50": 3.33, "KSS 44X108|14|51": 3.39, "KSS 44X108|14|52": 3.46,
+        // KSS SLIM 36X108 14 GSM
+        "KSS SLIM 36X108|14|32": 1.74, "KSS SLIM 36X108|14|33": 1.80, "KSS SLIM 36X108|14|34": 1.85, "KSS SLIM 36X108|14|40": 2.18, "KSS SLIM 36X108|14|50": 2.72,
+        // SKS 54X108 13 GSM
+        "SKS 54X108|13|33": 2.50, "SKS 54X108|13|40": 3.03, "SKS 54X108|13|50": 3.79,
+        // SKS 54X108 14 GSM
+        "SKS 54X108|14|33": 2.69, "SKS 54X108|14|40": 3.27, "SKS 54X108|14|50": 4.08,
+        // CLEAR PAPER SKS 54X108 35 GSM
+        "CLEAR PAPER SKS 54X108|35|50": 10.21
+    };
 
-const svg = document.getElementById("svgCanvas");
+    // Berat box (kg)
+    const beratBoxMap = {
+        "White": 0.90,
+        "White New": 0.80,
+        "Grey": 1.25,
+        "Green Jumbo": 3.80
+    };
 
-// Tambahkan node ke SVG
-for (const [name, [x,y]] of Object.entries(nodes)) {
-  const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
-  circle.setAttribute("cx", x);
-  circle.setAttribute("cy", y);
-  circle.setAttribute("r", 10);
-  circle.setAttribute("class", "node " + (name=="A"?"start": name=="B"?"end":"stop"));
-  svg.appendChild(circle);
+    // Layer = 6.18 gram = 0.00618 kg per layer
+    const BERAT_PER_LAYER_KG = 0.00618;
 
-  const text = document.createElementNS("http://www.w3.org/2000/svg","text");
-  text.setAttribute("x", x);
-  text.setAttribute("y", y-10);
-  text.setAttribute("class","label");
-  text.textContent = name;
-  svg.appendChild(text);
-}
+    // Ambil elemen
+    const sizeSelect = document.getElementById('size');
+    const gsmInput = document.getElementById('gsm');
+    const leavesInput = document.getElementById('leaves');
+    const jenisBoxSelect = document.getElementById('jenisBox');
+    const beratTimbangRealInput = document.getElementById('beratTimbangReal');
+    const jumlahLayerInput = document.getElementById('jumlahLayer');
+    const hitungBtn = document.getElementById('hitungBtn');
+    const hasilCard = document.getElementById('hasilCard');
+    const riwayatBody = document.querySelector('#riwayatTable tbody');
+    const hapusRiwayatBtn = document.getElementById('hapusRiwayatBtn');
 
-// Generate 83 jalur acak
-const stops = Object.keys(nodes).filter(n=>n!=="A" && n!=="B");
-const colors = ["blue","red","green","orange","purple","#888","#666","#444","#222","#555"];
-const routes = [];
+    // Fungsi ambil berat rumus kertas
+    function getBeratRumusKertas() {
+        let size = sizeSelect.value;
+        let gsm = gsmInput.value;
+        let leaves = leavesInput.value;
+        let key = `${size}|${gsm}|${leaves}`;
+        let berat = beratRumusDB[key];
+        if (berat === undefined) {
+            // Coba fallback kalau gsm dan leaves tidak exact, tapi lebih baik kasih warning
+            return null;
+        }
+        return berat;
+    }
 
-for (let i=0;i<83;i++){
-  const pathNodes = ["A"];
-  const len = Math.floor(Math.random()*3)+3; // 3-5 titik per jalur
-  for(let j=0;j<len;j++){
-    pathNodes.push(stops[Math.floor(Math.random()*stops.length)]);
-  }
-  pathNodes.push("B");
-  routes.push(pathNodes);
-}
+    // Fungsi hitung dan simpan
+    function hitungDanSimpan() {
+        // Validasi input wajib
+        let beratTimbangReal = parseFloat(beratTimbangRealInput.value);
+        if (isNaN(beratTimbangReal)) {
+            alert("Masukkan Berat TIMBANG Real 1 Box (kg) dulu!");
+            return;
+        }
+        let leaves = parseInt(leavesInput.value);
+        let gsm = parseInt(gsmInput.value);
+        if (isNaN(leaves) || isNaN(gsm)) {
+            alert("GSM dan Leaves harus angka!");
+            return;
+        }
 
-// Tambahkan jalur ke SVG
-routes.forEach((pathNodes, idx)=>{
-  const path = document.createElementNS("http://www.w3.org/2000/svg","path");
-  const d = "M"+pathNodes.map(n=>nodes[n].join(",")).join(" L");
-  path.setAttribute("d", d);
-  path.setAttribute("stroke", colors[idx % colors.length]);
-  path.setAttribute("class","route");
-  path.addEventListener("mouseover", ()=>{document.getElementById("info").textContent = pathNodes.join(" → ");});
-  path.addEventListener("mouseout", ()=>{document.getElementById("info").textContent = "Hover atau klik jalur untuk info";});
-  path.addEventListener("click", ()=>{ 
-    document.querySelectorAll(".route").forEach(r=>r.setAttribute("opacity",0.5));
-    path.setAttribute("opacity",1);
-    path.setAttribute("stroke-width",4);
-    document.getElementById("info").textContent = "Dipilih: "+pathNodes.join(" → ");
-  });
-  svg.appendChild(path);
-});
+        let beratRumusKertas = getBeratRumusKertas();
+        if (beratRumusKertas === null) {
+            alert(`Data rumus tidak ditemukan untuk: ${sizeSelect.value} | GSM ${gsm} | Leaves ${leaves}\nSilakan cek kombinasi.`);
+            return;
+        }
+
+        let jenisBox = jenisBoxSelect.value;
+        let beratBox = beratBoxMap[jenisBox];
+        let jumlahLayer = parseInt(jumlahLayerInput.value) || 0;
+        let beratLayer = jumlahLayer * BERAT_PER_LAYER_KG;
+        let totalRumus = beratRumusKertas + beratBox + beratLayer;
+        let selisih = beratTimbangReal - totalRumus;
+
+        // Tampilkan hasil card
+        document.getElementById('beratRumus').innerText = beratRumusKertas.toFixed(3);
+        document.getElementById('beratBox').innerText = beratBox.toFixed(3);
+        document.getElementById('beratLayer').innerText = beratLayer.toFixed(3);
+        document.getElementById('totalRumus').innerText = totalRumus.toFixed(3);
+        document.getElementById('timbangRealDisplay').innerText = beratTimbangReal.toFixed(3);
+        document.getElementById('selisih').innerText = selisih.toFixed(3);
+        hasilCard.style.display = 'block';
+
+        // Simpan ke riwayat
+        let tanggal = document.getElementById('tanggal').value;
+        let brand = document.getElementById('brand').value || "-";
+        let sizeText = sizeSelect.value;
+        let gsmText = gsm;
+        let leavesText = leaves;
+        let boxText = jenisBox;
+        let layerText = jumlahLayer;
+
+        let newRow = {
+            tanggal, brand, size: sizeText, gsm: gsmText, leaves: leavesText,
+            box: boxText, layer: layerText,
+            timbangReal: beratTimbangReal,
+            totalRumus: totalRumus,
+            selisih: selisih
+        };
+
+        simpanKeLocalStorage(newRow);
+        tampilkanRiwayat();
+    }
+
+    function simpanKeLocalStorage(data) {
+        let riwayat = localStorage.getItem('riwayatTimbang');
+        if (!riwayat) {
+            riwayat = [];
+        } else {
+            riwayat = JSON.parse(riwayat);
+        }
+        riwayat.push(data);
+        localStorage.setItem('riwayatTimbang', JSON.stringify(riwayat));
+    }
+
+    function tampilkanRiwayat() {
+        let riwayat = localStorage.getItem('riwayatTimbang');
+        if (!riwayat || JSON.parse(riwayat).length === 0) {
+            riwayatBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Belum ada data</td></tr>';
+            return;
+        }
+        let dataArr = JSON.parse(riwayat);
+        riwayatBody.innerHTML = "";
+        for (let i = 0; i < dataArr.length; i++) {
+            let d = dataArr[i];
+            let row = `<tr>
+                <td>${d.tanggal}</td>
+                <td>${d.brand}</td>
+                <td>${d.size}</td>
+                <td>${d.gsm}</td>
+                <td>${d.leaves}</td>
+                <td>${d.box}</td>
+                <td>${d.layer}</td>
+                <td>${d.timbangReal.toFixed(3)}</td>
+                <td>${d.totalRumus.toFixed(3)}</td>
+                <td style="color:${d.selisih >=0 ? 'green' : 'red'}">${d.selisih.toFixed(3)}</td>
+            </tr>`;
+            riwayatBody.innerHTML += row;
+        }
+    }
+
+    function hapusRiwayat() {
+        if (confirm("Hapus SEMUA riwayat timbang?")) {
+            localStorage.removeItem('riwayatTimbang');
+            tampilkanRiwayat();
+            hasilCard.style.display = 'none';
+        }
+    }
+
+    // Event listener
+    hitungBtn.addEventListener('click', hitungDanSimpan);
+    hapusRiwayatBtn.addEventListener('click', hapusRiwayat);
+
+    // Load riwayat saat halaman dibuka
+    tampilkanRiwayat();
 </script>
-
 </body>
 </html>
