@@ -2,41 +2,67 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Timbangan Kertas - Hitung Bundles Otomatis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Timbangan Kertas - Hitung Bundles</title>
     <style>
         * {
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
         }
         body {
             background: #e0e7ff;
-            margin: 0;
-            padding: 20px;
+            font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 12px;
+            padding-bottom: 30px;
         }
         .container {
-            max-width: 750px;
+            max-width: 650px;
             margin: 0 auto;
         }
         .card {
             background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-radius: 24px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
         h1 {
-            font-size: 1.5rem;
-            margin-top: 0;
+            font-size: 1.4rem;
+            margin: 0 0 4px 0;
             color: #1e3a8a;
             text-align: center;
         }
-        h2 {
-            font-size: 1.1rem;
-            margin: 0 0 15px 0;
-            color: #1e40af;
-            border-left: 5px solid #3b82f6;
-            padding-left: 12px;
+        .sub {
+            text-align: center;
+            font-size: 0.7rem;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: #cbd5e1;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab.active {
+            background: #1e3a8a;
+            color: white;
+        }
+        .page {
+            display: none;
+        }
+        .page.active-page {
+            display: block;
         }
         label {
             font-weight: 600;
@@ -44,23 +70,25 @@
             margin-top: 12px;
             margin-bottom: 5px;
             color: #1e293b;
+            font-size: 0.85rem;
         }
         input, select {
             width: 100%;
             padding: 12px;
             border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 1rem;
+            border-radius: 14px;
+            font-size: 0.95rem;
             background: #f8fafc;
+            font-family: inherit;
         }
         .row-2 {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
         }
         .row-2 > div {
             flex: 1;
-            min-width: 130px;
+            min-width: 120px;
         }
         button {
             background: #3b82f6;
@@ -71,37 +99,55 @@
             font-size: 1rem;
             font-weight: bold;
             width: 100%;
-            margin-top: 20px;
+            margin-top: 18px;
             cursor: pointer;
+            font-family: inherit;
         }
-        button:hover {
+        button:active {
             background: #2563eb;
+            transform: scale(0.98);
+        }
+        .btn-export {
+            background: #10b981;
+            margin-top: 8px;
+        }
+        .btn-hapus {
+            background: #ef4444;
+            margin-top: 8px;
+        }
+        .btn-cari {
+            background: #8b5cf6;
+            margin-top: 8px;
         }
         .result-box {
             background: #f1f5f9;
-            padding: 15px;
-            border-radius: 16px;
-            margin-top: 20px;
+            padding: 14px;
+            border-radius: 18px;
+            margin-top: 16px;
         }
         .result-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #cbd5e1;
+            font-size: 0.9rem;
         }
         .total {
             font-weight: bold;
-            font-size: 1.2rem;
-            color: #0f3b2c;
+            font-size: 1.1rem;
             background: #dcfce7;
-            padding: 8px;
-            border-radius: 12px;
+            padding: 10px;
+            border-radius: 14px;
             margin-top: 10px;
         }
         .highlight-number {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             color: #1e3a8a;
+        }
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 10px;
         }
         table {
             width: 100%;
@@ -110,169 +156,213 @@
         }
         th, td {
             border: 1px solid #cbd5e1;
-            padding: 6px;
+            padding: 8px 5px;
             text-align: left;
         }
         th {
             background: #e2e8f0;
-        }
-        .btn-hapus {
-            background: #ef4444;
-            padding: 8px 12px;
-            font-size: 0.75rem;
-            margin-top: 10px;
-        }
-        footer {
-            text-align: center;
-            font-size: 0.7rem;
-            color: #475569;
-            margin-top: 20px;
-        }
-        @media (max-width: 500px) {
-            body { padding: 12px; }
-            .row-2 { flex-direction: column; gap: 0; }
+            font-weight: 600;
         }
         .warning {
             background: #fef3c7;
             padding: 10px;
-            border-radius: 12px;
+            border-radius: 14px;
             color: #92400e;
-            margin-top: 10px;
-            font-size: 0.85rem;
+            margin-top: 12px;
+            font-size: 0.75rem;
         }
         .note {
             background: #dbeafe;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            margin-bottom: 15px;
+            padding: 8px 12px;
+            border-radius: 14px;
+            font-size: 0.7rem;
+            margin-bottom: 12px;
         }
-        .bundles-bulat {
-            background: #dcfce7;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+        .pagination button {
+            width: auto;
+            padding: 8px 14px;
+            margin-top: 0;
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .pagination button.active-page-btn {
+            background: #1e3a8a;
+            color: white;
+        }
+        .search-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .search-row input {
+            flex: 2;
+            margin-top: 0;
+        }
+        .search-row button {
+            flex: 1;
+            margin-top: 0;
+        }
+        footer {
+            text-align: center;
+            font-size: 0.65rem;
+            color: #475569;
+            margin-top: 16px;
+        }
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .card { padding: 14px; }
+            .highlight-number { font-size: 1.2rem; }
+            .search-row { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-    <div class="card">
-        <h1>📦 TIMBANG 1 BOX KERTAS</h1>
-        <div class="note">
-            🔄 <strong>KONVERSI SATUAN OTOMATIS:</strong><br>
-            • Data berat kertas dari GRAM → diubah ke KILOGRAM<br>
-            • Layer 6,18 gram = 0,00618 kg<br>
-            • Box sudah dalam KG<br>
-            • Hasil BUNDLES dibulatkan
-        </div>
-
-        <label>📅 Tanggal</label>
-        <input type="date" id="tanggal" value="2026-04-22">
-
-        <label>🏷️ Brand (manual)</label>
-        <input type="text" id="brand" placeholder="Contoh: Sinar Dunia">
-
-        <div class="row-2">
-            <div>
-                <label>📏 Size Kertas</label>
-                <select id="size">
-                    <option value="SINGLE 36X69">SINGLE 36X69</option>
-                    <option value="1 1/4 44X78">1 1/4 44X78</option>
-                    <option value="KS 54X97">KS 54X97</option>
-                    <option value="KSS 44X108">KSS 44X108</option>
-                    <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
-                    <option value="SKS 54X108">SKS 54X108</option>
-                    <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
-                    <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
-                </select>
-            </div>
-            <div>
-                <label>📄 GSM</label>
-                <select id="gsm">
-                    <option value="13">13</option>
-                    <option value="14">14</option>
-                    <option value="20">20</option>
-                    <option value="35">35</option>
-                </select>
-            </div>
-            <div>
-                <label>📑 Leaves per BUNDLE</label>
-                <select id="leavesPerBundle">
-                    <option value="32">32 leaves</option>
-                    <option value="33">33 leaves</option>
-                    <option value="35">35 leaves</option>
-                    <option value="40">40 leaves</option>
-                    <option value="42">42 leaves</option>
-                    <option value="50">50 leaves</option>
-                    <option value="51">51 leaves</option>
-                    <option value="52">52 leaves</option>
-                    <option value="60">60 leaves</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="row-2">
-            <div>
-                <label>📦 Jenis Box</label>
-                <select id="jenisBox">
-                    <option value="White">White (0.90 kg)</option>
-                    <option value="White New">White New (0.80 kg)</option>
-                    <option value="Grey">Grey (1.25 kg)</option>
-                    <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
-                </select>
-            </div>
-            <div>
-                <label>📚 Jumlah Layer (1 layer = 6.18 gram)</label>
-                <input type="number" id="jumlahLayer" step="1" value="0" placeholder="0">
-            </div>
-        </div>
-
-        <label>⚖️ Berat TIMBANG 1 BOX (kg) - ISI KERTAS + BOX + LAYER</label>
-        <input type="number" id="beratTimbangBox" step="0.01" placeholder="Contoh: 2.50">
-
-        <button id="hitungBtn">🔍 HITUNG JUMLAH BUNDLES</button>
+    <!-- Tab Navigation -->
+    <div class="tab-bar">
+        <div class="tab active" data-page="page1">📦 Timbang</div>
+        <div class="tab" data-page="page2">📜 Riwayat Data</div>
     </div>
 
-    <!-- Hasil Perhitungan -->
-    <div class="card" id="hasilCard" style="display: none;">
-        <h2>📊 HASIL PERHITUNGAN</h2>
-        <div class="result-box">
-            <div class="result-item"><strong>⚖️ Berat Timbang 1 Box:</strong> <span id="beratTimbangDisplay">0</span> kg</div>
-            <div class="result-item"><strong>📦 Berat Box Kosong:</strong> <span id="beratBox">0</span> kg</div>
-            <div class="result-item"><strong>📚 Berat Layer:</strong> <span id="beratLayer">0</span> kg</div>
-            <div class="result-item total"><strong>📦 BERAT BERSIH KERTAS:</strong> <span id="beratBersih" class="highlight-number">0</span> kg</div>
-            <div class="result-item"><strong>📑 Berat 1 Bundle (rumus):</strong> <span id="beratPerBundle">0</span> kg</div>
-            <div class="result-item total"><strong>📦 JUMLAH BUNDLES:</strong> 
-                <span id="jumlahBundles" class="highlight-number">0</span> 
-                <span id="bundlesDetail" style="font-size:0.8rem; font-weight:normal;"></span>
+    <!-- Halaman 1: Form Timbang -->
+    <div id="page1" class="page active-page">
+        <div class="card">
+            <h1>📦 TIMBANG 1 BOX KERTAS</h1>
+            <div class="sub">Bundles dibulatkan KE ATAS (Ceil)</div>
+            <div class="note">
+                ✅ Berat kertas dari data Anda (GRAM → KG)<br>
+                ✅ Layer 6,18 gram = 0,00618 kg<br>
+                ✅ Hasil BUNDLES dibulatkan KE ATAS
             </div>
+
+            <label>📅 Tanggal (MM/DD/YYYY)</label>
+            <input type="text" id="tanggal" placeholder="04/22/2026" value="04/22/2026">
+
+            <label>📄 No. PO</label>
+            <input type="text" id="noPo" placeholder="Contoh: PO-001 / INV-123">
+
+            <label>🏷️ Brand</label>
+            <input type="text" id="brand" placeholder="Contoh: Sinar Dunia">
+
+            <label>📏 Size Kertas</label>
+            <select id="size">
+                <option value="SINGLE 36X69">SINGLE 36X69</option>
+                <option value="1 1/4 44X78">1 1/4 44X78</option>
+                <option value="KS 54X97">KS 54X97</option>
+                <option value="KSS 44X108">KSS 44X108</option>
+                <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
+                <option value="SKS 54X108">SKS 54X108</option>
+                <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
+                <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
+            </select>
+
+            <div class="row-2">
+                <div>
+                    <label>📄 GSM</label>
+                    <select id="gsm">
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="20">20</option>
+                        <option value="35">35</option>
+                    </select>
+                </div>
+                <div>
+                    <label>📑 Leaves per BUNDLE</label>
+                    <select id="leavesPerBundle">
+                        <option value="32">32 leaves</option>
+                        <option value="33">33 leaves</option>
+                        <option value="35">35 leaves</option>
+                        <option value="40">40 leaves</option>
+                        <option value="42">42 leaves</option>
+                        <option value="50">50 leaves</option>
+                        <option value="51">51 leaves</option>
+                        <option value="52">52 leaves</option>
+                        <option value="60">60 leaves</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row-2">
+                <div>
+                    <label>📦 Jenis Box</label>
+                    <select id="jenisBox">
+                        <option value="White">White (0.90 kg)</option>
+                        <option value="White New">White New (0.80 kg)</option>
+                        <option value="Grey">Grey (1.25 kg)</option>
+                        <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>📚 Jumlah Layer (1 layer = 6.18 gram)</label>
+                    <input type="number" id="jumlahLayer" step="1" value="0" placeholder="0">
+                </div>
+            </div>
+
+            <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
+            <input type="number" id="beratTimbangBox" step="0.01" placeholder="Contoh: 2.50">
+
+            <button id="hitungBtn">🔍 HITUNG & SIMPAN</button>
         </div>
-        <div id="warningMsg" class="warning" style="display:none;"></div>
+
+        <!-- Hasil Perhitungan -->
+        <div class="card" id="hasilCard" style="display: none;">
+            <h2>📊 HASIL PERHITUNGAN</h2>
+            <div class="result-box">
+                <div class="result-item"><strong>⚖️ Berat Timbang 1 Box:</strong> <span id="beratTimbangDisplay">0</span> kg</div>
+                <div class="result-item"><strong>📦 Berat Box Kosong:</strong> <span id="beratBox">0</span> kg</div>
+                <div class="result-item"><strong>📚 Berat Layer:</strong> <span id="beratLayer">0</span> kg</div>
+                <div class="result-item total"><strong>📦 BERAT BERSIH KERTAS:</strong> <span id="beratBersih" class="highlight-number">0</span> kg</div>
+                <div class="result-item"><strong>📑 Berat 1 Bundle (rumus):</strong> <span id="beratPerBundle">0</span> kg</div>
+                <div class="result-item total"><strong>📦 JUMLAH BUNDLES:</strong> 
+                    <span id="jumlahBundles" class="highlight-number">0</span> bundle
+                </div>
+            </div>
+            <div id="warningMsg" class="warning" style="display:none;"></div>
+        </div>
     </div>
 
-    <!-- Riwayat -->
-    <div class="card">
-        <h2>📜 RIWAYAT TIMBANG</h2>
-        <div style="overflow-x: auto;">
-            <table id="riwayatTable">
-                <thead>
-                    <tr>
-                        <th>No</th><th>Tgl</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Layer</th>
-                        <th>Timbang(kg)</th><th>Bersih(kg)</th><th>Bundles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="10" style="text-align:center;">Belum ada数据</td></tr>
-                </tbody>
-            </table>
+    <!-- Halaman 2: Riwayat Data -->
+    <div id="page2" class="page">
+        <div class="card">
+            <h2>📜 RIWAYAT DATA TIMBANG</h2>
+            
+            <!-- Search -->
+            <div class="search-row">
+                <input type="text" id="searchInput" placeholder="Cari No. PO, Brand, atau Size...">
+                <button id="cariBtn" class="btn-cari">🔍 Cari</button>
+            </div>
+            <button id="resetCariBtn" style="background:#64748b; margin-top:0;">↺ Reset</button>
+
+            <div class="table-wrapper">
+                <table id="riwayatTable">
+                    <thead>
+                        <tr>
+                            <th>No</th><th>Tgl</th><th>No. PO</th><th>Brand</th><th>Size</th><th>GSM</th>
+                            <th>Box</th><th>Layer</th><th>Timbang(kg)</th><th>Bundles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="10" style="text-align:center;">Belum ada data</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+
+            <button id="exportExcelBtn" class="btn-export">📎 Export ke Excel</button>
+            <button id="hapusRiwayatBtn" class="btn-hapus">🗑️ Hapus Semua Riwayat</button>
         </div>
-        <button id="hapusRiwayatBtn" class="btn-hapus">🗑️ Hapus Semua Riwayat</button>
     </div>
-    <footer>
-        📌 Berat 1 bundle dari data Anda (GRAM → KG)<br>
-        📌 Bundles dibulatkan ke bilangan bulat terdekat
-    </footer>
+    <footer>Bundles dibulatkan KE ATAS | Data tersimpan otomatis di browser</footer>
 </div>
 
 <script>
@@ -302,6 +392,7 @@
     const beratBoxMap = { "White": 0.90, "White New": 0.80, "Grey": 1.25, "Green Jumbo": 3.80 };
     const BERAT_PER_LAYER_KG = 0.00618;
 
+    // DOM Elements
     const sizeSelect = document.getElementById('size');
     const gsmSelect = document.getElementById('gsm');
     const leavesPerBundleSelect = document.getElementById('leavesPerBundle');
@@ -312,6 +403,15 @@
     const hasilCard = document.getElementById('hasilCard');
     const riwayatBody = document.querySelector('#riwayatTable tbody');
     const hapusRiwayatBtn = document.getElementById('hapusRiwayatBtn');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const searchInput = document.getElementById('searchInput');
+    const cariBtn = document.getElementById('cariBtn');
+    const resetCariBtn = document.getElementById('resetCariBtn');
+    const paginationDiv = document.getElementById('pagination');
+
+    let currentPage = 1;
+    let currentSearch = '';
+    const rowsPerPage = 10;
 
     function getBeratPerBundle_KG() {
         let size = sizeSelect.value;
@@ -321,6 +421,17 @@
         let beratGram = beratBundleDB_GRAM[key];
         if (beratGram === undefined) return null;
         return beratGram / 1000;
+    }
+
+    function formatDateToMMDDYYYY(dateStr) {
+        if (!dateStr) return "";
+        let parts = dateStr.split(/[-/]/);
+        if (parts.length === 3) {
+            if (parts[0].length === 4) {
+                return `${parts[1]}/${parts[2]}/${parts[0]}`;
+            }
+        }
+        return dateStr;
     }
 
     function hitungDanSimpan() {
@@ -346,12 +457,9 @@
             return;
         }
 
-        // Hitung jumlah bundles (desimal)
         let jumlahBundlesDesimal = beratBersihKertas / beratPerBundleKG;
-        // Pembulatan ke bilangan bulat terdekat
-        let jumlahBundlesBulat = Math.round(jumlahBundlesDesimal);
+        let jumlahBundlesBulat = Math.ceil(jumlahBundlesDesimal);
         
-        // Tampilkan hasil
         document.getElementById('beratTimbangDisplay').innerText = beratTimbangTotal.toFixed(3);
         document.getElementById('beratBox').innerText = beratBox.toFixed(3);
         document.getElementById('beratLayer').innerText = beratLayer.toFixed(4);
@@ -359,518 +467,197 @@
         document.getElementById('beratPerBundle').innerHTML = `${(beratPerBundleKG*1000).toFixed(2)} gram <span style="font-size:0.7rem;">(= ${beratPerBundleKG.toFixed(6)} kg)</span>`;
         document.getElementById('jumlahBundles').innerHTML = `<span class="highlight-number">${jumlahBundlesBulat}</span> bundle`;
         
-        let selisih = Math.abs(jumlahBundlesDesimal - jumlahBundlesBulat);
-        let detailText = `(dari hitungan: ${jumlahBundlesDesimal.toFixed(2)} bundle)`;
-        document.getElementById('bundlesDetail').innerHTML = detailText;
-
+        let selisih = jumlahBundlesBulat - jumlahBundlesDesimal;
         let warningDiv = document.getElementById('warningMsg');
         if (selisih > 0.05) {
             warningDiv.style.display = 'block';
-            warningDiv.innerHTML = `⚠️ PERHATIAN: Hasil hitungan tidak bulat (${jumlahBundlesDesimal.toFixed(2)} bundles) dibulatkan menjadi ${jumlahBundlesBulat} bundle. Selisih ${selisih.toFixed(2)} bundle. Mungkin ada kelebihan/kekurangan isi.`;
+            warningDiv.innerHTML = `⚠️ PERHATIAN: Hasil hitungan desimal = ${jumlahBundlesDesimal.toFixed(2)} bundles, dibulatkan KE ATAS menjadi ${jumlahBundlesBulat} bundle. Selisih kelebihan ${selisih.toFixed(2)} bundle.`;
         } else {
             warningDiv.style.display = 'none';
         }
-
         hasilCard.style.display = 'block';
 
-        // Simpan riwayat
-        let tanggal = document.getElementById('tanggal').value;
+        let tanggalRaw = document.getElementById('tanggal').value;
+        let tanggal = formatDateToMMDDYYYY(tanggalRaw);
+        let noPo = document.getElementById('noPo').value || "-";
         let brand = document.getElementById('brand').value || "-";
         let size = sizeSelect.value;
         let gsm = gsmSelect.value;
         let box = jenisBoxSelect.value;
         let layer = jumlahLayer;
 
-        let riwayat = localStorage.getItem('riwayatTimbangFinal');
+        let riwayat = localStorage.getItem('riwayatTimbangFinalV2');
         if (!riwayat) riwayat = [];
         else riwayat = JSON.parse(riwayat);
         
-        riwayat.push({
-            tanggal, brand, size, gsm, box, layer,
+        let newData = {
+            tanggal, noPo, brand, size, gsm, box, layer,
             beratTimbang: beratTimbangTotal,
             beratBersih: beratBersihKertas,
             bundles: jumlahBundlesBulat,
             bundlesDesimal: jumlahBundlesDesimal
-        });
-        localStorage.setItem('riwayatTimbangFinal', JSON.stringify(riwayat));
+        };
+        
+        riwayat.unshift(newData);
+        localStorage.setItem('riwayatTimbangFinalV2', JSON.stringify(riwayat));
+        
+        currentPage = 1;
+        currentSearch = '';
+        searchInput.value = '';
         tampilkanRiwayat();
+        
+        alert("Data berhasil disimpan!");
     }
 
     function tampilkanRiwayat() {
-        let riwayat = localStorage.getItem('riwayatTimbangFinal');
-        if (!riwayat || JSON.parse(riwayat).length === 0) {
-            riwayatBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Belum ada data</td></tr>';
+        let riwayat = localStorage.getItem('riwayatTimbangFinalV2');
+        if (!riwayat) riwayat = [];
+        else riwayat = JSON.parse(riwayat);
+        
+        let filteredData = riwayat;
+        if (currentSearch) {
+            let searchLower = currentSearch.toLowerCase();
+            filteredData = riwayat.filter(item => 
+                item.noPo.toLowerCase().includes(searchLower) ||
+                item.brand.toLowerCase().includes(searchLower) ||
+                item.size.toLowerCase().includes(searchLower) ||
+                item.tanggal.includes(currentSearch)
+            );
+        }
+        
+        let totalPages = Math.ceil(filteredData.length / rowsPerPage);
+        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
+        if (currentPage < 1) currentPage = 1;
+        
+        let start = (currentPage - 1) * rowsPerPage;
+        let end = start + rowsPerPage;
+        let pageData = filteredData.slice(start, end);
+        
+        if (filteredData.length === 0) {
+            riwayatBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Tidak ada data</td></tr>';
+            paginationDiv.innerHTML = '';
             return;
         }
-        let dataArr = JSON.parse(riwayat);
+        
         riwayatBody.innerHTML = "";
-        for (let i = 0; i < dataArr.length; i++) {
-            let d = dataArr[i];
-            let no = i + 1;
+        let globalNo = start + 1;
+        for (let i = 0; i < pageData.length; i++) {
+            let d = pageData[i];
             let row = `<tr>
-                <td style="text-align:center; font-weight:bold;">${no}</td>
+                <td style="text-align:center;">${globalNo + i}</td>
                 <td>${d.tanggal}</td>
+                <td>${d.noPo}</td>
                 <td>${d.brand}</td>
                 <td>${d.size.substring(0,10)}</td>
                 <td>${d.gsm}</td>
                 <td>${d.box}</td>
                 <td>${d.layer}</td>
                 <td>${parseFloat(d.beratTimbang).toFixed(3)}</td>
-                <td>${parseFloat(d.beratBersih).toFixed(4)}</td>
-                <td style="font-weight:bold; text-align:center;">${d.bundles}</td>
+                <td style="text-align:center; font-weight:bold;">${d.bundles}</td>
             </tr>`;
             riwayatBody.innerHTML += row;
         }
-    }
-
-    function hapusRiwayat() {
-        if (confirm("Hapus SEMUA riwayat timbang?")) {
-            localStorage.removeItem('riwayatTimbangFinal');
-            tampilkanRiwayat();
-            hasilCard.style.display = 'none';
-        }
-    }
-
-    hitungBtn.addEventListener('click', hitungDanSimpan);
-    hapusRiwayatBtn.addEventListener('click', hapusRiwayat);
-    tampilkanRiwayat();
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Timbangan Kertas - Hitung Bundles Otomatis</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        body {
-            background: #e0e7ff;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 750px;
-            margin: 0 auto;
-        }
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        h1 {
-            font-size: 1.5rem;
-            margin-top: 0;
-            color: #1e3a8a;
-            text-align: center;
-        }
-        h2 {
-            font-size: 1.1rem;
-            margin: 0 0 15px 0;
-            color: #1e40af;
-            border-left: 5px solid #3b82f6;
-            padding-left: 12px;
-        }
-        label {
-            font-weight: 600;
-            display: block;
-            margin-top: 12px;
-            margin-bottom: 5px;
-            color: #1e293b;
-        }
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            font-size: 1rem;
-            background: #f8fafc;
-        }
-        .row-2 {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-        .row-2 > div {
-            flex: 1;
-            min-width: 130px;
-        }
-        button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 40px;
-            font-size: 1rem;
-            font-weight: bold;
-            width: 100%;
-            margin-top: 20px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #2563eb;
-        }
-        .result-box {
-            background: #f1f5f9;
-            padding: 15px;
-            border-radius: 16px;
-            margin-top: 20px;
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid #cbd5e1;
-        }
-        .total {
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #0f3b2c;
-            background: #dcfce7;
-            padding: 8px;
-            border-radius: 12px;
-            margin-top: 10px;
-        }
-        .highlight-number {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #1e3a8a;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.7rem;
-        }
-        th, td {
-            border: 1px solid #cbd5e1;
-            padding: 6px;
-            text-align: left;
-        }
-        th {
-            background: #e2e8f0;
-        }
-        .btn-hapus {
-            background: #ef4444;
-            padding: 8px 12px;
-            font-size: 0.75rem;
-            margin-top: 10px;
-        }
-        footer {
-            text-align: center;
-            font-size: 0.7rem;
-            color: #475569;
-            margin-top: 20px;
-        }
-        @media (max-width: 500px) {
-            body { padding: 12px; }
-            .row-2 { flex-direction: column; gap: 0; }
-        }
-        .warning {
-            background: #fef3c7;
-            padding: 10px;
-            border-radius: 12px;
-            color: #92400e;
-            margin-top: 10px;
-            font-size: 0.85rem;
-        }
-        .note {
-            background: #dbeafe;
-            padding: 10px;
-            border-radius: 10px;
-            font-size: 0.75rem;
-            margin-bottom: 15px;
-        }
-        .bundles-bulat {
-            background: #dcfce7;
-            padding: 5px 10px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-    </style>
-</head>
-<body>
-<div class="container">
-    <div class="card">
-        <h1>📦 TIMBANG 1 BOX KERTAS</h1>
-        <div class="note">
-            🔄 <strong>KONVERSI SATUAN OTOMATIS:</strong><br>
-            • Data berat kertas dari GRAM → diubah ke KILOGRAM<br>
-            • Layer 6,18 gram = 0,00618 kg<br>
-            • Box sudah dalam KG<br>
-            • Hasil BUNDLES dibulatkan
-        </div>
-
-        <label>📅 Tanggal</label>
-        <input type="date" id="tanggal" value="2026-04-22">
-
-        <label>🏷️ Brand (manual)</label>
-        <input type="text" id="brand" placeholder="Contoh: Sinar Dunia">
-
-        <div class="row-2">
-            <div>
-                <label>📏 Size Kertas</label>
-                <select id="size">
-                    <option value="SINGLE 36X69">SINGLE 36X69</option>
-                    <option value="1 1/4 44X78">1 1/4 44X78</option>
-                    <option value="KS 54X97">KS 54X97</option>
-                    <option value="KSS 44X108">KSS 44X108</option>
-                    <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
-                    <option value="SKS 54X108">SKS 54X108</option>
-                    <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
-                    <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
-                </select>
-            </div>
-            <div>
-                <label>📄 GSM</label>
-                <select id="gsm">
-                    <option value="13">13</option>
-                    <option value="14">14</option>
-                    <option value="20">20</option>
-                    <option value="35">35</option>
-                </select>
-            </div>
-            <div>
-                <label>📑 Leaves per BUNDLE</label>
-                <select id="leavesPerBundle">
-                    <option value="32">32 leaves</option>
-                    <option value="33">33 leaves</option>
-                    <option value="35">35 leaves</option>
-                    <option value="40">40 leaves</option>
-                    <option value="42">42 leaves</option>
-                    <option value="50">50 leaves</option>
-                    <option value="51">51 leaves</option>
-                    <option value="52">52 leaves</option>
-                    <option value="60">60 leaves</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="row-2">
-            <div>
-                <label>📦 Jenis Box</label>
-                <select id="jenisBox">
-                    <option value="White">White (0.90 kg)</option>
-                    <option value="White New">White New (0.80 kg)</option>
-                    <option value="Grey">Grey (1.25 kg)</option>
-                    <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
-                </select>
-            </div>
-            <div>
-                <label>📚 Jumlah Layer (1 layer = 6.18 gram)</label>
-                <input type="number" id="jumlahLayer" step="1" value="0" placeholder="0">
-            </div>
-        </div>
-
-        <label>⚖️ Berat TIMBANG 1 BOX (kg) - ISI KERTAS + BOX + LAYER</label>
-        <input type="number" id="beratTimbangBox" step="0.01" placeholder="Contoh: 2.50">
-
-        <button id="hitungBtn">🔍 HITUNG JUMLAH BUNDLES</button>
-    </div>
-
-    <!-- Hasil Perhitungan -->
-    <div class="card" id="hasilCard" style="display: none;">
-        <h2>📊 HASIL PERHITUNGAN</h2>
-        <div class="result-box">
-            <div class="result-item"><strong>⚖️ Berat Timbang 1 Box:</strong> <span id="beratTimbangDisplay">0</span> kg</div>
-            <div class="result-item"><strong>📦 Berat Box Kosong:</strong> <span id="beratBox">0</span> kg</div>
-            <div class="result-item"><strong>📚 Berat Layer:</strong> <span id="beratLayer">0</span> kg</div>
-            <div class="result-item total"><strong>📦 BERAT BERSIH KERTAS:</strong> <span id="beratBersih" class="highlight-number">0</span> kg</div>
-            <div class="result-item"><strong>📑 Berat 1 Bundle (rumus):</strong> <span id="beratPerBundle">0</span> kg</div>
-            <div class="result-item total"><strong>📦 JUMLAH BUNDLES:</strong> 
-                <span id="jumlahBundles" class="highlight-number">0</span> 
-                <span id="bundlesDetail" style="font-size:0.8rem; font-weight:normal;"></span>
-            </div>
-        </div>
-        <div id="warningMsg" class="warning" style="display:none;"></div>
-    </div>
-
-    <!-- Riwayat -->
-    <div class="card">
-        <h2>📜 RIWAYAT TIMBANG</h2>
-        <div style="overflow-x: auto;">
-            <table id="riwayatTable">
-                <thead>
-                    <tr>
-                        <th>No</th><th>Tgl</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Layer</th>
-                        <th>Timbang(kg)</th><th>Bersih(kg)</th><th>Bundles</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr><td colspan="10" style="text-align:center;">Belum ada数据</td></tr>
-                </tbody>
-            </table>
-        </div>
-        <button id="hapusRiwayatBtn" class="btn-hapus">🗑️ Hapus Semua Riwayat</button>
-    </div>
-    <footer>
-        📌 Berat 1 bundle dari data Anda (GRAM → KG)<br>
-        📌 Bundles dibulatkan ke bilangan bulat terdekat
-    </footer>
-</div>
-
-<script>
-    // ======================= DATABASE BERAT 1 BUNDLE (DALAM GRAM) =======================
-    const beratBundleDB_GRAM = {
-        "SINGLE 36X69|13|32": 1.03, "SINGLE 36X69|13|33": 1.07, "SINGLE 36X69|13|40": 1.29, 
-        "SINGLE 36X69|13|50": 1.61, "SINGLE 36X69|13|51": 1.65, "SINGLE 36X69|13|60": 1.94,
-        "SINGLE 36X69|14|32": 1.11, "SINGLE 36X69|14|33": 1.15, "SINGLE 36X69|14|40": 1.39, 
-        "SINGLE 36X69|14|50": 1.74, "SINGLE 36X69|14|51": 1.77, "SINGLE 36X69|14|60": 2.09,
-        "1 1/4 44X78|13|32": 1.43, "1 1/4 44X78|13|33": 1.47, "1 1/4 44X78|13|40": 1.78, "1 1/4 44X78|13|50": 2.23,
-        "1 1/4 44X78|14|32": 1.54, "1 1/4 44X78|14|33": 1.59, "1 1/4 44X78|14|35": 1.68, 
-        "1 1/4 44X78|14|40": 1.92, "1 1/4 44X78|14|42": 2.02, "1 1/4 44X78|14|50": 2.40, 
-        "1 1/4 44X78|14|51": 2.45, "1 1/4 44X78|14|52": 2.50,
-        "CLEAR PAPER 1 1/4 44X78|35|50": 4.80,
-        "KS 54X97|14|32": 2.35, "KS 54X97|14|33": 2.42, "KS 54X97|14|40": 2.93, "KS 54X97|14|50": 3.67,
-        "KS 54X97|20|32": 3.35, "KS 54X97|20|33": 3.46, "KS 54X97|20|40": 4.19, "KS 54X97|20|50": 5.24,
-        "KSS 44X108|13|32": 1.98, "KSS 44X108|13|33": 2.04, "KSS 44X108|13|40": 2.47, "KSS 44X108|13|50": 3.09,
-        "KSS 44X108|14|33": 2.20, "KSS 44X108|14|35": 2.33, "KSS 44X108|14|40": 2.66, 
-        "KSS 44X108|14|42": 2.79, "KSS 44X108|14|50": 3.33, "KSS 44X108|14|51": 3.39, "KSS 44X108|14|52": 3.46,
-        "KSS SLIM 36X108|14|32": 1.74, "KSS SLIM 36X108|14|33": 1.80, "KSS SLIM 36X108|14|34": 1.85, 
-        "KSS SLIM 36X108|14|40": 2.18, "KSS SLIM 36X108|14|50": 2.72,
-        "SKS 54X108|13|33": 2.50, "SKS 54X108|13|40": 3.03, "SKS 54X108|13|50": 3.79,
-        "SKS 54X108|14|33": 2.69, "SKS 54X108|14|40": 3.27, "SKS 54X108|14|50": 4.08,
-        "CLEAR PAPER SKS 54X108|35|50": 10.21
-    };
-
-    const beratBoxMap = { "White": 0.90, "White New": 0.80, "Grey": 1.25, "Green Jumbo": 3.80 };
-    const BERAT_PER_LAYER_KG = 0.00618;
-
-    const sizeSelect = document.getElementById('size');
-    const gsmSelect = document.getElementById('gsm');
-    const leavesPerBundleSelect = document.getElementById('leavesPerBundle');
-    const jenisBoxSelect = document.getElementById('jenisBox');
-    const beratTimbangInput = document.getElementById('beratTimbangBox');
-    const jumlahLayerInput = document.getElementById('jumlahLayer');
-    const hitungBtn = document.getElementById('hitungBtn');
-    const hasilCard = document.getElementById('hasilCard');
-    const riwayatBody = document.querySelector('#riwayatTable tbody');
-    const hapusRiwayatBtn = document.getElementById('hapusRiwayatBtn');
-
-    function getBeratPerBundle_KG() {
-        let size = sizeSelect.value;
-        let gsm = gsmSelect.value;
-        let leaves = leavesPerBundleSelect.value;
-        let key = `${size}|${gsm}|${leaves}`;
-        let beratGram = beratBundleDB_GRAM[key];
-        if (beratGram === undefined) return null;
-        return beratGram / 1000;
-    }
-
-    function hitungDanSimpan() {
-        let beratTimbangTotal = parseFloat(beratTimbangInput.value);
-        if (isNaN(beratTimbangTotal) || beratTimbangTotal <= 0) {
-            alert("Masukkan Berat TIMBANG 1 Box (kg) yang benar!");
-            return;
-        }
-
-        let beratBox = beratBoxMap[jenisBoxSelect.value];
-        let jumlahLayer = parseInt(jumlahLayerInput.value) || 0;
-        let beratLayer = jumlahLayer * BERAT_PER_LAYER_KG;
-        let beratBersihKertas = beratTimbangTotal - beratBox - beratLayer;
-
-        if (beratBersihKertas <= 0) {
-            alert("Berat bersih kertas negatif! Cek berat timbang, box, atau layer.");
-            return;
-        }
-
-        let beratPerBundleKG = getBeratPerBundle_KG();
-        if (beratPerBundleKG === null) {
-            alert(`⚠️ DATA TIDAK DITEMUKAN!\n\nSize: ${sizeSelect.value}\nGSM: ${gsmSelect.value}\nLeaves per Bundle: ${leavesPerBundleSelect.value}`);
-            return;
-        }
-
-        // Hitung jumlah bundles (desimal)
-        let jumlahBundlesDesimal = beratBersihKertas / beratPerBundleKG;
-        // Pembulatan ke bilangan bulat terdekat
-        let jumlahBundlesBulat = Math.round(jumlahBundlesDesimal);
         
-        // Tampilkan hasil
-        document.getElementById('beratTimbangDisplay').innerText = beratTimbangTotal.toFixed(3);
-        document.getElementById('beratBox').innerText = beratBox.toFixed(3);
-        document.getElementById('beratLayer').innerText = beratLayer.toFixed(4);
-        document.getElementById('beratBersih').innerHTML = `<span class="highlight-number">${beratBersihKertas.toFixed(4)}</span> kg`;
-        document.getElementById('beratPerBundle').innerHTML = `${(beratPerBundleKG*1000).toFixed(2)} gram <span style="font-size:0.7rem;">(= ${beratPerBundleKG.toFixed(6)} kg)</span>`;
-        document.getElementById('jumlahBundles').innerHTML = `<span class="highlight-number">${jumlahBundlesBulat}</span> bundle`;
-        
-        let selisih = Math.abs(jumlahBundlesDesimal - jumlahBundlesBulat);
-        let detailText = `(dari hitungan: ${jumlahBundlesDesimal.toFixed(2)} bundle)`;
-        document.getElementById('bundlesDetail').innerHTML = detailText;
-
-        let warningDiv = document.getElementById('warningMsg');
-        if (selisih > 0.05) {
-            warningDiv.style.display = 'block';
-            warningDiv.innerHTML = `⚠️ PERHATIAN: Hasil hitungan tidak bulat (${jumlahBundlesDesimal.toFixed(2)} bundles) dibulatkan menjadi ${jumlahBundlesBulat} bundle. Selisih ${selisih.toFixed(2)} bundle. Mungkin ada kelebihan/kekurangan isi.`;
-        } else {
-            warningDiv.style.display = 'none';
+        let paginationHtml = '';
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHtml += `<button class="${i === currentPage ? 'active-page-btn' : ''}" onclick="goToPage(${i})">${i}</button>`;
         }
-
-        hasilCard.style.display = 'block';
-
-        // Simpan riwayat
-        let tanggal = document.getElementById('tanggal').value;
-        let brand = document.getElementById('brand').value || "-";
-        let size = sizeSelect.value;
-        let gsm = gsmSelect.value;
-        let box = jenisBoxSelect.value;
-        let layer = jumlahLayer;
-
-        let riwayat = localStorage.getItem('riwayatTimbangFinal');
-        if (!riwayat) riwayat = [];
-        else riwayat = JSON.parse(riwayat);
-        
-        riwayat.push({
-            tanggal, brand, size, gsm, box, layer,
-            beratTimbang: beratTimbangTotal,
-            beratBersih: beratBersihKertas,
-            bundles: jumlahBundlesBulat,
-            bundlesDesimal: jumlahBundlesDesimal
-        });
-        localStorage.setItem('riwayatTimbangFinal', JSON.stringify(riwayat));
+        paginationDiv.innerHTML = paginationHtml;
+    }
+    
+    function goToPage(page) {
+        currentPage = page;
         tampilkanRiwayat();
     }
-
-    function tampilkanRiwayat() {
-        let riwayat = localStorage.getItem('riwayatTimbangFinal');
+    
+    function cariData() {
+        currentSearch = searchInput.value.trim();
+        currentPage = 1;
+        tampilkanRiwayat();
+    }
+    
+    function resetCari() {
+        currentSearch = '';
+        searchInput.value = '';
+        currentPage = 1;
+        tampilkanRiwayat();
+    }
+    
+    function exportToExcel() {
+        let riwayat = localStorage.getItem('riwayatTimbangFinalV2');
         if (!riwayat || JSON.parse(riwayat).length === 0) {
-            riwayatBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Belum ada data</td></tr>';
+            alert("Tidak ada data untuk di export!");
             return;
         }
-        let dataArr = JSON.parse(riwayat);
-        riwayatBody.innerHTML = "";
-        for (let i = 0; i < dataArr.length; i++) {
-            let d = dataArr[i];
-            let no = i + 1;
-            let row = `<tr>
-                <td style="text-align:center; font-weight:bold;">${no}</td>
-                <td>${d.tanggal}</td>
-                <td>${d.brand}</td>
-                <td>${d.size.substring(0,10)}</td>
-                <td>${d.gsm}</td>
-                <td>${d.box}</td>
-                <td>${d.layer}</td>
-                <td>${parseFloat(d.beratTimbang).toFixed(3)}</td>
-                <td>${parseFloat(d.beratBersih).toFixed(4)}</td>
-                <td style="font-weight:bold; text-align:center;">${d.bundles}</td>
-            </tr>`;
-            riwayatBody.innerHTML += row;
+        let data = JSON.parse(riwayat);
+        let filteredData = data;
+        if (currentSearch) {
+            let searchLower = currentSearch.toLowerCase();
+            filteredData = data.filter(item => 
+                item.noPo.toLowerCase().includes(searchLower) ||
+                item.brand.toLowerCase().includes(searchLower) ||
+                item.size.toLowerCase().includes(searchLower) ||
+                item.tanggal.includes(currentSearch)
+            );
         }
+        
+        let rows = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Jenis Box", "Layer", "Berat Timbang(kg)", "Berat Bersih(kg)", "Jumlah Bundles"]];
+        for (let i = 0; i < filteredData.length; i++) {
+            let d = filteredData[i];
+            rows.push([
+                i+1, d.tanggal, d.noPo, d.brand, d.size, d.gsm, d.box, d.layer, 
+                parseFloat(d.beratTimbang).toFixed(3), 
+                parseFloat(d.beratBersih).toFixed(4), 
+                d.bundles
+            ]);
+        }
+        
+        let csv = rows.map(row => row.join(",")).join("\n");
+        let blob = new Blob([csv], { type: "text/csv" });
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `riwayat_timbang_${new Date().toISOString().slice(0,19)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
     }
-
+    
     function hapusRiwayat() {
         if (confirm("Hapus SEMUA riwayat timbang?")) {
-            localStorage.removeItem('riwayatTimbangFinal');
+            localStorage.removeItem('riwayatTimbangFinalV2');
+            currentPage = 1;
+            currentSearch = '';
+            searchInput.value = '';
             tampilkanRiwayat();
             hasilCard.style.display = 'none';
+            alert("Semua data telah dihapus!");
         }
     }
-
+    
+    // Tab switching
+    const tabs = document.querySelectorAll('.tab');
+    const pages = document.querySelectorAll('.page');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const pageId = tab.dataset.page;
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            pages.forEach(page => page.classList.remove('active-page'));
+            document.getElementById(pageId).classList.add('active-page');
+            if (pageId === 'page2') {
+                tampilkanRiwayat();
+            }
+        });
+    });
+    
     hitungBtn.addEventListener('click', hitungDanSimpan);
     hapusRiwayatBtn.addEventListener('click', hapusRiwayat);
+    exportExcelBtn.addEventListener('click', exportToExcel);
+    cariBtn.addEventListener('click', cariData);
+    resetCariBtn.addEventListener('click', resetCari);
+    
+    window.goToPage = goToPage;
+    
     tampilkanRiwayat();
 </script>
 </body>
