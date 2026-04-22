@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Aplikasi Timbangan Kertas</title>
+    <title>Aplikasi Timbangan - Hitung Bundles Otomatis</title>
     <style>
         * {
             box-sizing: border-box;
@@ -26,13 +26,13 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         h1 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             margin-top: 0;
             color: #1e3a8a;
             text-align: center;
         }
         h2 {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin: 0 0 15px 0;
             color: #1e40af;
             border-left: 5px solid #3b82f6;
@@ -60,7 +60,7 @@
         }
         .row-2 > div {
             flex: 1;
-            min-width: 120px;
+            min-width: 140px;
         }
         button {
             background: #3b82f6;
@@ -86,40 +86,41 @@
         .result-item {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #cbd5e1;
         }
         .total {
             font-weight: bold;
             font-size: 1.2rem;
             color: #0f3b2c;
+            background: #dcfce7;
+            padding: 8px;
+            border-radius: 12px;
+            margin-top: 10px;
         }
-        .selisih {
+        .highlight-number {
+            font-size: 1.4rem;
             font-weight: bold;
-            color: #b91c1c;
+            color: #1e3a8a;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
         }
         th, td {
             border: 1px solid #cbd5e1;
             padding: 8px;
             text-align: left;
-            vertical-align: top;
         }
         th {
             background: #e2e8f0;
         }
         .btn-hapus {
             background: #ef4444;
-            padding: 6px 10px;
-            font-size: 0.7rem;
+            padding: 8px 12px;
+            font-size: 0.75rem;
             margin-top: 10px;
-        }
-        .btn-hapus:hover {
-            background: #dc2626;
         }
         footer {
             text-align: center;
@@ -131,18 +132,26 @@
             body { padding: 12px; }
             .row-2 { flex-direction: column; gap: 0; }
         }
+        .warning {
+            background: #fef3c7;
+            padding: 10px;
+            border-radius: 12px;
+            color: #92400e;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
 <div class="container">
     <div class="card">
-        <h1>📦 TIMBANG KERTAS 1 BOX</h1>
+        <h1>📦 TIMBANG 1 BOX KERTAS</h1>
+        <p style="font-size:0.85rem; color:#475569;">Aplikasi akan menghitung otomatis berapa BUNDLES dalam box berdasarkan berat timbangan</p>
 
         <label>📅 Tanggal</label>
         <input type="date" id="tanggal" value="2026-04-22">
 
         <label>🏷️ Brand (manual)</label>
-        <input type="text" id="brand" placeholder="Contoh: Sinar Dunia, PaperOne, dll">
+        <input type="text" id="brand" placeholder="Contoh: Sinar Dunia">
 
         <label>📏 Size Kertas</label>
         <select id="size">
@@ -159,11 +168,26 @@
         <div class="row-2">
             <div>
                 <label>📄 GSM</label>
-                <input type="number" id="gsm" placeholder="13 / 14 / 20 / 35" step="1" value="13">
+                <select id="gsm">
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="20">20</option>
+                    <option value="35">35</option>
+                </select>
             </div>
             <div>
-                <label>📑 Jumlah Leaves</label>
-                <input type="number" id="leaves" placeholder="32-60" value="32">
+                <label>📑 Leaves per BUNDLE</label>
+                <select id="leavesPerBundle">
+                    <option value="32">32 leaves</option>
+                    <option value="33">33 leaves</option>
+                    <option value="35">35 leaves</option>
+                    <option value="40">40 leaves</option>
+                    <option value="42">42 leaves</option>
+                    <option value="50">50 leaves</option>
+                    <option value="51">51 leaves</option>
+                    <option value="52">52 leaves</option>
+                    <option value="60">60 leaves</option>
+                </select>
             </div>
         </div>
 
@@ -175,26 +199,29 @@
             <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
         </select>
 
-        <label>📦 Berat TIMBANG 1 Box (kg) - real hasil timbang</label>
-        <input type="number" id="beratTimbangReal" step="0.01" placeholder="Contoh: 2.45">
+        <label>⚖️ Berat TIMBANG 1 BOX (kg) - isi kertas + box + layer</label>
+        <input type="number" id="beratTimbangBox" step="0.01" placeholder="Contoh: 5.25">
 
-        <label>📚 Jumlah Layer / Pembatas (1 layer = 6.18 gram)</label>
+        <label>📚 Jumlah Layer / Pembatas dalam box (1 layer = 6.18 gram)</label>
         <input type="number" id="jumlahLayer" step="1" value="0" placeholder="0">
 
-        <button id="hitungBtn">✅ HITUNG & SIMPAN</button>
+        <button id="hitungBtn">🔍 HITUNG BUNDLES & TOTAL LEAVES</button>
     </div>
 
     <!-- Hasil Perhitungan -->
     <div class="card" id="hasilCard" style="display: none;">
         <h2>📊 HASIL PERHITUNGAN</h2>
         <div class="result-box">
-            <div class="result-item"><strong>Berat Kertas (Rumus):</strong> <span id="beratRumus">0</span> kg</div>
-            <div class="result-item"><strong>Berat Box:</strong> <span id="beratBox">0</span> kg</div>
-            <div class="result-item"><strong>Berat Layer (6.18 gr x jumlah):</strong> <span id="beratLayer">0</span> kg</div>
-            <div class="result-item total"><strong>📌 TOTAL RUMUS (Kertas+Box+Layer):</strong> <span id="totalRumus">0</span> kg</div>
-            <div class="result-item"><strong>⚖️ Berat TIMBANG Real (input Anda):</strong> <span id="timbangRealDisplay">0</span> kg</div>
-            <div class="result-item selisih"><strong>🔄 SELISIH (Real - Rumus):</strong> <span id="selisih">0</span> kg</div>
+            <div class="result-item"><strong>Berat Timpang 1 Box (Real):</strong> <span id="beratTimbangDisplay">0</span> kg</div>
+            <div class="result-item"><strong>Berat Box Kosong:</strong> <span id="beratBox">0</span> kg</div>
+            <div class="result-item"><strong>Berat Layer:</strong> <span id="beratLayer">0</span> kg</div>
+            <div class="result-item total"><strong>📦 BERAT BERSIH KERTAS:</strong> <span id="beratBersih" class="highlight-number">0</span> kg</div>
+            <div class="result-item"><strong>Berat 1 Bundle (dari database):</strong> <span id="beratPerBundle">0</span> kg</div>
+            <div class="result-item total"><strong>📦 JUMLAH BUNDLES dalam box:</strong> <span id="jumlahBundles" class="highlight-number">0</span> bundle</div>
+            <div class="result-item"><strong>📑 TOTAL LEAVES dalam box:</strong> <span id="totalLeaves" class="highlight-number">0</span> leaves</div>
+            <div class="result-item"><strong>✅ Leaves per Bundle (standar):</strong> <span id="stdLeavesPerBundle">0</span> leaves</div>
         </div>
+        <div id="warningMsg" class="warning" style="display:none;"></div>
     </div>
 
     <!-- Riwayat -->
@@ -203,22 +230,25 @@
         <div style="overflow-x: auto;">
             <table id="riwayatTable">
                 <thead>
-                    <tr><th>Tanggal</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Box</th><th>Layer</th><th>Timbang Real(kg)</th><th>Rumus Total(kg)</th><th>Selisih(kg)</th></tr>
+                    <tr>
+                        <th>Tgl</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Layer</th>
+                        <th>Timbang(kg)</th><th>Bersih(kg)</th><th>Bundles</th><th>Total Leaves</th><th>Lvs/Bundle</th>
+                    </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="10" style="text-align:center;">Belum ada data</td></tr>
+                    <tr><td colspan="11" style="text-align:center;">Belum ada data</td></tr>
                 </tbody>
             </table>
         </div>
         <button id="hapusRiwayatBtn" class="btn-hapus">🗑️ Hapus Semua Riwayat</button>
     </div>
-    <footer>Database rumus sesuai data kertas yang diberikan | Layer = 6.18 gram per lembar pembatas</footer>
+    <footer>Database berat 1 bundle sesuai data kertas Anda | Layer = 6.18 gram</footer>
 </div>
 
 <script>
-    // ======================= DATABASE BERAT RUMUS KERTAS (berdasarkan data Anda) =======================
-    // Format: key = "SIZE|GSM|LEAVES" -> berat dalam kg (BERDASARKAN RUMUS dari tabel Anda)
-    const beratRumusDB = {
+    // ======================= DATABASE BERAT 1 BUNDLE (BERDASARKAN RUMUS DARI DATA ANDA) =======================
+    // Key = "SIZE|GSM|LEAVES_PER_BUNDLE" -> Berat 1 bundle (kg)
+    const beratBundleDB = {
         // SINGLE 36X69 13 GSM
         "SINGLE 36X69|13|32": 1.03, "SINGLE 36X69|13|33": 1.07, "SINGLE 36X69|13|40": 1.29, "SINGLE 36X69|13|50": 1.61, "SINGLE 36X69|13|51": 1.65, "SINGLE 36X69|13|60": 1.94,
         // SINGLE 36X69 14 GSM
@@ -247,116 +277,112 @@
         "CLEAR PAPER SKS 54X108|35|50": 10.21
     };
 
-    // Berat box (kg)
-    const beratBoxMap = {
-        "White": 0.90,
-        "White New": 0.80,
-        "Grey": 1.25,
-        "Green Jumbo": 3.80
-    };
-
-    // Layer = 6.18 gram = 0.00618 kg per layer
+    const beratBoxMap = { "White": 0.90, "White New": 0.80, "Grey": 1.25, "Green Jumbo": 3.80 };
     const BERAT_PER_LAYER_KG = 0.00618;
 
-    // Ambil elemen
+    // DOM Elements
     const sizeSelect = document.getElementById('size');
-    const gsmInput = document.getElementById('gsm');
-    const leavesInput = document.getElementById('leaves');
+    const gsmSelect = document.getElementById('gsm');
+    const leavesPerBundleSelect = document.getElementById('leavesPerBundle');
     const jenisBoxSelect = document.getElementById('jenisBox');
-    const beratTimbangRealInput = document.getElementById('beratTimbangReal');
+    const beratTimbangInput = document.getElementById('beratTimbangBox');
     const jumlahLayerInput = document.getElementById('jumlahLayer');
     const hitungBtn = document.getElementById('hitungBtn');
     const hasilCard = document.getElementById('hasilCard');
     const riwayatBody = document.querySelector('#riwayatTable tbody');
     const hapusRiwayatBtn = document.getElementById('hapusRiwayatBtn');
 
-    // Fungsi ambil berat rumus kertas
-    function getBeratRumusKertas() {
+    function getBeratPerBundle() {
         let size = sizeSelect.value;
-        let gsm = gsmInput.value;
-        let leaves = leavesInput.value;
+        let gsm = gsmSelect.value;
+        let leaves = leavesPerBundleSelect.value;
         let key = `${size}|${gsm}|${leaves}`;
-        let berat = beratRumusDB[key];
+        let berat = beratBundleDB[key];
         if (berat === undefined) {
-            // Coba fallback kalau gsm dan leaves tidak exact, tapi lebih baik kasih warning
             return null;
         }
         return berat;
     }
 
-    // Fungsi hitung dan simpan
     function hitungDanSimpan() {
-        // Validasi input wajib
-        let beratTimbangReal = parseFloat(beratTimbangRealInput.value);
-        if (isNaN(beratTimbangReal)) {
-            alert("Masukkan Berat TIMBANG Real 1 Box (kg) dulu!");
-            return;
-        }
-        let leaves = parseInt(leavesInput.value);
-        let gsm = parseInt(gsmInput.value);
-        if (isNaN(leaves) || isNaN(gsm)) {
-            alert("GSM dan Leaves harus angka!");
+        let beratTimbangTotal = parseFloat(beratTimbangInput.value);
+        if (isNaN(beratTimbangTotal) || beratTimbangTotal <= 0) {
+            alert("Masukkan Berat TIMBANG 1 Box (kg) yang benar!");
             return;
         }
 
-        let beratRumusKertas = getBeratRumusKertas();
-        if (beratRumusKertas === null) {
-            alert(`Data rumus tidak ditemukan untuk: ${sizeSelect.value} | GSM ${gsm} | Leaves ${leaves}\nSilakan cek kombinasi.`);
-            return;
-        }
-
-        let jenisBox = jenisBoxSelect.value;
-        let beratBox = beratBoxMap[jenisBox];
+        let beratBox = beratBoxMap[jenisBoxSelect.value];
         let jumlahLayer = parseInt(jumlahLayerInput.value) || 0;
         let beratLayer = jumlahLayer * BERAT_PER_LAYER_KG;
-        let totalRumus = beratRumusKertas + beratBox + beratLayer;
-        let selisih = beratTimbangReal - totalRumus;
+        let beratBersihKertas = beratTimbangTotal - beratBox - beratLayer;
 
-        // Tampilkan hasil card
-        document.getElementById('beratRumus').innerText = beratRumusKertas.toFixed(3);
+        if (beratBersihKertas <= 0) {
+            alert("Berat bersih kertas negatif! Cek berat timbang, box, atau layer.");
+            return;
+        }
+
+        let beratPerBundle = getBeratPerBundle();
+        if (beratPerBundle === null) {
+            alert(`Data TIDAK DITEMUKAN!\nSize: ${sizeSelect.value}\nGSM: ${gsmSelect.value}\nLeaves per Bundle: ${leavesPerBundleSelect.value}\n\nTidak bisa menghitung jumlah bundles.`);
+            return;
+        }
+
+        // HITUNG JUMLAH BUNDLES OTOMATIS
+        let jumlahBundles = beratBersihKertas / beratPerBundle;
+        let totalLeaves = jumlahBundles * parseInt(leavesPerBundleSelect.value);
+        let stdLeaves = parseInt(leavesPerBundleSelect.value);
+
+        // Tampilkan hasil
+        document.getElementById('beratTimbangDisplay').innerText = beratTimbangTotal.toFixed(3);
         document.getElementById('beratBox').innerText = beratBox.toFixed(3);
         document.getElementById('beratLayer').innerText = beratLayer.toFixed(3);
-        document.getElementById('totalRumus').innerText = totalRumus.toFixed(3);
-        document.getElementById('timbangRealDisplay').innerText = beratTimbangReal.toFixed(3);
-        document.getElementById('selisih').innerText = selisih.toFixed(3);
+        document.getElementById('beratBersih').innerText = beratBersihKertas.toFixed(3);
+        document.getElementById('beratPerBundle').innerText = beratPerBundle.toFixed(3);
+        document.getElementById('jumlahBundles').innerText = jumlahBundles.toFixed(2);
+        document.getElementById('totalLeaves').innerText = totalLeaves.toFixed(0);
+        document.getElementById('stdLeavesPerBundle').innerText = stdLeaves;
+
+        let warningDiv = document.getElementById('warningMsg');
+        if (!Number.isInteger(jumlahBundles) && Math.abs(jumlahBundles - Math.round(jumlahBundles)) > 0.01) {
+            warningDiv.style.display = 'block';
+            warningDiv.innerHTML = `⚠️ PERHATIAN: Jumlah bundles tidak bulat (${jumlahBundles.toFixed(2)}). Kemungkinan berat timbang tidak presisi atau ada kelebihan/kekurangan isi.`;
+        } else {
+            warningDiv.style.display = 'none';
+        }
+
         hasilCard.style.display = 'block';
 
-        // Simpan ke riwayat
+        // Simpan riwayat
         let tanggal = document.getElementById('tanggal').value;
         let brand = document.getElementById('brand').value || "-";
-        let sizeText = sizeSelect.value;
-        let gsmText = gsm;
-        let leavesText = leaves;
-        let boxText = jenisBox;
-        let layerText = jumlahLayer;
+        let size = sizeSelect.value;
+        let gsm = gsmSelect.value;
+        let box = jenisBoxSelect.value;
+        let layer = jumlahLayer;
+        let bundlesFinal = jumlahBundles.toFixed(2);
+        let totalLeavesFinal = totalLeaves.toFixed(0);
+        let leavesPerBundleFinal = stdLeaves;
 
-        let newRow = {
-            tanggal, brand, size: sizeText, gsm: gsmText, leaves: leavesText,
-            box: boxText, layer: layerText,
-            timbangReal: beratTimbangReal,
-            totalRumus: totalRumus,
-            selisih: selisih
-        };
-
-        simpanKeLocalStorage(newRow);
+        let riwayat = localStorage.getItem('riwayatTimbangBundlesV2');
+        if (!riwayat) riwayat = [];
+        else riwayat = JSON.parse(riwayat);
+        
+        riwayat.push({
+            tanggal, brand, size, gsm, box, layer,
+            beratTimbang: beratTimbangTotal,
+            beratBersih: beratBersihKertas,
+            bundles: bundlesFinal,
+            totalLeaves: totalLeavesFinal,
+            leavesPerBundle: leavesPerBundleFinal
+        });
+        localStorage.setItem('riwayatTimbangBundlesV2', JSON.stringify(riwayat));
         tampilkanRiwayat();
     }
 
-    function simpanKeLocalStorage(data) {
-        let riwayat = localStorage.getItem('riwayatTimbang');
-        if (!riwayat) {
-            riwayat = [];
-        } else {
-            riwayat = JSON.parse(riwayat);
-        }
-        riwayat.push(data);
-        localStorage.setItem('riwayatTimbang', JSON.stringify(riwayat));
-    }
-
     function tampilkanRiwayat() {
-        let riwayat = localStorage.getItem('riwayatTimbang');
+        let riwayat = localStorage.getItem('riwayatTimbangBundlesV2');
         if (!riwayat || JSON.parse(riwayat).length === 0) {
-            riwayatBody.innerHTML = '<tr><td colspan="10" style="text-align:center;">Belum ada data</td></tr>';
+            riwayatBody.innerHTML = '<tr><td colspan="11" style="text-align:center;">Belum ada data</td></tr>';
             return;
         }
         let dataArr = JSON.parse(riwayat);
@@ -366,14 +392,15 @@
             let row = `<tr>
                 <td>${d.tanggal}</td>
                 <td>${d.brand}</td>
-                <td>${d.size}</td>
+                <td>${d.size.substring(0,12)}</td>
                 <td>${d.gsm}</td>
-                <td>${d.leaves}</td>
                 <td>${d.box}</td>
                 <td>${d.layer}</td>
-                <td>${d.timbangReal.toFixed(3)}</td>
-                <td>${d.totalRumus.toFixed(3)}</td>
-                <td style="color:${d.selisih >=0 ? 'green' : 'red'}">${d.selisih.toFixed(3)}</td>
+                <td>${parseFloat(d.beratTimbang).toFixed(3)}</td>
+                <td>${parseFloat(d.beratBersih).toFixed(3)}</td>
+                <td>${d.bundles}</td>
+                <td>${d.totalLeaves}</td>
+                <td>${d.leavesPerBundle}</td>
             </tr>`;
             riwayatBody.innerHTML += row;
         }
@@ -381,17 +408,14 @@
 
     function hapusRiwayat() {
         if (confirm("Hapus SEMUA riwayat timbang?")) {
-            localStorage.removeItem('riwayatTimbang');
+            localStorage.removeItem('riwayatTimbangBundlesV2');
             tampilkanRiwayat();
             hasilCard.style.display = 'none';
         }
     }
 
-    // Event listener
     hitungBtn.addEventListener('click', hitungDanSimpan);
     hapusRiwayatBtn.addEventListener('click', hapusRiwayat);
-
-    // Load riwayat saat halaman dibuka
     tampilkanRiwayat();
 </script>
 </body>
