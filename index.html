@@ -3,35 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Timbangan Kertas - Supabase</title>
+    <title>Aplikasi Timbangan Kertas</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #e0e7ff; font-family: Arial, sans-serif; padding: 12px; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; }
+        .container { max-width: 550px; margin: 0 auto; }
+        .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         h1 { font-size: 1.3rem; color: #1e3a8a; text-align: center; }
         .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
         .tab { flex: 1; text-align: center; padding: 10px; background: #cbd5e1; border-radius: 40px; font-weight: bold; cursor: pointer; }
         .tab.active { background: #1e3a8a; color: white; }
         .page { display: none; }
         .page.active-page { display: block; }
-        label { font-weight: bold; display: block; margin-top: 12px; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; }
-        button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 16px; cursor: pointer; }
+        label { font-weight: bold; display: block; margin-top: 12px; margin-bottom: 5px; font-size: 0.85rem; }
+        input, select { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; font-size: 0.9rem; }
+        button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 16px; cursor: pointer; font-size: 1rem; font-weight: bold; }
         .btn-hapus { background: #ef4444; margin-top: 8px; }
-        .btn-reset { background: #dc2626; margin-top: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
         th { background: #e2e8f0; }
         .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 12px; flex-wrap: wrap; }
-        .pagination button { width: auto; padding: 5px 10px; margin-top: 0; }
+        .pagination button { width: auto; padding: 5px 10px; margin-top: 0; background: #e2e8f0; color: black; }
         .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
         .search-row input { flex: 2; margin-top: 0; }
-        .search-row button { flex: 1; margin-top: 0; }
+        .search-row button { flex: 1; margin-top: 0; background: #8b5cf6; }
         .note { background: #dbeafe; padding: 8px; border-radius: 12px; font-size: 0.7rem; margin-bottom: 12px; }
         .status { font-size: 0.7rem; text-align: center; padding: 6px; border-radius: 10px; margin-top: 8px; }
         .status.success { background: #dcfce7; color: #166534; }
         .status.error { background: #fee2e2; color: #991b1b; }
+        .row-2 { display: flex; gap: 12px; }
+        .row-2 > div { flex: 1; }
     </style>
 </head>
 <body>
@@ -41,19 +42,20 @@
         <div class="tab" data-page="page2">📜 Riwayat</div>
     </div>
 
+    <!-- HALAMAN 1: TIMBANG -->
     <div id="page1" class="page active-page">
         <div class="card">
             <h1>📦 TIMBANG 1 BOX KERTAS</h1>
-            <div class="note">✅ Bundles dibulatkan KE ATAS | Data ke Supabase Cloud</div>
+            <div class="note">✅ Bundles dibulatkan KE ATAS | Data tersimpan di Cloud Supabase</div>
 
             <label>📅 Tanggal (MM/DD/YYYY)</label>
             <input type="text" id="tanggal" value="04/22/2026">
 
             <label>📄 No. PO</label>
-            <input type="text" id="noPo" placeholder="PO-001">
+            <input type="text" id="noPo" placeholder="PO-001 / INV-123">
 
             <label>🏷️ Brand</label>
-            <input type="text" id="brand" placeholder="Sinar Dunia">
+            <input type="text" id="brand" placeholder="Contoh: Sinar Dunia">
 
             <label>📏 Size Kertas</label>
             <select id="size">
@@ -65,14 +67,42 @@
                 <option value="SKS 54X108">SKS 54X108</option>
             </select>
 
-            <div style="display:flex; gap:12px;">
-                <div style="flex:1"><label>GSM</label><select id="gsm"><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select></div>
-                <div style="flex:1"><label>Leaves/Bundle</label><select id="leavesPerBundle"><option value="32">32</option><option value="33">33</option><option value="40">40</option><option value="50">50</option><option value="60">60</option></select></div>
+            <div class="row-2">
+                <div>
+                    <label>📄 GSM</label>
+                    <select id="gsm">
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="20">20</option>
+                        <option value="35">35</option>
+                    </select>
+                </div>
+                <div>
+                    <label>📑 Leaves/Bundle</label>
+                    <select id="leavesPerBundle">
+                        <option value="32">32 leaves</option>
+                        <option value="33">33 leaves</option>
+                        <option value="40">40 leaves</option>
+                        <option value="50">50 leaves</option>
+                        <option value="60">60 leaves</option>
+                    </select>
+                </div>
             </div>
 
-            <div style="display:flex; gap:12px;">
-                <div style="flex:1"><label>Jenis Box</label><select id="jenisBox"><option value="White">White (0.90 kg)</option><option value="White New">White New (0.80 kg)</option><option value="Grey">Grey (1.25 kg)</option></select></div>
-                <div style="flex:1"><label>Jumlah Layer</label><input type="number" id="jumlahLayer" value="0"></div>
+            <div class="row-2">
+                <div>
+                    <label>📦 Jenis Box</label>
+                    <select id="jenisBox">
+                        <option value="White">White (0.90 kg)</option>
+                        <option value="White New">White New (0.80 kg)</option>
+                        <option value="Grey">Grey (1.25 kg)</option>
+                        <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>📚 Jumlah Layer</label>
+                    <input type="number" id="jumlahLayer" step="1" value="0">
+                </div>
             </div>
 
             <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
@@ -83,35 +113,49 @@
         </div>
 
         <div class="card" id="hasilCard" style="display:none">
-            <h2>📊 HASIL</h2>
-            <div><strong>Berat Bersih:</strong> <span id="beratBersih">0</span> kg</div>
-            <div><strong>Berat 1 Bundle:</strong> <span id="beratPerBundle">0</span> gram</div>
-            <div><strong>📦 JUMLAH BUNDLES:</strong> <span id="jumlahBundles">0</span> bundle</div>
+            <h2>📊 HASIL PERHITUNGAN</h2>
+            <div style="padding: 8px; background:#f1f5f9; border-radius:12px">
+                <div><strong>⚖️ Berat Bersih Kertas:</strong> <span id="beratBersih">0</span> kg</div>
+                <div><strong>📑 Berat 1 Bundle:</strong> <span id="beratPerBundle">0</span> gram</div>
+                <div style="margin-top:10px; font-size:1.2rem"><strong>📦 JUMLAH BUNDLES:</strong> <span id="jumlahBundles" style="font-size:1.5rem; color:#1e3a8a; font-weight:bold">0</span> bundle</div>
+            </div>
         </div>
     </div>
 
+    <!-- HALAMAN 2: RIWAYAT -->
     <div id="page2" class="page">
         <div class="card">
-            <h2>📜 RIWAYAT (CLOUD)</h2>
-            <div class="search-row"><input type="text" id="searchInput" placeholder="Cari No.PO / Brand"><button id="cariBtn">🔍 Cari</button></div>
-            <div style="overflow-x:auto"><table id="riwayatTable"><thead><tr><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Bundles</th></tr></thead><tbody><tr><td colspan="8">Memuat...</td></tr></tbody></table></div>
+            <h2>📜 RIWAYAT TIMBANG</h2>
+            <div class="search-row">
+                <input type="text" id="searchInput" placeholder="Cari No. PO atau Brand...">
+                <button id="cariBtn">🔍 Cari</button>
+            </div>
+            <button id="resetCariBtn" style="background:#64748b; margin-top:0;">↺ Reset</button>
+
+            <div style="overflow-x:auto; margin-top:12px">
+                <table id="riwayatTable">
+                    <thead>
+                        <tr><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Bundles</th></tr>
+                    </thead>
+                    <tbody><tr><td colspan="8" style="text-align:center">Memuat data...</td></tr></tbody>
+                </table>
+            </div>
             <div class="pagination" id="pagination"></div>
-            <button id="hapusRiwayatBtn" class="btn-hapus">🗑️ Hapus Semua</button>
-            <button id="resetAllBtn" class="btn-reset">⚠️ Reset Total (Buat Ulang Tabel)</button>
+            <button id="hapusRiwayatBtn" class="btn-hapus">🗑️ Hapus Semua Data</button>
         </div>
     </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ==================== GANTI DENGAN CREDENTIALS ANDA ====================
-    const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
+    // ==================== 🔧 GANTI DENGAN CREDENTIALS ANDA ====================
+    const SUPABASE_URL = 'https://YOUR_PROJECT.supabase.co';  // GANTI!
+    const SUPABASE_KEY = 'YOUR_ANON_KEY';  // GANTI!
     // ========================================================================
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // DATABASE BERAT 1 BUNDLE (GRAM)
+    // DATABASE BERAT 1 BUNDLE (GRAM) - dari data Anda
     const beratBundleDB = {
         "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61,
         "SINGLE 36X69|14|32":1.11, "SINGLE 36X69|14|33":1.15, "SINGLE 36X69|14|40":1.39, "SINGLE 36X69|14|50":1.74,
@@ -125,44 +169,66 @@
         "SKS 54X108|13|33":2.50, "SKS 54X108|13|40":3.03, "SKS 54X108|13|50":3.79,
         "SKS 54X108|14|33":2.69, "SKS 54X108|14|40":3.27, "SKS 54X108|14|50":4.08
     };
-    const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25 };
-    const BERAT_LAYER = 0.00618;
+
+    const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
+    const BERAT_LAYER_KG = 0.00618; // 6.18 gram
 
     let currentPage = 1;
     let currentSearch = "";
-    let totalData = 0;
     const rowsPerPage = 10;
 
     function showStatus(msg, type) {
         let el = document.getElementById('statusMsg');
+        if(!el) return;
         el.innerText = msg;
         el.className = `status ${type}`;
         setTimeout(() => { if(el.innerText === msg) el.innerText = ''; }, 3000);
     }
 
-    function getBeratBundle() {
-        let key = `${document.getElementById('size').value}|${document.getElementById('gsm').value}|${document.getElementById('leavesPerBundle').value}`;
+    function getBeratBundleKG() {
+        let size = document.getElementById('size').value;
+        let gsm = document.getElementById('gsm').value;
+        let leaves = document.getElementById('leavesPerBundle').value;
+        let key = `${size}|${gsm}|${leaves}`;
         let gram = beratBundleDB[key];
-        return gram ? gram/1000 : null;
+        if(!gram) return null;
+        return gram / 1000; // GRAM -> KG
     }
 
+    // HITUNG DAN SIMPAN
     document.getElementById('hitungBtn').onclick = async () => {
         let beratTimbang = parseFloat(document.getElementById('beratTimbangBox').value);
-        if(isNaN(beratTimbang)) { alert("Masukkan berat timbang!"); return; }
+        if(isNaN(beratTimbang) || beratTimbang <= 0) {
+            alert("Masukkan berat timbang yang benar!");
+            return;
+        }
+
         let beratBox = beratBoxMap[document.getElementById('jenisBox').value];
-        let layer = parseInt(document.getElementById('jumlahLayer').value)||0;
-        let beratBersih = beratTimbang - beratBox - (layer * BERAT_LAYER);
-        if(beratBersih <=0) { alert("Berat bersih negatif!"); return; }
-        let beratBundleKG = getBeratBundle();
-        if(!beratBundleKG) { alert("Data tidak ditemukan!"); return; }
+        let jumlahLayer = parseInt(document.getElementById('jumlahLayer').value) || 0;
+        let beratLayer = jumlahLayer * BERAT_LAYER_KG;
+        let beratBersih = beratTimbang - beratBox - beratLayer;
+
+        if(beratBersih <= 0) {
+            alert("Berat bersih negatif! Cek berat timbang, box, dan layer.");
+            return;
+        }
+
+        let beratBundleKG = getBeratBundleKG();
+        if(!beratBundleKG) {
+            alert("Data kombinasi size/GSM/leaves tidak ditemukan di database!");
+            return;
+        }
+
         let bundlesDesimal = beratBersih / beratBundleKG;
         let bundlesBulat = Math.ceil(bundlesDesimal);
-        
-        document.getElementById('beratBersih').innerText = beratBersih.toFixed(4);
-        document.getElementById('beratPerBundle').innerText = (beratBundleKG*1000).toFixed(2);
-        document.getElementById('jumlahBundles').innerText = bundlesBulat;
+
+        // Tampilkan hasil
+        document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
+        document.getElementById('beratPerBundle').innerHTML = (beratBundleKG*1000).toFixed(2);
+        document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
         document.getElementById('hasilCard').style.display = "block";
 
+        // Siapkan data untuk Supabase
         let data = {
             tanggal: document.getElementById('tanggal').value,
             no_po: document.getElementById('noPo').value || "-",
@@ -171,20 +237,26 @@
             gsm: parseInt(document.getElementById('gsm').value),
             leaves_per_bundle: parseInt(document.getElementById('leavesPerBundle').value),
             jenis_box: document.getElementById('jenisBox').value,
-            jumlah_layer: layer,
+            jumlah_layer: jumlahLayer,
             berat_timbang_kg: beratTimbang,
             berat_bersih_kg: beratBersih,
             jumlah_bundles: bundlesBulat,
             bundles_desimal: bundlesDesimal
         };
 
-        showStatus('⏳ Menyimpan...', 'loading');
+        showStatus('⏳ Menyimpan ke cloud...', 'loading');
         let { error } = await supabase.from('riwayat_timbang').insert([data]);
+        
         if(error) {
             showStatus('❌ Gagal: ' + error.message, 'error');
             alert('Gagal simpan! ' + error.message);
         } else {
-            showStatus('✅ Tersimpan!', 'success');
+            showStatus('✅ Data tersimpan ke cloud!', 'success');
+            // Reset form
+            document.getElementById('beratTimbangBox').value = '';
+            document.getElementById('noPo').value = '';
+            document.getElementById('brand').value = '';
+            // Refresh riwayat
             currentPage = 1;
             currentSearch = "";
             document.getElementById('searchInput').value = "";
@@ -192,56 +264,62 @@
         }
     };
 
+    // TAMPILKAN RIWAYAT
     async function tampilkanRiwayat() {
         let tbody = document.querySelector('#riwayatTable tbody');
-        tbody.innerHTML = '<tr><td colspan="8">Memuat...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">⏳ Memuat...</td></tr>';
         
         try {
             let query = supabase.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
+            
             if(currentSearch) {
                 query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
             }
-            let start = (currentPage-1)*rowsPerPage;
+            
+            let start = (currentPage - 1) * rowsPerPage;
             let end = start + rowsPerPage - 1;
             query = query.range(start, end);
             
             let { data, error, count } = await query;
             if(error) throw error;
             
-            totalData = count || 0;
+            let totalData = count || 0;
             let totalPages = Math.ceil(totalData / rowsPerPage);
             
             if(!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8">Tidak ada data</td></tr>';
-            } else {
-                tbody.innerHTML = "";
-                for(let i=0; i<data.length; i++) {
-                    let d = data[i];
-                    tbody.innerHTML += `<tr>
-                        <td>${start+i+1}</td>
-                        <td>${d.tanggal || ''}</td>
-                        <td>${d.no_po || '-'}</td>
-                        <td>${d.brand || '-'}</td>
-                        <td>${(d.size_kertas || '').substring(0,8)}</td>
-                        <td>${d.gsm}</td>
-                        <td>${d.jenis_box || ''}</td>
-                        <td style="font-weight:bold">${d.jumlah_bundles}</td>
-                    </tr>`;
-                }
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">📭 Tidak ada data</td></tr>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
+            tbody.innerHTML = "";
+            for(let i = 0; i < data.length; i++) {
+                let d = data[i];
+                tbody.innerHTML += `<tr>
+                    <td style="text-align:center">${start + i + 1}</td>
+                    <td>${d.tanggal || ''}</td>
+                    <td>${d.no_po || '-'}</td>
+                    <td>${d.brand || '-'}</td>
+                    <td>${(d.size_kertas || '').substring(0,8)}</td>
+                    <td>${d.gsm}</td>
+                    <td>${d.jenis_box || ''}</td>
+                    <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td>
+                </tr>`;
             }
             
             let pagHtml = '';
-            for(let i=1; i<=totalPages; i++) {
-                pagHtml += `<button onclick="goPage(${i})" class="${i===currentPage?'active-page-btn':''}">${i}</button>`;
+            for(let i = 1; i <= totalPages; i++) {
+                pagHtml += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page-btn' : ''}">${i}</button>`;
             }
             document.getElementById('pagination').innerHTML = pagHtml;
+            
         } catch(err) {
             console.error(err);
-            tbody.innerHTML = `<tr><td colspan="8" style="color:red">Error: ${err.message}</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="8" style="color:red">❌ Error: ${err.message}</td></tr>`;
         }
     }
 
-    window.goPage = (p) => { currentPage = p; tampilkanRiwayat(); };
+    window.goToPage = (p) => { currentPage = p; tampilkanRiwayat(); };
     
     document.getElementById('cariBtn').onclick = () => {
         currentSearch = document.getElementById('searchInput').value.trim();
@@ -249,40 +327,50 @@
         tampilkanRiwayat();
     };
     
-    document.getElementById('hapusRiwayatBtn').onclick = async () => {
-        if(!confirm("Hapus SEMUA data?")) return;
-        let { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
-        if(error) alert("Gagal hapus: " + error.message);
-        else { currentPage=1; currentSearch=""; tampilkanRiwayat(); alert("Data terhapus!"); }
+    document.getElementById('resetCariBtn').onclick = () => {
+        currentSearch = '';
+        document.getElementById('searchInput').value = '';
+        currentPage = 1;
+        tampilkanRiwayat();
     };
     
-    document.getElementById('resetAllBtn').onclick = async () => {
-        if(!confirm("RESET TOTAL? Ini akan menghapus semua data dan membuat ulang tabel!\nKetik RESET untuk konfirmasi")) return;
-        showStatus('⏳ Mereset...', 'loading');
-        try {
-            await supabase.from('riwayat_timbang').delete().neq('id', 0);
-            showStatus('✅ Database sudah kosong!', 'success');
-            currentPage=1; currentSearch=""; tampilkanRiwayat();
-        } catch(err) { showStatus('❌ Gagal: '+err.message, 'error'); }
+    document.getElementById('hapusRiwayatBtn').onclick = async () => {
+        if(!confirm("⚠️ Hapus SEMUA data riwayat? Tindakan ini tidak bisa dibatalkan!")) return;
+        
+        let { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
+        if(error) {
+            alert("Gagal hapus: " + error.message);
+        } else {
+            alert("✅ Semua data telah dihapus!");
+            currentPage = 1;
+            currentSearch = "";
+            document.getElementById('searchInput').value = "";
+            tampilkanRiwayat();
+        }
     };
 
-    // Tab switching
+    // TAB SWITCHING
     document.querySelectorAll('.tab').forEach(tab => {
         tab.onclick = () => {
-            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active-page'));
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
             document.getElementById(tab.dataset.page).classList.add('active-page');
             if(tab.dataset.page === 'page2') tampilkanRiwayat();
         };
     });
-    
-    // Cek koneksi awal
+
+    // CEK KONEKSI SUPABASE
     async function cekKoneksi() {
         let { error } = await supabase.from('riwayat_timbang').select('id', { count: 'exact', head: true });
-        if(error) showStatus('⚠️ Gagal koneksi ke Supabase! Periksa tabel.', 'error');
-        else showStatus('✅ Terhubung ke Supabase!', 'success');
+        if(error) {
+            console.error("Koneksi error:", error);
+            showStatus('⚠️ Gagal koneksi ke Supabase! Periksa URL dan Key.', 'error');
+        } else {
+            showStatus('✅ Terhubung ke Supabase!', 'success');
+        }
     }
+    
     cekKoneksi();
     tampilkanRiwayat();
 </script>
