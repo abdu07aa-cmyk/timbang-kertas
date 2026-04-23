@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Aplikasi Timbangan Kertas</title>
+    <title>Timbangan Kertas - Supabase Cloud</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #e0e7ff; font-family: Arial, sans-serif; padding: 12px; }
@@ -28,6 +28,9 @@
         .search-row input { flex: 2; margin-top: 0; }
         .search-row button { flex: 1; margin-top: 0; background: #8b5cf6; }
         .note { background: #dbeafe; padding: 8px; border-radius: 12px; font-size: 0.7rem; margin-bottom: 12px; }
+        .status { font-size: 0.7rem; text-align: center; padding: 6px; border-radius: 10px; margin-top: 8px; }
+        .status.success { background: #dcfce7; color: #166534; }
+        .status.error { background: #fee2e2; color: #991b1b; }
         .row-2 { display: flex; gap: 12px; }
         .row-2 > div { flex: 1; }
         .berat-bersih { font-size: 1.2rem; font-weight: bold; color: #1e3a8a; }
@@ -37,14 +40,14 @@
 <div class="container">
     <div class="tab-bar">
         <div class="tab active" data-page="page1">📦 Timbang</div>
-        <div class="tab" data-page="page2">📜 Riwayat</div>
+        <div class="tab" data-page="page2">📜 Riwayat (Cloud)</div>
     </div>
 
     <!-- HALAMAN 1: TIMBANG -->
     <div id="page1" class="page active-page">
         <div class="card">
             <h1>📦 TIMBANG 1 BOX KERTAS</h1>
-            <div class="note">✅ Bundles dibulatkan KE ATAS | Data tersimpan di HP (Local Storage)</div>
+            <div class="note">✅ Bundles dibulatkan KE ATAS | Data tersimpan di SUPABASE CLOUD</div>
 
             <label>📅 Tanggal (MM/DD/YYYY)</label>
             <input type="text" id="tanggal" value="04/22/2026">
@@ -78,7 +81,8 @@
             <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
             <input type="number" id="berat" step="0.01" placeholder="Contoh: 2.50">
 
-            <button id="hitungBtn">✅ HITUNG & SIMPAN</button>
+            <button id="hitungBtn">✅ HITUNG & SIMPAN KE CLOUD</button>
+            <div id="statusMsg" class="status"></div>
         </div>
 
         <div class="card" id="hasilCard" style="display:none">
@@ -93,7 +97,7 @@
     <!-- HALAMAN 2: RIWAYAT -->
     <div id="page2" class="page">
         <div class="card">
-            <h2>📜 RIWAYAT TIMBANG</h2>
+            <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
             <div class="search-row">
                 <input type="text" id="searchInput" placeholder="Cari No. PO atau Brand...">
                 <button id="cariBtn">🔍 Cari</button>
@@ -114,8 +118,16 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ==================== DATABASE BERAT 1 BUNDLE (GRAM dari data Anda) ====================
+    // ==================== CREDENTIALS ANDA ====================
+    const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
+    // ===========================================================
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Database berat bundle (GRAM dari data Anda)
     const beratBundleDB = {
         "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61,
         "SINGLE 36X69|14|32":1.11, "SINGLE 36X69|14|33":1.15, "SINGLE 36X69|14|40":1.39, "SINGLE 36X69|14|50":1.74,
@@ -133,28 +145,16 @@
     const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
     const BERAT_LAYER_KG = 0.00618;
 
-    // Data riwayat
-    let dataRiwayat = [];
     let currentPage = 1;
     let currentSearch = "";
     const rowsPerPage = 10;
 
-    // Load data dari Local Storage
-    function loadData() {
-        const saved = localStorage.getItem('timbangan_kertas');
-        if(saved) {
-            dataRiwayat = JSON.parse(saved);
-        } else {
-            dataRiwayat = [];
-        }
+    function showStatus(msg, type) {
+        let el = document.getElementById('statusMsg');
+        if(el) { el.innerText = msg; el.className = `status ${type}`; }
+        setTimeout(() => { if(el && el.innerText === msg) el.innerText = ''; }, 3000);
     }
 
-    // Simpan ke Local Storage
-    function saveData() {
-        localStorage.setItem('timbangan_kertas', JSON.stringify(dataRiwayat));
-    }
-
-    // Ambil berat 1 bundle dalam KG
     function getBeratBundleKG() {
         const size = document.getElementById('size').value;
         const gsm = document.getElementById('gsm').value;
@@ -165,9 +165,8 @@
         return gram / 1000;
     }
 
-    // Hitung dan simpan
-    document.getElementById('hitungBtn').onclick = () => {
-        // Ambil input
+    // HITUNG & SIMPAN
+    document.getElementById('hitungBtn').onclick = async () => {
         const beratTimbang = parseFloat(document.getElementById('berat').value);
         if(isNaN(beratTimbang) || beratTimbang <= 0) {
             alert("Masukkan berat timbang yang benar!");
@@ -199,76 +198,93 @@
         document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
         document.getElementById('hasilCard').style.display = "block";
 
-        // Simpan ke riwayat
-        const newData = {
-            id: Date.now(),
+        // Siapkan data untuk Supabase
+        const dataToSave = {
             tanggal: document.getElementById('tanggal').value,
-            noPo: document.getElementById('noPo').value || "-",
+            no_po: document.getElementById('noPo').value || "-",
             brand: document.getElementById('brand').value || "-",
-            size: document.getElementById('size').value,
-            gsm: document.getElementById('gsm').value,
-            box: boxType,
-            bundles: bundlesBulat
+            size_kertas: document.getElementById('size').value,
+            gsm: parseInt(document.getElementById('gsm').value),
+            leaves_per_bundle: parseInt(document.getElementById('leaves').value),
+            jenis_box: boxType,
+            jumlah_layer: jumlahLayer,
+            berat_timbang_kg: beratTimbang,
+            berat_bersih_kg: beratBersih,
+            jumlah_bundles: bundlesBulat,
+            bundles_desimal: bundlesDesimal
         };
 
-        dataRiwayat.unshift(newData);
-        saveData();
-
-        // Reset form
-        document.getElementById('berat').value = '';
-        document.getElementById('noPo').value = '';
-        document.getElementById('brand').value = '';
-
-        // Refresh tabel
-        currentPage = 1;
-        currentSearch = "";
-        document.getElementById('searchInput').value = "";
-        tampilkanRiwayat();
-
-        alert("Data berhasil disimpan!");
+        showStatus('⏳ Menyimpan ke cloud...', 'loading');
+        const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
+        
+        if(error) {
+            showStatus('❌ Gagal: ' + error.message, 'error');
+            alert('Gagal simpan! ' + error.message);
+        } else {
+            showStatus('✅ Tersimpan ke cloud!', 'success');
+            // Reset form
+            document.getElementById('berat').value = '';
+            document.getElementById('noPo').value = '';
+            document.getElementById('brand').value = '';
+            // Refresh riwayat
+            currentPage = 1;
+            currentSearch = "";
+            document.getElementById('searchInput').value = "";
+            tampilkanRiwayat();
+        }
     };
 
-    // Tampilkan riwayat
-    function tampilkanRiwayat() {
-        let filtered = dataRiwayat;
-        if(currentSearch) {
-            const searchLower = currentSearch.toLowerCase();
-            filtered = dataRiwayat.filter(item => 
-                item.noPo.toLowerCase().includes(searchLower) || 
-                item.brand.toLowerCase().includes(searchLower)
-            );
-        }
-
-        const totalPages = Math.ceil(filtered.length / rowsPerPage);
-        const start = (currentPage - 1) * rowsPerPage;
-        const pageData = filtered.slice(start, start + rowsPerPage);
-
+    // TAMPILKAN RIWAYAT
+    async function tampilkanRiwayat() {
         const tbody = document.getElementById('riwayatBody');
-        if(pageData.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">📭 Tidak ada data</td></tr>';
-        } else {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">⏳ Memuat data...</td></tr>';
+        
+        try {
+            let query = supabase.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
+            
+            if(currentSearch) {
+                query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
+            }
+            
+            const start = (currentPage - 1) * rowsPerPage;
+            const { data, error, count } = await query.range(start, start + rowsPerPage - 1);
+            
+            if(error) throw error;
+            
+            const totalData = count || 0;
+            const totalPages = Math.ceil(totalData / rowsPerPage);
+            
+            if(!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.</td></tr>';
+                document.getElementById('pagination').innerHTML = '';
+                return;
+            }
+            
             tbody.innerHTML = "";
-            for(let i = 0; i < pageData.length; i++) {
-                const d = pageData[i];
+            for(let i = 0; i < data.length; i++) {
+                const d = data[i];
                 tbody.innerHTML += `<tr>
                     <td style="text-align:center">${start + i + 1}</td>
-                    <td>${d.tanggal}</td>
-                    <td>${d.noPo}</td>
-                    <td>${d.brand}</td>
-                    <td>${d.size.substring(0,8)}</td>
+                    <td>${d.tanggal || ''}</td>
+                    <td>${d.no_po || '-'}</td>
+                    <td>${d.brand || '-'}</td>
+                    <td>${(d.size_kertas || '').substring(0,8)}</td>
                     <td>${d.gsm}</td>
-                    <td>${d.box}</td>
-                    <td style="text-align:center; font-weight:bold">${d.bundles}</td>
+                    <td>${d.jenis_box || ''}</td>
+                    <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td>
                 </tr>`;
             }
+            
+            let pagHtml = '';
+            for(let i = 1; i <= totalPages; i++) {
+                pagHtml += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page-btn' : ''}">${i}</button>`;
+            }
+            document.getElementById('pagination').innerHTML = pagHtml;
+            
+        } catch(err) {
+            console.error(err);
+            tbody.innerHTML = `<tr><td colspan="8" style="color:red">❌ Error: ${err.message}</td></tr>`;
         }
-
-        // Pagination
-        let pagHtml = '';
-        for(let i = 1; i <= totalPages; i++) {
-            pagHtml += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page-btn' : ''}">${i}</button>`;
-        }
-        document.getElementById('pagination').innerHTML = pagHtml;
     }
 
     window.goToPage = (p) => {
@@ -290,16 +306,19 @@
         tampilkanRiwayat();
     };
 
-    // Hapus semua
-    document.getElementById('hapusSemuaBtn').onclick = () => {
-        if(confirm("⚠️ Hapus SEMUA data riwayat? Tindakan ini tidak bisa dibatalkan!")) {
-            dataRiwayat = [];
-            saveData();
-            currentPage = 1;
-            currentSearch = "";
-            document.getElementById('searchInput').value = "";
-            tampilkanRiwayat();
-            alert("Semua data telah dihapus!");
+    // Hapus semua data
+    document.getElementById('hapusSemuaBtn').onclick = async () => {
+        if(confirm("⚠️ Hapus SEMUA data dari cloud? Tindakan ini tidak bisa dibatalkan!")) {
+            const { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
+            if(error) {
+                alert("Gagal hapus: " + error.message);
+            } else {
+                alert("✅ Semua data telah dihapus dari cloud!");
+                currentPage = 1;
+                currentSearch = "";
+                document.getElementById('searchInput').value = "";
+                tampilkanRiwayat();
+            }
         }
     };
 
@@ -316,8 +335,17 @@
         };
     });
 
-    // Inisialisasi
-    loadData();
+    // Cek koneksi ke Supabase
+    async function cekKoneksi() {
+        const { error } = await supabase.from('riwayat_timbang').select('id', { count: 'exact', head: true });
+        if(error) {
+            showStatus('⚠️ ' + error.message, 'error');
+        } else {
+            showStatus('✅ Terhubung ke Supabase Cloud!', 'success');
+        }
+    }
+    
+    cekKoneksi();
     tampilkanRiwayat();
 </script>
 </body>
