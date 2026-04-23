@@ -51,6 +51,9 @@
         .close-modal {
             background: #64748b; margin-top: 16px;
         }
+        input[type="date"] {
+            font-family: inherit;
+        }
     </style>
 </head>
 <body>
@@ -66,8 +69,8 @@
             <h1>📦 TIMBANG 1 BOX KERTAS</h1>
             <div class="note">✅ Bundles dibulatkan KE ATAS | Data tersimpan di SUPABASE CLOUD</div>
 
-            <label>📅 Tanggal (MM/DD/YYYY)</label>
-            <input type="text" id="tanggal" value="04/22/2026">
+            <label>📅 Tanggal</label>
+            <input type="date" id="tanggal" value="2026-04-23">
 
             <label>📄 No. PO</label>
             <input type="text" id="noPo" placeholder="PO-001">
@@ -87,7 +90,7 @@
 
             <div class="row-2">
                 <div><label>📄 GSM</label><select id="gsm"><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select></div>
-                <div><label>📑 Leaves/Bundle</label><select id="leaves"><option value="32">32</option><option value="33">33</option><option value="40">40</option><option value="50">50</option><option value="60">60</option></select></div>
+                <div><label>📑 Leaves/Bundle</label><select id="leaves"><option value="32">32</option><option value="33">33</option><option value="35">35</option><option value="40">40</option><option value="42">42</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="60">60</option></select></div>
             </div>
 
             <div class="row-2">
@@ -140,8 +143,8 @@
 <div id="editModal" class="modal">
     <div class="modal-content">
         <h3>✏️ Edit Data</h3>
-        <label>Tanggal (MM/DD/YYYY)</label>
-        <input type="text" id="editTanggal">
+        <label>Tanggal</label>
+        <input type="date" id="editTanggal">
         <label>No. PO</label>
         <input type="text" id="editNoPo">
         <label>Brand</label>
@@ -173,16 +176,20 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+        // Database berat bundle (GRAM) - SUDAH ADA 51 LEAVES
         const beratBundleDB = {
-            "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61,
-            "SINGLE 36X69|14|32":1.11, "SINGLE 36X69|14|33":1.15, "SINGLE 36X69|14|40":1.39, "SINGLE 36X69|14|50":1.74,
+            "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61, "SINGLE 36X69|13|51":1.65, "SINGLE 36X69|13|60":1.94,
+            "SINGLE 36X69|14|32":1.11, "SINGLE 36X69|14|33":1.15, "SINGLE 36X69|14|40":1.39, "SINGLE 36X69|14|50":1.74, "SINGLE 36X69|14|51":1.77, "SINGLE 36X69|14|60":2.09,
             "1 1/4 44X78|13|32":1.43, "1 1/4 44X78|13|33":1.47, "1 1/4 44X78|13|40":1.78, "1 1/4 44X78|13|50":2.23,
-            "1 1/4 44X78|14|32":1.54, "1 1/4 44X78|14|33":1.59, "1 1/4 44X78|14|40":1.92, "1 1/4 44X78|14|50":2.40,
+            "1 1/4 44X78|14|32":1.54, "1 1/4 44X78|14|33":1.59, "1 1/4 44X78|14|35":1.68, "1 1/4 44X78|14|40":1.92, 
+            "1 1/4 44X78|14|42":2.02, "1 1/4 44X78|14|50":2.40, "1 1/4 44X78|14|51":2.45, "1 1/4 44X78|14|52":2.50,
             "KS 54X97|14|32":2.35, "KS 54X97|14|33":2.42, "KS 54X97|14|40":2.93, "KS 54X97|14|50":3.67,
             "KS 54X97|20|32":3.35, "KS 54X97|20|33":3.46, "KS 54X97|20|40":4.19, "KS 54X97|20|50":5.24,
             "KSS 44X108|13|32":1.98, "KSS 44X108|13|33":2.04, "KSS 44X108|13|40":2.47, "KSS 44X108|13|50":3.09,
-            "KSS 44X108|14|33":2.20, "KSS 44X108|14|40":2.66, "KSS 44X108|14|50":3.33,
-            "KSS SLIM 36X108|14|32":1.74, "KSS SLIM 36X108|14|33":1.80, "KSS SLIM 36X108|14|40":2.18, "KSS SLIM 36X108|14|50":2.72,
+            "KSS 44X108|14|33":2.20, "KSS 44X108|14|35":2.33, "KSS 44X108|14|40":2.66, "KSS 44X108|14|42":2.79,
+            "KSS 44X108|14|50":3.33, "KSS 44X108|14|51":3.39, "KSS 44X108|14|52":3.46,
+            "KSS SLIM 36X108|14|32":1.74, "KSS SLIM 36X108|14|33":1.80, "KSS SLIM 36X108|14|34":1.85,
+            "KSS SLIM 36X108|14|40":2.18, "KSS SLIM 36X108|14|50":2.72,
             "SKS 54X108|13|33":2.50, "SKS 54X108|13|40":3.03, "SKS 54X108|13|50":3.79,
             "SKS 54X108|14|33":2.69, "SKS 54X108|14|40":3.27, "SKS 54X108|14|50":4.08
         };
@@ -193,6 +200,29 @@
         let currentSearch = "";
         let currentEditId = null;
         const rowsPerPage = 10;
+
+        function formatDateToDB(dateStr) {
+            if(!dateStr) return "";
+            return dateStr;
+        }
+
+        function formatDateToDisplay(dateStr) {
+            if(!dateStr) return "";
+            let parts = dateStr.split('-');
+            if(parts.length === 3) {
+                return `${parts[1]}/${parts[2]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        function formatDateForInput(dateStr) {
+            if(!dateStr) return "";
+            let parts = dateStr.split('/');
+            if(parts.length === 3) {
+                return `${parts[2]}-${parts[0]}-${parts[1]}`;
+            }
+            return dateStr;
+        }
 
         function showStatus(msg, type) {
             let el = document.getElementById('statusMsg');
@@ -226,8 +256,11 @@
             document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
             document.getElementById('hasilCard').style.display = "block";
 
+            let tanggalRaw = document.getElementById('tanggal').value;
+            let tanggalFormatted = formatDateToDisplay(tanggalRaw);
+
             const dataToSave = {
-                tanggal: document.getElementById('tanggal').value,
+                tanggal: tanggalFormatted,
                 no_po: document.getElementById('noPo').value || "-",
                 brand: document.getElementById('brand').value || "-",
                 size_kertas: document.getElementById('size').value,
@@ -255,7 +288,7 @@
 
         async function tampilkanRiwayat() {
             const tbody = document.getElementById('riwayatBody');
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center">⏳ Memuat...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center">⏳ Memuat...<\/td><\/tr>';
             try {
                 let query = supabase.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
                 if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
@@ -264,34 +297,35 @@
                 if(error) throw error;
                 const totalData = count || 0;
                 const totalPages = Math.ceil(totalData / rowsPerPage);
-                if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="9">📭 Tidak ada数据</td></tr>'; document.getElementById('pagination').innerHTML = ''; return; }
+                if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="9">📭 Tidak ada data<\/td><\/tr>'; document.getElementById('pagination').innerHTML = ''; return; }
                 tbody.innerHTML = "";
                 for(let i=0; i<data.length; i++) {
                     const d = data[i];
                     tbody.innerHTML += `<tr>
-                        <td style="text-align:center">${start+i+1}</td>
-                        <td>${d.tanggal || ''}</td>
-                        <td>${d.no_po || '-'}</td>
-                        <td>${d.brand || '-'}</td>
-                        <td>${(d.size_kertas || '').substring(0,8)}</td>
-                        <td>${d.gsm}</td>
-                        <td>${d.jenis_box || ''}</td>
-                        <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td>
+                        <td style="text-align:center">${start+i+1}<\/td>
+                        <td>${d.tanggal || ''}<\/td>
+                        <td>${d.no_po || '-'}<\/td>
+                        <td>${d.brand || '-'}<\/td>
+                        <td>${(d.size_kertas || '').substring(0,8)}<\/td>
+                        <td>${d.gsm}<\/td>
+                        <td>${d.jenis_box || ''}<\/td>
+                        <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}<\/td>
                         <td class="aksi-cell">
-                            <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit</button>
-                            <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus</button>
-                        </td>
+                            <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit<\/button>
+                            <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus<\/button>
+                        <\/td>
                     </tr>`;
                 }
                 let pagHtml = '';
                 for(let i=1; i<=totalPages; i++) pagHtml += `<button onclick="goToPage(${i})" class="${i===currentPage?'active-page-btn':''}">${i}</button>`;
                 document.getElementById('pagination').innerHTML = pagHtml;
-            } catch(err) { tbody.innerHTML = `<tr><td colspan="9" style="color:red">❌ Error: ${err.message}</td></tr>`; }
+            } catch(err) { tbody.innerHTML = `<tr><td colspan="9" style="color:red">❌ Error: ${err.message}<\/td><\/tr>`; }
         }
 
         window.editData = (id, tanggal, noPo, brand, size, gsm, box, bundles) => {
             currentEditId = id;
-            document.getElementById('editTanggal').value = tanggal;
+            let tanggalForInput = formatDateForInput(tanggal);
+            document.getElementById('editTanggal').value = tanggalForInput;
             document.getElementById('editNoPo').value = noPo;
             document.getElementById('editBrand').value = brand;
             document.getElementById('editSize').value = size;
@@ -310,8 +344,10 @@
         };
 
         document.getElementById('saveEditBtn').onclick = async () => {
+            let tanggalRaw = document.getElementById('editTanggal').value;
+            let tanggalFormatted = formatDateToDisplay(tanggalRaw);
             const updatedData = {
-                tanggal: document.getElementById('editTanggal').value,
+                tanggal: tanggalFormatted,
                 no_po: document.getElementById('editNoPo').value,
                 brand: document.getElementById('editBrand').value,
                 size_kertas: document.getElementById('editSize').value,
