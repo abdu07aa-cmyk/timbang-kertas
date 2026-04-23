@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Timbangan Kertas - Supabase Cloud</title>
+    <title>Timbangan Kertas - Real Data Timbangan</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #e0e7ff; font-family: Arial, sans-serif; padding: 12px; }
@@ -19,22 +19,23 @@
         input, select { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; }
         button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 16px; cursor: pointer; font-weight: bold; }
         .btn-hapus { background: #ef4444; margin-top: 8px; }
-        .btn-edit { background: #f59e0b; margin-top: 4px; }
-        .btn-edit-small { background: #f59e0b; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; }
-        .btn-hapus-small { background: #ef4444; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; }
+        .btn-edit-small { background: #f59e0b; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; border-radius: 12px; cursor: pointer; color: white; border: none; }
+        .btn-hapus-small { background: #ef4444; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 4px; border-radius: 12px; cursor: pointer; color: white; border: none; }
         .btn-export { background: #10b981; margin-top: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         th, td { border: 1px solid #ccc; padding: 6px; text-align: left; vertical-align: middle; }
         th { background: #e2e8f0; }
         .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 12px; flex-wrap: wrap; }
-        .pagination button { width: auto; padding: 5px 10px; margin-top: 0; background: #e2e8f0; color: black; }
+        .pagination button { width: auto; padding: 5px 10px; margin-top: 0; background: #e2e8f0; color: black; border: none; border-radius: 12px; cursor: pointer; }
+        .pagination button.active-page-btn { background: #1e3a8a; color: white; }
         .search-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
         .search-row input { flex: 2; margin-top: 0; }
-        .search-row button { flex: 1; margin-top: 0; background: #8b5cf6; }
+        .search-row button { flex: 1; margin-top: 0; background: #8b5cf6; border: none; border-radius: 40px; cursor: pointer; color: white; font-weight: bold; padding: 10px; }
         .note { background: #dbeafe; padding: 8px; border-radius: 12px; font-size: 0.7rem; margin-bottom: 12px; }
         .status { font-size: 0.7rem; text-align: center; padding: 6px; border-radius: 10px; margin-top: 8px; }
         .status.success { background: #dcfce7; color: #166534; }
         .status.error { background: #fee2e2; color: #991b1b; }
+        .status.loading { background: #fef3c7; color: #92400e; }
         .row-2 { display: flex; gap: 12px; }
         .row-2 > div { flex: 1; }
         .berat-bersih { font-size: 1.2rem; font-weight: bold; color: #1e3a8a; }
@@ -48,12 +49,8 @@
             max-height: 80vh; overflow-y: auto;
         }
         .modal-content h3 { margin-bottom: 16px; color: #1e3a8a; }
-        .close-modal {
-            background: #64748b; margin-top: 16px;
-        }
-        input[type="date"] {
-            font-family: inherit;
-        }
+        .close-modal { background: #64748b; margin-top: 16px; }
+        input[type="date"] { font-family: inherit; }
     </style>
 </head>
 <body>
@@ -67,7 +64,7 @@
     <div id="page1" class="page active-page">
         <div class="card">
             <h1>📦 TIMBANG 1 BOX KERTAS</h1>
-            <div class="note">✅ Bundles dibulatkan KE ATAS | Data tersimpan di SUPABASE CLOUD</div>
+            <div class="note">✅ Bundles dibulatkan KE ATAS | Data berdasarkan TIMBANGAN REAL</div>
 
             <label>📅 Tanggal</label>
             <input type="date" id="tanggal" value="2026-04-23">
@@ -75,26 +72,40 @@
             <label>📄 No. PO</label>
             <input type="text" id="noPo" placeholder="PO-001">
 
-            <label>🏷️ Brand</label>
-            <input type="text" id="brand" placeholder="Sinar Dunia">
+            <label>🏷️ Brand (Manual)</label>
+            <input type="text" id="brand" placeholder="Contoh: RONSON, SINAR DUNIA, dll">
 
             <label>📏 Size Kertas</label>
             <select id="size">
                 <option value="SINGLE 36X69">SINGLE 36X69</option>
                 <option value="1 1/4 44X78">1 1/4 44X78</option>
+                <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
                 <option value="KS 54X97">KS 54X97</option>
                 <option value="KSS 44X108">KSS 44X108</option>
                 <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
                 <option value="SKS 54X108">SKS 54X108</option>
+                <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
             </select>
 
             <div class="row-2">
-                <div><label>📄 GSM</label><select id="gsm"><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select></div>
-                <div><label>📑 Leaves/Bundle</label><select id="leaves"><option value="32">32</option><option value="33">33</option><option value="35">35</option><option value="40">40</option><option value="42">42</option><option value="50">50</option><option value="51">51</option><option value="52">52</option><option value="60">60</option></select></div>
+                <div><label>📄 GSM</label><select id="gsm">
+                    <option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option>
+                </select></div>
+                <div><label>📑 Leaves/Bundle</label><select id="leaves">
+                    <option value="32">32</option><option value="33">33</option><option value="34">34</option>
+                    <option value="35">35</option><option value="40">40</option><option value="42">42</option>
+                    <option value="50">50</option><option value="51">51</option><option value="52">52</option>
+                    <option value="60">60</option>
+                </select></div>
             </div>
 
             <div class="row-2">
-                <div><label>📦 Jenis Box</label><select id="box"><option value="White">White (0.90 kg)</option><option value="White New">White New (0.80 kg)</option><option value="Grey">Grey (1.25 kg)</option><option value="Green Jumbo">Green Jumbo (3.80 kg)</option></select></div>
+                <div><label>📦 Jenis Box</label><select id="box">
+                    <option value="White">White (0.90 kg)</option>
+                    <option value="White New">White New (0.80 kg)</option>
+                    <option value="Grey">Grey (1.25 kg)</option>
+                    <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
+                </select></div>
                 <div><label>📚 Jumlah Layer</label><input type="number" id="layer" step="1" value="0"></div>
             </div>
 
@@ -123,12 +134,12 @@
                 <button id="cariBtn">🔍 Cari</button>
                 <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Export Excel</button>
             </div>
-            <button id="resetCariBtn" style="background:#64748b; margin-top:0;">↺ Reset</button>
+            <button id="resetCariBtn" style="background:#64748b; margin-top:0; border:none; border-radius:40px; padding:10px; color:white; font-weight:bold; cursor:pointer;">↺ Reset</button>
 
             <div style="overflow-x:auto; margin-top:12px">
                 <table id="riwayatTable">
                     <thead>
-                        <tr><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Bundles</th><th>Aksi</th></tr>
+                        <tr><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Box</th><th>Bundles</th><th>Aksi</th></tr>
                     </thead>
                     <tbody id="riwayatBody"></tbody>
                 </table>
@@ -153,15 +164,15 @@
         <select id="editSize">
             <option value="SINGLE 36X69">SINGLE 36X69</option>
             <option value="1 1/4 44X78">1 1/4 44X78</option>
+            <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
             <option value="KS 54X97">KS 54X97</option>
             <option value="KSS 44X108">KSS 44X108</option>
             <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
             <option value="SKS 54X108">SKS 54X108</option>
+            <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
         </select>
         <label>GSM</label>
         <select id="editGsm"><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select>
-        <label>Jenis Box</label>
-        <select id="editBox"><option value="White">White</option><option value="White New">White New</option><option value="Grey">Grey</option><option value="Green Jumbo">Green Jumbo</option></select>
         <label>Jumlah Bundles</label>
         <input type="number" id="editBundles" step="1">
         <button id="saveEditBtn">💾 Simpan Perubahan</button>
@@ -172,27 +183,43 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function() {
+        // ==================== SUPABASE CREDENTIALS ====================
         const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ==============================================================
 
-        // Database berat bundle (GRAM) - SUDAH ADA 51 LEAVES
+        // DATABASE BERAT 1 BUNDLE (GRAM) - BERDASARKAN TIMBANGAN REAL DARI DATA ANDA
         const beratBundleDB = {
-            "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61, "SINGLE 36X69|13|51":1.65, "SINGLE 36X69|13|60":1.94,
-            "SINGLE 36X69|14|32":1.11, "SINGLE 36X69|14|33":1.15, "SINGLE 36X69|14|40":1.39, "SINGLE 36X69|14|50":1.74, "SINGLE 36X69|14|51":1.77, "SINGLE 36X69|14|60":2.09,
-            "1 1/4 44X78|13|32":1.43, "1 1/4 44X78|13|33":1.47, "1 1/4 44X78|13|40":1.78, "1 1/4 44X78|13|50":2.23,
-            "1 1/4 44X78|14|32":1.54, "1 1/4 44X78|14|33":1.59, "1 1/4 44X78|14|35":1.68, "1 1/4 44X78|14|40":1.92, 
-            "1 1/4 44X78|14|42":2.02, "1 1/4 44X78|14|50":2.40, "1 1/4 44X78|14|51":2.45, "1 1/4 44X78|14|52":2.50,
-            "KS 54X97|14|32":2.35, "KS 54X97|14|33":2.42, "KS 54X97|14|40":2.93, "KS 54X97|14|50":3.67,
-            "KS 54X97|20|32":3.35, "KS 54X97|20|33":3.46, "KS 54X97|20|40":4.19, "KS 54X97|20|50":5.24,
-            "KSS 44X108|13|32":1.98, "KSS 44X108|13|33":2.04, "KSS 44X108|13|40":2.47, "KSS 44X108|13|50":3.09,
-            "KSS 44X108|14|33":2.20, "KSS 44X108|14|35":2.33, "KSS 44X108|14|40":2.66, "KSS 44X108|14|42":2.79,
-            "KSS 44X108|14|50":3.33, "KSS 44X108|14|51":3.39, "KSS 44X108|14|52":3.46,
-            "KSS SLIM 36X108|14|32":1.74, "KSS SLIM 36X108|14|33":1.80, "KSS SLIM 36X108|14|34":1.85,
-            "KSS SLIM 36X108|14|40":2.18, "KSS SLIM 36X108|14|50":2.72,
-            "SKS 54X108|13|33":2.50, "SKS 54X108|13|40":3.03, "SKS 54X108|13|50":3.79,
-            "SKS 54X108|14|33":2.69, "SKS 54X108|14|40":3.27, "SKS 54X108|14|50":4.08
+            // SINGLE 36X69
+            "SINGLE 36X69|13|32":1.09, "SINGLE 36X69|13|33":1.10, "SINGLE 36X69|13|40":1.33,
+            "SINGLE 36X69|13|50":1.67, "SINGLE 36X69|13|51":1.69, "SINGLE 36X69|13|60":2.00,
+            "SINGLE 36X69|14|32":1.39, "SINGLE 36X69|14|33":1.43, "SINGLE 36X69|14|40":1.67,
+            "SINGLE 36X69|14|50":2.04, "SINGLE 36X69|14|51":2.08, "SINGLE 36X69|14|60":2.40,
+            // 1 1/4 44X78
+            "1 1/4 44X78|13|32":1.48, "1 1/4 44X78|13|33":1.54, "1 1/4 44X78|13|40":1.90, "1 1/4 44X78|13|50":2.34,
+            "1 1/4 44X78|14|32":1.62, "1 1/4 44X78|14|33":1.65, "1 1/4 44X78|14|35":1.75,
+            "1 1/4 44X78|14|40":2.08, "1 1/4 44X78|14|42":2.21, "1 1/4 44X78|14|50":2.50,
+            "1 1/4 44X78|14|51":2.69, "1 1/4 44X78|14|52":2.64,
+            // CLEAR PAPER 1 1/4 44X78
+            "CLEAR PAPER 1 1/4 44X78|35|50":5.75,
+            // KS 54X97
+            "KS 54X97|14|32":2.50, "KS 54X97|14|33":2.58, "KS 54X97|14|40":3.05, "KS 54X97|14|50":3.82,
+            "KS 54X97|20|32":4.34, "KS 54X97|20|33":4.42, "KS 54X97|20|40":5.22, "KS 54X97|20|50":6.32,
+            // KSS 44X108
+            "KSS 44X108|13|32":2.19, "KSS 44X108|13|33":2.26, "KSS 44X108|13|40":2.76, "KSS 44X108|13|50":3.44,
+            "KSS 44X108|14|33":2.31, "KSS 44X108|14|35":2.49, "KSS 44X108|14|40":2.79,
+            "KSS 44X108|14|42":2.89, "KSS 44X108|14|50":3.49, "KSS 44X108|14|51":3.56, "KSS 44X108|14|52":3.58,
+            // KSS SLIM 36X108
+            "KSS SLIM 36X108|14|32":1.88, "KSS SLIM 36X108|14|33":1.95, "KSS SLIM 36X108|14|34":2.00,
+            "KSS SLIM 36X108|14|40":2.35, "KSS SLIM 36X108|14|50":2.95,
+            // SKS 54X108
+            "SKS 54X108|13|33":2.63, "SKS 54X108|13|40":3.20, "SKS 54X108|13|50":4.02,
+            "SKS 54X108|14|33":2.92, "SKS 54X108|14|40":3.52, "SKS 54X108|14|50":4.40,
+            // CLEAR PAPER SKS 54X108
+            "CLEAR PAPER SKS 54X108|35|50":10.28
         };
+
         const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
         const BERAT_LAYER_KG = 0.00618;
 
@@ -203,24 +230,15 @@
 
         function formatDateToDB(dateStr) {
             if(!dateStr) return "";
-            return dateStr;
-        }
-
-        function formatDateToDisplay(dateStr) {
-            if(!dateStr) return "";
             let parts = dateStr.split('-');
-            if(parts.length === 3) {
-                return `${parts[1]}/${parts[2]}/${parts[0]}`;
-            }
+            if(parts.length === 3) return `${parts[1]}/${parts[2]}/${parts[0]}`;
             return dateStr;
         }
 
         function formatDateForInput(dateStr) {
             if(!dateStr) return "";
             let parts = dateStr.split('/');
-            if(parts.length === 3) {
-                return `${parts[2]}-${parts[0]}-${parts[1]}`;
-            }
+            if(parts.length === 3) return `${parts[2]}-${parts[0]}-${parts[1]}`;
             return dateStr;
         }
 
@@ -236,29 +254,38 @@
             const leaves = document.getElementById('leaves').value;
             const key = `${size}|${gsm}|${leaves}`;
             const gram = beratBundleDB[key];
-            return gram ? gram/1000 : null;
+            if(!gram) return null;
+            return gram / 1000; // GRAM -> KG
         }
 
         document.getElementById('hitungBtn').onclick = async () => {
             const beratTimbang = parseFloat(document.getElementById('berat').value);
             if(isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
+            
             const boxType = document.getElementById('box').value;
             const beratBox = beratBoxMap[boxType];
             const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
             const beratLayer = jumlahLayer * BERAT_LAYER_KG;
             const beratBersih = beratTimbang - beratBox - beratLayer;
-            if(beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
+            
+            if(beratBersih <= 0) { alert("Berat bersih negatif! Cek timbangan, box, dan layer."); return; }
+            
             const beratBundleKG = getBeratBundleKG();
-            if(!beratBundleKG) { alert("Data tidak ditemukan!"); return; }
+            if(!beratBundleKG) { 
+                alert(`Data tidak ditemukan! Size: ${document.getElementById('size').value} | GSM: ${document.getElementById('gsm').value} | Leaves: ${document.getElementById('leaves').value}`);
+                return; 
+            }
+            
             const bundlesDesimal = beratBersih / beratBundleKG;
             const bundlesBulat = Math.ceil(bundlesDesimal);
+            
             document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
             document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
             document.getElementById('hasilCard').style.display = "block";
-
-            let tanggalRaw = document.getElementById('tanggal').value;
-            let tanggalFormatted = formatDateToDisplay(tanggalRaw);
-
+            
+            const tanggalRaw = document.getElementById('tanggal').value;
+            const tanggalFormatted = formatDateToDB(tanggalRaw);
+            
             const dataToSave = {
                 tanggal: tanggalFormatted,
                 no_po: document.getElementById('noPo').value || "-",
@@ -273,22 +300,28 @@
                 jumlah_bundles: bundlesBulat,
                 bundles_desimal: bundlesDesimal
             };
-            showStatus('⏳ Menyimpan...', 'loading');
+            
+            showStatus('⏳ Menyimpan ke cloud...', 'loading');
             const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
-            if(error) { showStatus('❌ Gagal: ' + error.message, 'error'); alert('Gagal simpan! ' + error.message); }
-            else {
-                showStatus('✅ Tersimpan!', 'success');
+            
+            if(error) { 
+                showStatus('❌ Gagal: ' + error.message, 'error'); 
+                alert('Gagal simpan! ' + error.message); 
+            } else { 
+                showStatus('✅ Tersimpan ke cloud!', 'success'); 
                 document.getElementById('berat').value = '';
                 document.getElementById('noPo').value = '';
                 document.getElementById('brand').value = '';
-                currentPage = 1; currentSearch = ""; document.getElementById('searchInput').value = "";
-                tampilkanRiwayat();
+                currentPage = 1; 
+                currentSearch = ""; 
+                document.getElementById('searchInput').value = "";
+                tampilkanRiwayat(); 
             }
         };
 
         async function tampilkanRiwayat() {
             const tbody = document.getElementById('riwayatBody');
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center">⏳ Memuat...<\/td><\/tr>';
+            tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">⏳ Memuat data...<\/td><\/tr>';
             try {
                 let query = supabase.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
                 if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
@@ -297,7 +330,11 @@
                 if(error) throw error;
                 const totalData = count || 0;
                 const totalPages = Math.ceil(totalData / rowsPerPage);
-                if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="9">📭 Tidak ada data<\/td><\/tr>'; document.getElementById('pagination').innerHTML = ''; return; }
+                if(!data || data.length === 0) { 
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.<\/td><\/tr>'; 
+                    document.getElementById('pagination').innerHTML = ''; 
+                    return; 
+                }
                 tbody.innerHTML = "";
                 for(let i=0; i<data.length; i++) {
                     const d = data[i];
@@ -306,20 +343,23 @@
                         <td>${d.tanggal || ''}<\/td>
                         <td>${d.no_po || '-'}<\/td>
                         <td>${d.brand || '-'}<\/td>
-                        <td>${(d.size_kertas || '').substring(0,8)}<\/td>
+                        <td>${(d.size_kertas || '').substring(0,18)}<\/td>
                         <td>${d.gsm}<\/td>
+                        <td>${d.leaves_per_bundle || '-'}<\/td>
                         <td>${d.jenis_box || ''}<\/td>
                         <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}<\/td>
                         <td class="aksi-cell">
                             <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit<\/button>
                             <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus<\/button>
                         <\/td>
-                    </tr>`;
+                    <\/tr>`;
                 }
                 let pagHtml = '';
                 for(let i=1; i<=totalPages; i++) pagHtml += `<button onclick="goToPage(${i})" class="${i===currentPage?'active-page-btn':''}">${i}</button>`;
                 document.getElementById('pagination').innerHTML = pagHtml;
-            } catch(err) { tbody.innerHTML = `<tr><td colspan="9" style="color:red">❌ Error: ${err.message}<\/td><\/tr>`; }
+            } catch(err) { 
+                tbody.innerHTML = `<tr><td colspan="10" style="color:red">❌ Error: ${err.message}<\/td><\/tr>`; 
+            }
         }
 
         window.editData = (id, tanggal, noPo, brand, size, gsm, box, bundles) => {
@@ -345,7 +385,7 @@
 
         document.getElementById('saveEditBtn').onclick = async () => {
             let tanggalRaw = document.getElementById('editTanggal').value;
-            let tanggalFormatted = formatDateToDisplay(tanggalRaw);
+            let tanggalFormatted = formatDateToDB(tanggalRaw);
             const updatedData = {
                 tanggal: tanggalFormatted,
                 no_po: document.getElementById('editNoPo').value,
@@ -366,7 +406,14 @@
         window.goToPage = (p) => { currentPage = p; tampilkanRiwayat(); };
         document.getElementById('cariBtn').onclick = () => { currentSearch = document.getElementById('searchInput').value.trim(); currentPage=1; tampilkanRiwayat(); };
         document.getElementById('resetCariBtn').onclick = () => { currentSearch = ''; document.getElementById('searchInput').value = ''; currentPage=1; tampilkanRiwayat(); };
-        document.getElementById('hapusSemuaBtn').onclick = async () => { if(confirm("Hapus SEMUA data?")) { await supabase.from('riwayat_timbang').delete().neq('id',0); currentPage=1; currentSearch=""; tampilkanRiwayat(); alert("Semua data terhapus!"); } };
+        
+        document.getElementById('hapusSemuaBtn').onclick = async () => { 
+            if(confirm("⚠️ Hapus SEMUA data dari cloud? Tindakan ini tidak bisa dibatalkan!")) { 
+                const { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0); 
+                if(error) alert("Gagal hapus: " + error.message); 
+                else { alert("✅ Semua data telah dihapus!"); currentPage=1; currentSearch=""; document.getElementById('searchInput').value=""; tampilkanRiwayat(); } 
+            } 
+        };
 
         document.getElementById('exportExcelBtn').onclick = async () => {
             let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
@@ -374,10 +421,10 @@
             const { data, error } = await query;
             if(error) { alert("Gagal export!"); return; }
             if(!data || data.length===0) { alert("Tidak ada data untuk di export!"); return; }
-            let rows = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Jenis Box", "Jumlah Bundles", "Berat Timbang(kg)", "Berat Bersih(kg)"]];
+            let rows = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang(kg)", "Berat Bersih(kg)"]];
             for(let i=0; i<data.length; i++) {
                 const d = data[i];
-                rows.push([i+1, d.tanggal, d.no_po, d.brand, d.size_kertas, d.gsm, d.jenis_box, d.jumlah_bundles, d.berat_timbang_kg, d.berat_bersih_kg]);
+                rows.push([i+1, d.tanggal, d.no_po, d.brand, d.size_kertas, d.gsm, d.leaves_per_bundle, d.jenis_box, d.jumlah_bundles, d.berat_timbang_kg, d.berat_bersih_kg]);
             }
             let csv = rows.map(row => row.join(",")).join("\n");
             let blob = new Blob([csv], { type: "text/csv" });
