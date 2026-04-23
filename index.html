@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Timbangan Kertas - Real Data Timbangan</title>
+    <title>Timbangan Kertas - Real Data</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #e0e7ff; font-family: Arial, sans-serif; padding: 12px; }
@@ -18,6 +18,7 @@
         label { font-weight: bold; display: block; margin-top: 12px; margin-bottom: 5px; font-size: 0.85rem; }
         input, select { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; }
         button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 16px; cursor: pointer; font-weight: bold; }
+        .btn-reset { background: #64748b; margin-top: 8px; }
         .btn-hapus { background: #ef4444; margin-top: 8px; }
         .btn-edit-small { background: #f59e0b; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; border-radius: 12px; cursor: pointer; color: white; border: none; }
         .btn-hapus-small { background: #ef4444; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 4px; border-radius: 12px; cursor: pointer; color: white; border: none; }
@@ -64,7 +65,7 @@
     <div id="page1" class="page active-page">
         <div class="card">
             <h1>📦 TIMBANG 1 BOX KERTAS</h1>
-            <div class="note">✅ Bundles dibulatkan KE ATAS | Data berdasarkan TIMBANGAN REAL</div>
+            <div class="note">✅ Bundles dibulatkan KE ATAS | PO & Brand TETAP setelah simpan (tidak hilang)</div>
 
             <label>📅 Tanggal</label>
             <input type="date" id="tanggal" value="2026-04-23">
@@ -72,8 +73,8 @@
             <label>📄 No. PO</label>
             <input type="text" id="noPo" placeholder="PO-001">
 
-            <label>🏷️ Brand (Manual)</label>
-            <input type="text" id="brand" placeholder="Contoh: RONSON, SINAR DUNIA, dll">
+            <label>🏷️ Brand</label>
+            <input type="text" id="brand" placeholder="Contoh: RONSON, ROYO">
 
             <label>📏 Size Kertas</label>
             <select id="size">
@@ -113,6 +114,7 @@
             <input type="number" id="berat" step="0.01" placeholder="Contoh: 2.50">
 
             <button id="hitungBtn">✅ HITUNG & SIMPAN KE CLOUD</button>
+            <button id="resetFormBtn" class="btn-reset">🔄 Reset Form (Kosongkan PO & Brand)</button>
             <div id="statusMsg" class="status"></div>
         </div>
 
@@ -189,34 +191,33 @@
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         // ==============================================================
 
-        // DATABASE BERAT 1 BUNDLE (GRAM) - BERDASARKAN TIMBANGAN REAL DARI DATA ANDA
+        // DATABASE BERAT 1 BUNDLE (GRAM) - BERDASARKAN TIMBANGAN REAL
         const beratBundleDB = {
-            // SINGLE 36X69
             "SINGLE 36X69|13|32":1.09, "SINGLE 36X69|13|33":1.10, "SINGLE 36X69|13|40":1.33,
             "SINGLE 36X69|13|50":1.67, "SINGLE 36X69|13|51":1.69, "SINGLE 36X69|13|60":2.00,
             "SINGLE 36X69|14|32":1.39, "SINGLE 36X69|14|33":1.43, "SINGLE 36X69|14|40":1.67,
             "SINGLE 36X69|14|50":2.04, "SINGLE 36X69|14|51":2.08, "SINGLE 36X69|14|60":2.40,
-            // 1 1/4 44X78
+            
             "1 1/4 44X78|13|32":1.48, "1 1/4 44X78|13|33":1.54, "1 1/4 44X78|13|40":1.90, "1 1/4 44X78|13|50":2.34,
             "1 1/4 44X78|14|32":1.62, "1 1/4 44X78|14|33":1.65, "1 1/4 44X78|14|35":1.75,
             "1 1/4 44X78|14|40":2.08, "1 1/4 44X78|14|42":2.21, "1 1/4 44X78|14|50":2.50,
-            "1 1/4 44X78|14|51":2.69, "1 1/4 44X78|14|52":2.64,
-            // CLEAR PAPER 1 1/4 44X78
+            "1 1/4 44X78|14|51":2.58, "1 1/4 44X78|14|52":2.64,
+            
             "CLEAR PAPER 1 1/4 44X78|35|50":5.75,
-            // KS 54X97
+            
             "KS 54X97|14|32":2.50, "KS 54X97|14|33":2.58, "KS 54X97|14|40":3.05, "KS 54X97|14|50":3.82,
             "KS 54X97|20|32":4.34, "KS 54X97|20|33":4.42, "KS 54X97|20|40":5.22, "KS 54X97|20|50":6.32,
-            // KSS 44X108
+            
             "KSS 44X108|13|32":2.19, "KSS 44X108|13|33":2.26, "KSS 44X108|13|40":2.76, "KSS 44X108|13|50":3.44,
             "KSS 44X108|14|33":2.31, "KSS 44X108|14|35":2.49, "KSS 44X108|14|40":2.79,
             "KSS 44X108|14|42":2.89, "KSS 44X108|14|50":3.49, "KSS 44X108|14|51":3.56, "KSS 44X108|14|52":3.58,
-            // KSS SLIM 36X108
+            
             "KSS SLIM 36X108|14|32":1.88, "KSS SLIM 36X108|14|33":1.95, "KSS SLIM 36X108|14|34":2.00,
             "KSS SLIM 36X108|14|40":2.35, "KSS SLIM 36X108|14|50":2.95,
-            // SKS 54X108
+            
             "SKS 54X108|13|33":2.63, "SKS 54X108|13|40":3.20, "SKS 54X108|13|50":4.02,
             "SKS 54X108|14|33":2.92, "SKS 54X108|14|40":3.52, "SKS 54X108|14|50":4.40,
-            // CLEAR PAPER SKS 54X108
+            
             "CLEAR PAPER SKS 54X108|35|50":10.28
         };
 
@@ -255,7 +256,7 @@
             const key = `${size}|${gsm}|${leaves}`;
             const gram = beratBundleDB[key];
             if(!gram) return null;
-            return gram / 1000; // GRAM -> KG
+            return gram / 1000;
         }
 
         document.getElementById('hitungBtn').onclick = async () => {
@@ -286,10 +287,14 @@
             const tanggalRaw = document.getElementById('tanggal').value;
             const tanggalFormatted = formatDateToDB(tanggalRaw);
             
+            // AMBIL NILAI PO DAN BRAND
+            const noPoValue = document.getElementById('noPo').value || "-";
+            const brandValue = document.getElementById('brand').value || "-";
+            
             const dataToSave = {
                 tanggal: tanggalFormatted,
-                no_po: document.getElementById('noPo').value || "-",
-                brand: document.getElementById('brand').value || "-",
+                no_po: noPoValue,
+                brand: brandValue,
                 size_kertas: document.getElementById('size').value,
                 gsm: parseInt(document.getElementById('gsm').value),
                 leaves_per_bundle: parseInt(document.getElementById('leaves').value),
@@ -309,13 +314,24 @@
                 alert('Gagal simpan! ' + error.message); 
             } else { 
                 showStatus('✅ Tersimpan ke cloud!', 'success'); 
+                // HANYA KOSONGKAN BERAT TIMBANG SAJA, PO DAN BRAND TETAP
                 document.getElementById('berat').value = '';
-                document.getElementById('noPo').value = '';
-                document.getElementById('brand').value = '';
+                // PO dan BRAND TIDAK DIKOSONGKAN (efisien untuk timbang banyak box)
                 currentPage = 1; 
                 currentSearch = ""; 
                 document.getElementById('searchInput').value = "";
                 tampilkanRiwayat(); 
+            }
+        };
+
+        // TOMBOL RESET FORM (untuk kosongkan PO dan Brand jika perlu ganti)
+        document.getElementById('resetFormBtn').onclick = () => {
+            if(confirm("Reset form? PO dan Brand akan dikosongkan.")) {
+                document.getElementById('noPo').value = '';
+                document.getElementById('brand').value = '';
+                document.getElementById('berat').value = '';
+                document.getElementById('hasilCard').style.display = 'none';
+                showStatus('Form direset', 'success');
             }
         };
 
