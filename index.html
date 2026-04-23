@@ -43,7 +43,6 @@
         <div class="tab" data-page="page2">📜 Riwayat (Cloud)</div>
     </div>
 
-    <!-- HALAMAN 1: TIMBANG -->
     <div id="page1" class="page active-page">
         <div class="card">
             <h1>📦 TIMBANG 1 BOX KERTAS</h1>
@@ -94,7 +93,6 @@
         </div>
     </div>
 
-    <!-- HALAMAN 2: RIWAYAT -->
     <div id="page2" class="page">
         <div class="card">
             <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
@@ -120,233 +118,188 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // ==================== CREDENTIALS ANDA ====================
-    const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
-    // ===========================================================
+    (function() {
+        // ==================== CREDENTIALS ====================
+        const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
+        // =====================================================
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Database berat bundle (GRAM dari data Anda)
-    const beratBundleDB = {
-        "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61,
-        "SINGLE 36X69|14|32":1.11, "SINGLE 36X69|14|33":1.15, "SINGLE 36X69|14|40":1.39, "SINGLE 36X69|14|50":1.74,
-        "1 1/4 44X78|13|32":1.43, "1 1/4 44X78|13|33":1.47, "1 1/4 44X78|13|40":1.78, "1 1/4 44X78|13|50":2.23,
-        "1 1/4 44X78|14|32":1.54, "1 1/4 44X78|14|33":1.59, "1 1/4 44X78|14|40":1.92, "1 1/4 44X78|14|50":2.40,
-        "KS 54X97|14|32":2.35, "KS 54X97|14|33":2.42, "KS 54X97|14|40":2.93, "KS 54X97|14|50":3.67,
-        "KS 54X97|20|32":3.35, "KS 54X97|20|33":3.46, "KS 54X97|20|40":4.19, "KS 54X97|20|50":5.24,
-        "KSS 44X108|13|32":1.98, "KSS 44X108|13|33":2.04, "KSS 44X108|13|40":2.47, "KSS 44X108|13|50":3.09,
-        "KSS 44X108|14|33":2.20, "KSS 44X108|14|40":2.66, "KSS 44X108|14|50":3.33,
-        "KSS SLIM 36X108|14|32":1.74, "KSS SLIM 36X108|14|33":1.80, "KSS SLIM 36X108|14|40":2.18, "KSS SLIM 36X108|14|50":2.72,
-        "SKS 54X108|13|33":2.50, "SKS 54X108|13|40":3.03, "SKS 54X108|13|50":3.79,
-        "SKS 54X108|14|33":2.69, "SKS 54X108|14|40":3.27, "SKS 54X108|14|50":4.08
-    };
-
-    const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
-    const BERAT_LAYER_KG = 0.00618;
-
-    let currentPage = 1;
-    let currentSearch = "";
-    const rowsPerPage = 10;
-
-    function showStatus(msg, type) {
-        let el = document.getElementById('statusMsg');
-        if(el) { el.innerText = msg; el.className = `status ${type}`; }
-        setTimeout(() => { if(el && el.innerText === msg) el.innerText = ''; }, 3000);
-    }
-
-    function getBeratBundleKG() {
-        const size = document.getElementById('size').value;
-        const gsm = document.getElementById('gsm').value;
-        const leaves = document.getElementById('leaves').value;
-        const key = `${size}|${gsm}|${leaves}`;
-        const gram = beratBundleDB[key];
-        if(!gram) return null;
-        return gram / 1000;
-    }
-
-    // HITUNG & SIMPAN
-    document.getElementById('hitungBtn').onclick = async () => {
-        const beratTimbang = parseFloat(document.getElementById('berat').value);
-        if(isNaN(beratTimbang) || beratTimbang <= 0) {
-            alert("Masukkan berat timbang yang benar!");
-            return;
-        }
-
-        const boxType = document.getElementById('box').value;
-        const beratBox = beratBoxMap[boxType];
-        const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
-        const beratLayer = jumlahLayer * BERAT_LAYER_KG;
-        const beratBersih = beratTimbang - beratBox - beratLayer;
-
-        if(beratBersih <= 0) {
-            alert("Berat bersih negatif! Cek timbangan, box, dan layer.");
-            return;
-        }
-
-        const beratBundleKG = getBeratBundleKG();
-        if(!beratBundleKG) {
-            alert("Data kombinasi Size/GSM/Leaves tidak ditemukan!");
-            return;
-        }
-
-        const bundlesDesimal = beratBersih / beratBundleKG;
-        const bundlesBulat = Math.ceil(bundlesDesimal);
-
-        // Tampilkan hasil
-        document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
-        document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
-        document.getElementById('hasilCard').style.display = "block";
-
-        // Siapkan data untuk Supabase
-        const dataToSave = {
-            tanggal: document.getElementById('tanggal').value,
-            no_po: document.getElementById('noPo').value || "-",
-            brand: document.getElementById('brand').value || "-",
-            size_kertas: document.getElementById('size').value,
-            gsm: parseInt(document.getElementById('gsm').value),
-            leaves_per_bundle: parseInt(document.getElementById('leaves').value),
-            jenis_box: boxType,
-            jumlah_layer: jumlahLayer,
-            berat_timbang_kg: beratTimbang,
-            berat_bersih_kg: beratBersih,
-            jumlah_bundles: bundlesBulat,
-            bundles_desimal: bundlesDesimal
+        const beratBundleDB = {
+            "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61,
+            "SINGLE 36X69|14|32":1.11, "SINGLE 36X69|14|33":1.15, "SINGLE 36X69|14|40":1.39, "SINGLE 36X69|14|50":1.74,
+            "1 1/4 44X78|13|32":1.43, "1 1/4 44X78|13|33":1.47, "1 1/4 44X78|13|40":1.78, "1 1/4 44X78|13|50":2.23,
+            "1 1/4 44X78|14|32":1.54, "1 1/4 44X78|14|33":1.59, "1 1/4 44X78|14|40":1.92, "1 1/4 44X78|14|50":2.40,
+            "KS 54X97|14|32":2.35, "KS 54X97|14|33":2.42, "KS 54X97|14|40":2.93, "KS 54X97|14|50":3.67,
+            "KS 54X97|20|32":3.35, "KS 54X97|20|33":3.46, "KS 54X97|20|40":4.19, "KS 54X97|20|50":5.24,
+            "KSS 44X108|13|32":1.98, "KSS 44X108|13|33":2.04, "KSS 44X108|13|40":2.47, "KSS 44X108|13|50":3.09,
+            "KSS 44X108|14|33":2.20, "KSS 44X108|14|40":2.66, "KSS 44X108|14|50":3.33,
+            "KSS SLIM 36X108|14|32":1.74, "KSS SLIM 36X108|14|33":1.80, "KSS SLIM 36X108|14|40":2.18, "KSS SLIM 36X108|14|50":2.72,
+            "SKS 54X108|13|33":2.50, "SKS 54X108|13|40":3.03, "SKS 54X108|13|50":3.79,
+            "SKS 54X108|14|33":2.69, "SKS 54X108|14|40":3.27, "SKS 54X108|14|50":4.08
         };
 
-        showStatus('⏳ Menyimpan ke cloud...', 'loading');
-        const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
-        
-        if(error) {
-            showStatus('❌ Gagal: ' + error.message, 'error');
-            alert('Gagal simpan! ' + error.message);
-        } else {
-            showStatus('✅ Tersimpan ke cloud!', 'success');
-            // Reset form
-            document.getElementById('berat').value = '';
-            document.getElementById('noPo').value = '';
-            document.getElementById('brand').value = '';
-            // Refresh riwayat
-            currentPage = 1;
-            currentSearch = "";
-            document.getElementById('searchInput').value = "";
-            tampilkanRiwayat();
-        }
-    };
+        const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
+        const BERAT_LAYER_KG = 0.00618;
 
-    // TAMPILKAN RIWAYAT
-    async function tampilkanRiwayat() {
-        const tbody = document.getElementById('riwayatBody');
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">⏳ Memuat data...</td></tr>';
-        
-        try {
-            let query = supabase.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
-            
-            if(currentSearch) {
-                query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
-            }
-            
-            const start = (currentPage - 1) * rowsPerPage;
-            const { data, error, count } = await query.range(start, start + rowsPerPage - 1);
-            
-            if(error) throw error;
-            
-            const totalData = count || 0;
-            const totalPages = Math.ceil(totalData / rowsPerPage);
-            
-            if(!data || data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.</td></tr>';
-                document.getElementById('pagination').innerHTML = '';
+        let currentPage = 1;
+        let currentSearch = "";
+        const rowsPerPage = 10;
+
+        function showStatus(msg, type) {
+            let el = document.getElementById('statusMsg');
+            if(el) { el.innerText = msg; el.className = `status ${type}`; }
+            setTimeout(() => { if(el && el.innerText === msg) el.innerText = ''; }, 3000);
+        }
+
+        function getBeratBundleKG() {
+            const size = document.getElementById('size').value;
+            const gsm = document.getElementById('gsm').value;
+            const leaves = document.getElementById('leaves').value;
+            const key = `${size}|${gsm}|${leaves}`;
+            const gram = beratBundleDB[key];
+            if(!gram) return null;
+            return gram / 1000;
+        }
+
+        document.getElementById('hitungBtn').onclick = async () => {
+            const beratTimbang = parseFloat(document.getElementById('berat').value);
+            if(isNaN(beratTimbang) || beratTimbang <= 0) {
+                alert("Masukkan berat timbang yang benar!");
                 return;
             }
-            
-            tbody.innerHTML = "";
-            for(let i = 0; i < data.length; i++) {
-                const d = data[i];
-                tbody.innerHTML += `<tr>
-                    <td style="text-align:center">${start + i + 1}</td>
-                    <td>${d.tanggal || ''}</td>
-                    <td>${d.no_po || '-'}</td>
-                    <td>${d.brand || '-'}</td>
-                    <td>${(d.size_kertas || '').substring(0,8)}</td>
-                    <td>${d.gsm}</td>
-                    <td>${d.jenis_box || ''}</td>
-                    <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td>
-                </tr>`;
+
+            const boxType = document.getElementById('box').value;
+            const beratBox = beratBoxMap[boxType];
+            const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
+            const beratLayer = jumlahLayer * BERAT_LAYER_KG;
+            const beratBersih = beratTimbang - beratBox - beratLayer;
+
+            if(beratBersih <= 0) {
+                alert("Berat bersih negatif! Cek timbangan, box, dan layer.");
+                return;
             }
-            
-            let pagHtml = '';
-            for(let i = 1; i <= totalPages; i++) {
-                pagHtml += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page-btn' : ''}">${i}</button>`;
+
+            const beratBundleKG = getBeratBundleKG();
+            if(!beratBundleKG) {
+                alert("Data kombinasi Size/GSM/Leaves tidak ditemukan!");
+                return;
             }
-            document.getElementById('pagination').innerHTML = pagHtml;
+
+            const bundlesDesimal = beratBersih / beratBundleKG;
+            const bundlesBulat = Math.ceil(bundlesDesimal);
+
+            document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
+            document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
+            document.getElementById('hasilCard').style.display = "block";
+
+            const dataToSave = {
+                tanggal: document.getElementById('tanggal').value,
+                no_po: document.getElementById('noPo').value || "-",
+                brand: document.getElementById('brand').value || "-",
+                size_kertas: document.getElementById('size').value,
+                gsm: parseInt(document.getElementById('gsm').value),
+                leaves_per_bundle: parseInt(document.getElementById('leaves').value),
+                jenis_box: boxType,
+                jumlah_layer: jumlahLayer,
+                berat_timbang_kg: beratTimbang,
+                berat_bersih_kg: beratBersih,
+                jumlah_bundles: bundlesBulat,
+                bundles_desimal: bundlesDesimal
+            };
+
+            showStatus('⏳ Menyimpan ke cloud...', 'loading');
+            const { error } = await supabaseClient.from('riwayat_timbang').insert([dataToSave]);
             
-        } catch(err) {
-            console.error(err);
-            tbody.innerHTML = `<tr><td colspan="8" style="color:red">❌ Error: ${err.message}</td></tr>`;
-        }
-    }
-
-    window.goToPage = (p) => {
-        currentPage = p;
-        tampilkanRiwayat();
-    };
-
-    // Pencarian
-    document.getElementById('cariBtn').onclick = () => {
-        currentSearch = document.getElementById('searchInput').value.trim();
-        currentPage = 1;
-        tampilkanRiwayat();
-    };
-
-    document.getElementById('resetCariBtn').onclick = () => {
-        currentSearch = '';
-        document.getElementById('searchInput').value = '';
-        currentPage = 1;
-        tampilkanRiwayat();
-    };
-
-    // Hapus semua data
-    document.getElementById('hapusSemuaBtn').onclick = async () => {
-        if(confirm("⚠️ Hapus SEMUA data dari cloud? Tindakan ini tidak bisa dibatalkan!")) {
-            const { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
             if(error) {
-                alert("Gagal hapus: " + error.message);
+                showStatus('❌ Gagal: ' + error.message, 'error');
+                alert('Gagal simpan! ' + error.message);
             } else {
-                alert("✅ Semua data telah dihapus dari cloud!");
+                showStatus('✅ Tersimpan ke cloud!', 'success');
+                document.getElementById('berat').value = '';
+                document.getElementById('noPo').value = '';
+                document.getElementById('brand').value = '';
                 currentPage = 1;
                 currentSearch = "";
                 document.getElementById('searchInput').value = "";
                 tampilkanRiwayat();
             }
-        }
-    };
+        };
 
-    // Tab switching
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.onclick = () => {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            document.getElementById(tab.dataset.page).classList.add('active-page');
-            if(tab.dataset.page === 'page2') {
-                tampilkanRiwayat();
+        async function tampilkanRiwayat() {
+            const tbody = document.getElementById('riwayatBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">⏳ Memuat data...</td></tr>';
+            
+            try {
+                let query = supabaseClient.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
+                if(currentSearch) {
+                    query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
+                }
+                const start = (currentPage - 1) * rowsPerPage;
+                const { data, error, count } = await query.range(start, start + rowsPerPage - 1);
+                if(error) throw error;
+                const totalData = count || 0;
+                const totalPages = Math.ceil(totalData / rowsPerPage);
+                if(!data || data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.</td></tr>';
+                    document.getElementById('pagination').innerHTML = '';
+                    return;
+                }
+                tbody.innerHTML = "";
+                for(let i = 0; i < data.length; i++) {
+                    const d = data[i];
+                    tbody.innerHTML += `<tr>
+                        <td style="text-align:center">${start + i + 1}</td>
+                        <td>${d.tanggal || ''}</td>
+                        <td>${d.no_po || '-'}</td>
+                        <td>${d.brand || '-'}</td>
+                        <td>${(d.size_kertas || '').substring(0,8)}</td>
+                        <td>${d.gsm}</td>
+                        <td>${d.jenis_box || ''}</td>
+                        <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td>
+                    </tr>`;
+                }
+                let pagHtml = '';
+                for(let i = 1; i <= totalPages; i++) {
+                    pagHtml += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page-btn' : ''}">${i}</button>`;
+                }
+                document.getElementById('pagination').innerHTML = pagHtml;
+            } catch(err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="8" style="color:red">❌ Error: ${err.message}</td></tr>`;
+            }
+        }
+
+        window.goToPage = (p) => { currentPage = p; tampilkanRiwayat(); };
+        document.getElementById('cariBtn').onclick = () => { currentSearch = document.getElementById('searchInput').value.trim(); currentPage=1; tampilkanRiwayat(); };
+        document.getElementById('resetCariBtn').onclick = () => { currentSearch = ''; document.getElementById('searchInput').value = ''; currentPage=1; tampilkanRiwayat(); };
+        document.getElementById('hapusSemuaBtn').onclick = async () => {
+            if(confirm("⚠️ Hapus SEMUA data dari cloud?")) {
+                const { error } = await supabaseClient.from('riwayat_timbang').delete().neq('id', 0);
+                if(error) alert("Gagal hapus: " + error.message);
+                else { alert("✅ Semua data telah dihapus!"); currentPage=1; currentSearch=""; document.getElementById('searchInput').value=""; tampilkanRiwayat(); }
             }
         };
-    });
 
-    // Cek koneksi ke Supabase
-    async function cekKoneksi() {
-        const { error } = await supabase.from('riwayat_timbang').select('id', { count: 'exact', head: true });
-        if(error) {
-            showStatus('⚠️ ' + error.message, 'error');
-        } else {
-            showStatus('✅ Terhubung ke Supabase Cloud!', 'success');
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+                document.getElementById(tab.dataset.page).classList.add('active-page');
+                if(tab.dataset.page === 'page2') tampilkanRiwayat();
+            };
+        });
+
+        async function cekKoneksi() {
+            const { error } = await supabaseClient.from('riwayat_timbang').select('id', { count: 'exact', head: true });
+            if(error) showStatus('⚠️ ' + error.message, 'error');
+            else showStatus('✅ Terhubung ke Supabase Cloud!', 'success');
         }
-    }
-    
-    cekKoneksi();
-    tampilkanRiwayat();
+        cekKoneksi();
+        tampilkanRiwayat();
+    })();
 </script>
 </body>
 </html>
