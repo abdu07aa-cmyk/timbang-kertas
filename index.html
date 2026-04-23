@@ -7,7 +7,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #e0e7ff; font-family: Arial, sans-serif; padding: 12px; }
-        .container { max-width: 550px; margin: 0 auto; }
+        .container { max-width: 600px; margin: 0 auto; }
         .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         h1 { font-size: 1.3rem; color: #1e3a8a; text-align: center; }
         .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
@@ -19,12 +19,16 @@
         input, select { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; }
         button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 16px; cursor: pointer; font-weight: bold; }
         .btn-hapus { background: #ef4444; margin-top: 8px; }
+        .btn-edit { background: #f59e0b; margin-top: 4px; }
+        .btn-edit-small { background: #f59e0b; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; }
+        .btn-hapus-small { background: #ef4444; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; }
+        .btn-export { background: #10b981; margin-top: 8px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; vertical-align: middle; }
         th { background: #e2e8f0; }
         .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 12px; flex-wrap: wrap; }
         .pagination button { width: auto; padding: 5px 10px; margin-top: 0; background: #e2e8f0; color: black; }
-        .search-row { display: flex; gap: 8px; margin-bottom: 12px; }
+        .search-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
         .search-row input { flex: 2; margin-top: 0; }
         .search-row button { flex: 1; margin-top: 0; background: #8b5cf6; }
         .note { background: #dbeafe; padding: 8px; border-radius: 12px; font-size: 0.7rem; margin-bottom: 12px; }
@@ -34,6 +38,19 @@
         .row-2 { display: flex; gap: 12px; }
         .row-2 > div { flex: 1; }
         .berat-bersih { font-size: 1.2rem; font-weight: bold; color: #1e3a8a; }
+        .aksi-cell { white-space: nowrap; }
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; border-radius: 20px; padding: 20px; width: 90%; max-width: 500px;
+            max-height: 80vh; overflow-y: auto;
+        }
+        .modal-content h3 { margin-bottom: 16px; color: #1e3a8a; }
+        .close-modal {
+            background: #64748b; margin-top: 16px;
+        }
     </style>
 </head>
 <body>
@@ -43,6 +60,7 @@
         <div class="tab" data-page="page2">📜 Riwayat (Cloud)</div>
     </div>
 
+    <!-- HALAMAN 1: TIMBANG -->
     <div id="page1" class="page active-page">
         <div class="card">
             <h1>📦 TIMBANG 1 BOX KERTAS</h1>
@@ -93,19 +111,21 @@
         </div>
     </div>
 
+    <!-- HALAMAN 2: RIWAYAT -->
     <div id="page2" class="page">
         <div class="card">
             <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
             <div class="search-row">
                 <input type="text" id="searchInput" placeholder="Cari No. PO atau Brand...">
                 <button id="cariBtn">🔍 Cari</button>
+                <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Export Excel</button>
             </div>
             <button id="resetCariBtn" style="background:#64748b; margin-top:0;">↺ Reset</button>
 
             <div style="overflow-x:auto; margin-top:12px">
                 <table id="riwayatTable">
                     <thead>
-                        <tr><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Bundles</th></tr>
+                        <tr><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Box</th><th>Bundles</th><th>Aksi</th></tr>
                     </thead>
                     <tbody id="riwayatBody"></tbody>
                 </table>
@@ -116,15 +136,42 @@
     </div>
 </div>
 
+<!-- MODAL EDIT -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3>✏️ Edit Data</h3>
+        <label>Tanggal (MM/DD/YYYY)</label>
+        <input type="text" id="editTanggal">
+        <label>No. PO</label>
+        <input type="text" id="editNoPo">
+        <label>Brand</label>
+        <input type="text" id="editBrand">
+        <label>Size Kertas</label>
+        <select id="editSize">
+            <option value="SINGLE 36X69">SINGLE 36X69</option>
+            <option value="1 1/4 44X78">1 1/4 44X78</option>
+            <option value="KS 54X97">KS 54X97</option>
+            <option value="KSS 44X108">KSS 44X108</option>
+            <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
+            <option value="SKS 54X108">SKS 54X108</option>
+        </select>
+        <label>GSM</label>
+        <select id="editGsm"><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select>
+        <label>Jenis Box</label>
+        <select id="editBox"><option value="White">White</option><option value="White New">White New</option><option value="Grey">Grey</option><option value="Green Jumbo">Green Jumbo</option></select>
+        <label>Jumlah Bundles</label>
+        <input type="number" id="editBundles" step="1">
+        <button id="saveEditBtn">💾 Simpan Perubahan</button>
+        <button id="closeModalBtn" class="close-modal">❌ Batal</button>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function() {
-        // ==================== CREDENTIALS ====================
         const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
-        // =====================================================
-
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         const beratBundleDB = {
             "SINGLE 36X69|13|32":1.03, "SINGLE 36X69|13|33":1.07, "SINGLE 36X69|13|40":1.29, "SINGLE 36X69|13|50":1.61,
@@ -139,12 +186,12 @@
             "SKS 54X108|13|33":2.50, "SKS 54X108|13|40":3.03, "SKS 54X108|13|50":3.79,
             "SKS 54X108|14|33":2.69, "SKS 54X108|14|40":3.27, "SKS 54X108|14|50":4.08
         };
-
         const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
         const BERAT_LAYER_KG = 0.00618;
 
         let currentPage = 1;
         let currentSearch = "";
+        let currentEditId = null;
         const rowsPerPage = 10;
 
         function showStatus(msg, type) {
@@ -159,37 +206,22 @@
             const leaves = document.getElementById('leaves').value;
             const key = `${size}|${gsm}|${leaves}`;
             const gram = beratBundleDB[key];
-            if(!gram) return null;
-            return gram / 1000;
+            return gram ? gram/1000 : null;
         }
 
         document.getElementById('hitungBtn').onclick = async () => {
             const beratTimbang = parseFloat(document.getElementById('berat').value);
-            if(isNaN(beratTimbang) || beratTimbang <= 0) {
-                alert("Masukkan berat timbang yang benar!");
-                return;
-            }
-
+            if(isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
             const boxType = document.getElementById('box').value;
             const beratBox = beratBoxMap[boxType];
             const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
             const beratLayer = jumlahLayer * BERAT_LAYER_KG;
             const beratBersih = beratTimbang - beratBox - beratLayer;
-
-            if(beratBersih <= 0) {
-                alert("Berat bersih negatif! Cek timbangan, box, dan layer.");
-                return;
-            }
-
+            if(beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
             const beratBundleKG = getBeratBundleKG();
-            if(!beratBundleKG) {
-                alert("Data kombinasi Size/GSM/Leaves tidak ditemukan!");
-                return;
-            }
-
+            if(!beratBundleKG) { alert("Data tidak ditemukan!"); return; }
             const bundlesDesimal = beratBersih / beratBundleKG;
             const bundlesBulat = Math.ceil(bundlesDesimal);
-
             document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
             document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
             document.getElementById('hasilCard').style.display = "block";
@@ -208,49 +240,36 @@
                 jumlah_bundles: bundlesBulat,
                 bundles_desimal: bundlesDesimal
             };
-
-            showStatus('⏳ Menyimpan ke cloud...', 'loading');
-            const { error } = await supabaseClient.from('riwayat_timbang').insert([dataToSave]);
-            
-            if(error) {
-                showStatus('❌ Gagal: ' + error.message, 'error');
-                alert('Gagal simpan! ' + error.message);
-            } else {
-                showStatus('✅ Tersimpan ke cloud!', 'success');
+            showStatus('⏳ Menyimpan...', 'loading');
+            const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
+            if(error) { showStatus('❌ Gagal: ' + error.message, 'error'); alert('Gagal simpan! ' + error.message); }
+            else {
+                showStatus('✅ Tersimpan!', 'success');
                 document.getElementById('berat').value = '';
                 document.getElementById('noPo').value = '';
                 document.getElementById('brand').value = '';
-                currentPage = 1;
-                currentSearch = "";
-                document.getElementById('searchInput').value = "";
+                currentPage = 1; currentSearch = ""; document.getElementById('searchInput').value = "";
                 tampilkanRiwayat();
             }
         };
 
         async function tampilkanRiwayat() {
             const tbody = document.getElementById('riwayatBody');
-            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">⏳ Memuat data...</td></tr>';
-            
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center">⏳ Memuat...</td></tr>';
             try {
-                let query = supabaseClient.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
-                if(currentSearch) {
-                    query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
-                }
-                const start = (currentPage - 1) * rowsPerPage;
-                const { data, error, count } = await query.range(start, start + rowsPerPage - 1);
+                let query = supabase.from('riwayat_timbang').select('*', { count: 'exact' }).order('id', { ascending: false });
+                if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
+                const start = (currentPage-1)*rowsPerPage;
+                const { data, error, count } = await query.range(start, start+rowsPerPage-1);
                 if(error) throw error;
                 const totalData = count || 0;
                 const totalPages = Math.ceil(totalData / rowsPerPage);
-                if(!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.</td></tr>';
-                    document.getElementById('pagination').innerHTML = '';
-                    return;
-                }
+                if(!data || data.length === 0) { tbody.innerHTML = '<tr><td colspan="9">📭 Tidak ada数据</td></tr>'; document.getElementById('pagination').innerHTML = ''; return; }
                 tbody.innerHTML = "";
-                for(let i = 0; i < data.length; i++) {
+                for(let i=0; i<data.length; i++) {
                     const d = data[i];
                     tbody.innerHTML += `<tr>
-                        <td style="text-align:center">${start + i + 1}</td>
+                        <td style="text-align:center">${start+i+1}</td>
                         <td>${d.tanggal || ''}</td>
                         <td>${d.no_po || '-'}</td>
                         <td>${d.brand || '-'}</td>
@@ -258,28 +277,81 @@
                         <td>${d.gsm}</td>
                         <td>${d.jenis_box || ''}</td>
                         <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td>
+                        <td class="aksi-cell">
+                            <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit</button>
+                            <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus</button>
+                        </td>
                     </tr>`;
                 }
                 let pagHtml = '';
-                for(let i = 1; i <= totalPages; i++) {
-                    pagHtml += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page-btn' : ''}">${i}</button>`;
-                }
+                for(let i=1; i<=totalPages; i++) pagHtml += `<button onclick="goToPage(${i})" class="${i===currentPage?'active-page-btn':''}">${i}</button>`;
                 document.getElementById('pagination').innerHTML = pagHtml;
-            } catch(err) {
-                console.error(err);
-                tbody.innerHTML = `<tr><td colspan="8" style="color:red">❌ Error: ${err.message}</td></tr>`;
-            }
+            } catch(err) { tbody.innerHTML = `<tr><td colspan="9" style="color:red">❌ Error: ${err.message}</td></tr>`; }
         }
+
+        window.editData = (id, tanggal, noPo, brand, size, gsm, box, bundles) => {
+            currentEditId = id;
+            document.getElementById('editTanggal').value = tanggal;
+            document.getElementById('editNoPo').value = noPo;
+            document.getElementById('editBrand').value = brand;
+            document.getElementById('editSize').value = size;
+            document.getElementById('editGsm').value = gsm;
+            document.getElementById('editBox').value = box;
+            document.getElementById('editBundles').value = bundles;
+            document.getElementById('editModal').style.display = 'flex';
+        };
+
+        window.hapusSatuData = async (id) => {
+            if(confirm("Hapus data ini?")) {
+                const { error } = await supabase.from('riwayat_timbang').delete().eq('id', id);
+                if(error) alert("Gagal hapus: " + error.message);
+                else { alert("Data terhapus!"); tampilkanRiwayat(); }
+            }
+        };
+
+        document.getElementById('saveEditBtn').onclick = async () => {
+            const updatedData = {
+                tanggal: document.getElementById('editTanggal').value,
+                no_po: document.getElementById('editNoPo').value,
+                brand: document.getElementById('editBrand').value,
+                size_kertas: document.getElementById('editSize').value,
+                gsm: parseInt(document.getElementById('editGsm').value),
+                jenis_box: document.getElementById('editBox').value,
+                jumlah_bundles: parseInt(document.getElementById('editBundles').value)
+            };
+            const { error } = await supabase.from('riwayat_timbang').update(updatedData).eq('id', currentEditId);
+            if(error) alert("Gagal update: " + error.message);
+            else { alert("Data berhasil diupdate!"); document.getElementById('editModal').style.display = 'none'; tampilkanRiwayat(); }
+        };
+
+        document.getElementById('closeModalBtn').onclick = () => { document.getElementById('editModal').style.display = 'none'; };
+        window.onclick = (e) => { if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none'; };
 
         window.goToPage = (p) => { currentPage = p; tampilkanRiwayat(); };
         document.getElementById('cariBtn').onclick = () => { currentSearch = document.getElementById('searchInput').value.trim(); currentPage=1; tampilkanRiwayat(); };
         document.getElementById('resetCariBtn').onclick = () => { currentSearch = ''; document.getElementById('searchInput').value = ''; currentPage=1; tampilkanRiwayat(); };
-        document.getElementById('hapusSemuaBtn').onclick = async () => {
-            if(confirm("⚠️ Hapus SEMUA data dari cloud?")) {
-                const { error } = await supabaseClient.from('riwayat_timbang').delete().neq('id', 0);
-                if(error) alert("Gagal hapus: " + error.message);
-                else { alert("✅ Semua data telah dihapus!"); currentPage=1; currentSearch=""; document.getElementById('searchInput').value=""; tampilkanRiwayat(); }
+        document.getElementById('hapusSemuaBtn').onclick = async () => { if(confirm("Hapus SEMUA data?")) { await supabase.from('riwayat_timbang').delete().neq('id',0); currentPage=1; currentSearch=""; tampilkanRiwayat(); alert("Semua data terhapus!"); } };
+
+        document.getElementById('exportExcelBtn').onclick = async () => {
+            let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
+            if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
+            const { data, error } = await query;
+            if(error) { alert("Gagal export!"); return; }
+            if(!data || data.length===0) { alert("Tidak ada data untuk di export!"); return; }
+            let rows = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Jenis Box", "Jumlah Bundles", "Berat Timbang(kg)", "Berat Bersih(kg)"]];
+            for(let i=0; i<data.length; i++) {
+                const d = data[i];
+                rows.push([i+1, d.tanggal, d.no_po, d.brand, d.size_kertas, d.gsm, d.jenis_box, d.jumlah_bundles, d.berat_timbang_kg, d.berat_bersih_kg]);
             }
+            let csv = rows.map(row => row.join(",")).join("\n");
+            let blob = new Blob([csv], { type: "text/csv" });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = `riwayat_timbang_${new Date().toISOString().slice(0,19)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            alert("Export berhasil!");
         };
 
         document.querySelectorAll('.tab').forEach(tab => {
@@ -293,7 +365,7 @@
         });
 
         async function cekKoneksi() {
-            const { error } = await supabaseClient.from('riwayat_timbang').select('id', { count: 'exact', head: true });
+            const { error } = await supabase.from('riwayat_timbang').select('id', { count: 'exact', head: true });
             if(error) showStatus('⚠️ ' + error.message, 'error');
             else showStatus('✅ Terhubung ke Supabase Cloud!', 'success');
         }
