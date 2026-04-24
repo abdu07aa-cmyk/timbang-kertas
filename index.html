@@ -169,6 +169,9 @@
     </div>
 </div>
 
+<!-- LIBRARY UNTUK XLSX -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+
 <!-- MODAL CETAK -->
 <div id="cetakModal" class="modal">
     <div class="modal-content">
@@ -281,11 +284,6 @@
             if(!dateStr) return "";
             let parts = dateStr.split('/');
             if(parts.length === 3) return `${parts[2]}-${parts[0]}-${parts[1]}`;
-            return dateStr;
-        }
-
-        function formatDateForDisplay(dateStr) {
-            if(!dateStr) return "";
             return dateStr;
         }
 
@@ -518,26 +516,67 @@
             }
         };
 
+        // EXPORT KE XLSX (EXCEL NATIVE)
         document.getElementById('exportExcelBtn').onclick = async () => {
             let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
             if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
             const { data, error } = await query;
             if(error) { alert("Gagal export!"); return; }
             if(!data || data.length===0) { alert("Tidak ada data untuk di export!"); return; }
-            let rows = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang(kg)", "Berat Bersih(kg)"]];
+            
+            // Format data untuk Excel
+            const excelData = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang (kg)", "Berat Bersih (kg)"]];
+            
             for(let i=0; i<data.length; i++) {
                 const d = data[i];
-                rows.push([i+1, d.tanggal, d.no_po, d.brand, d.size_kertas, d.gsm, d.leaves_per_bundle, d.jenis_box, d.jumlah_bundles, d.berat_timbang_kg, d.berat_bersih_kg]);
+                excelData.push([
+                    i+1,
+                    d.tanggal || '',
+                    d.no_po || '-',
+                    d.brand || '-',
+                    d.size_kertas || '',
+                    d.gsm || '',
+                    d.leaves_per_bundle || '',
+                    d.jenis_box || '',
+                    d.jumlah_bundles || 0,
+                    d.berat_timbang_kg || 0,
+                    d.berat_bersih_kg || 0
+                ]);
             }
-            let csv = rows.map(row => row.join(",")).join("\n");
-            let blob = new Blob([csv], { type: "text/csv" });
-            let url = URL.createObjectURL(blob);
-            let a = document.createElement('a');
-            a.href = url;
-            a.download = `riwayat_timbang_${new Date().toISOString().slice(0,19)}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-            alert("Export berhasil!");
+            
+            // Buat worksheet
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            
+            // Set lebar kolom otomatis
+            ws['!cols'] = [
+                {wch:5},   // No
+                {wch:12},  // Tanggal
+                {wch:15},  // No. PO
+                {wch:15},  // Brand
+                {wch:20},  // Size
+                {wch:6},   // GSM
+                {wch:8},   // Leaves
+                {wch:15},  // Jenis Box
+                {wch:12},  // Jumlah Bundles
+                {wch:15},  // Berat Timbang
+                {wch:15}   // Berat Bersih
+            ];
+            
+            // Style header (bold)
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            for(let C = range.s.c; C <= range.e.c; ++C) {
+                const address = XLSX.utils.encode_cell({r:0, c:C});
+                if(!ws[address]) continue;
+                ws[address].s = { font: { bold: true, sz: 11 }, fill: { fgColor: { rgb: "1E3A8A" } }, fontColor: { rgb: "FFFFFF" } };
+            }
+            
+            // Buat workbook
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Laporan Timbangan");
+            
+            // Download file XLSX
+            XLSX.writeFile(wb, `laporan_timbangan_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
+            alert("Export Excel berhasil!");
         };
 
         // CETAK MODAL
@@ -631,7 +670,7 @@
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 .header { text-align: center; margin-bottom: 30px; }
-                .header h1 { margin: 0; }
+                .header h1 { margin: 0; color: #1e3a8a; }
                 .header h3 { margin: 5px 0; color: #555; }
                 .po-group { margin-bottom: 30px; page-break-inside: avoid; }
                 .po-title { background: #1e3a8a; color: white; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
@@ -666,7 +705,7 @@
                         <td>${item.tanggal || ''}</td>
                         <td>${item.berat_timbang_kg} kg</td>
                         <td>${item.berat_bersih_kg} kg</td>
-                        <td style="text-align:center; font-weight:bold">${item.jumlah_bundles}</td>
+                        <td style="text-align:center; font-weight:bold">${item.jumlah_bundles.toLocaleString('id-ID')}</td>
                     </tr>`;
                 }
                 const rataRata = Math.round(totalBundles / items.length);
@@ -686,8 +725,8 @@
                             <tr><th>No</th><th>Tanggal</th><th>Berat Timbang</th><th>Berat Bersih</th><th>Jumlah Bundles</th></tr>
                         </thead>
                         <tbody>${tableRows}
-                        <tr class="total-row"><td colspan="4"><strong>TOTAL</strong></td><td><strong>${totalBundles} bundles</strong></td></tr>
-                        <tr class="total-row"><td colspan="4"><strong>RATA-RATA</strong></td><td><strong>${rataRata} bundles/box</strong></td></tr>
+                        <tr class="total-row"><td colspan="4"><strong>TOTAL</strong></td><td><strong>${totalBundles.toLocaleString('id-ID')} bundles</strong></td></tr>
+                        <tr class="total-row"><td colspan="4"><strong>RATA-RATA</strong></td><td><strong>${rataRata.toLocaleString('id-ID')} bundles/box</strong></td></tr>
                         </tbody>
                     </table>
                 </div>`;
