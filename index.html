@@ -1,774 +1,546 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Timbangan Kertas - Real Data</title>
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: #e0e7ff; font-family: Arial, sans-serif; padding: 12px; }
-        .container { max-width: 650px; margin: 0 auto; }
-        .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        h1 { font-size: 1.3rem; color: #1e3a8a; text-align: center; }
-        .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-        .tab { flex: 1; text-align: center; padding: 10px; background: #cbd5e1; border-radius: 40px; font-weight: bold; cursor: pointer; }
-        .tab.active { background: #1e3a8a; color: white; }
-        .page { display: none; }
-        .page.active-page { display: block; }
-        label { font-weight: bold; display: block; margin-top: 12px; margin-bottom: 5px; font-size: 0.85rem; }
-        input, select { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; }
-        button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 16px; cursor: pointer; font-weight: bold; }
-        .btn-reset { background: #64748b; margin-top: 8px; }
-        .btn-hapus { background: #ef4444; margin-top: 8px; }
-        .btn-edit-small { background: #f59e0b; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; border-radius: 12px; cursor: pointer; color: white; border: none; }
-        .btn-hapus-small { background: #ef4444; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0 0 0 4px; border-radius: 12px; cursor: pointer; color: white; border: none; }
-        .btn-export { background: #10b981; margin-top: 8px; }
-        .btn-cetak { background: #8b5cf6; margin-top: 8px; }
-        .btn-urut { background: #06b6d4; margin-top: 8px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
-        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; vertical-align: middle; }
-        th { background: #e2e8f0; }
-        .pagination { display: flex; justify-content: center; gap: 5px; margin-top: 12px; flex-wrap: wrap; }
-        .pagination button { width: auto; padding: 5px 10px; margin-top: 0; background: #e2e8f0; color: black; border: none; border-radius: 12px; cursor: pointer; }
-        .pagination button.active-page-btn { background: #1e3a8a; color: white; }
-        .search-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
-        .search-row input { flex: 2; margin-top: 0; }
-        .search-row button { flex: 1; margin-top: 0; background: #8b5cf6; border: none; border-radius: 40px; cursor: pointer; color: white; font-weight: bold; padding: 10px; }
-        .note { background: #dbeafe; padding: 8px; border-radius: 12px; font-size: 0.7rem; margin-bottom: 12px; }
-        .status { font-size: 0.7rem; text-align: center; padding: 6px; border-radius: 10px; margin-top: 8px; }
-        .status.success { background: #dcfce7; color: #166534; }
-        .status.error { background: #fee2e2; color: #991b1b; }
-        .status.loading { background: #fef3c7; color: #92400e; }
-        .row-2 { display: flex; gap: 12px; }
-        .row-2 > div { flex: 1; }
-        .berat-bersih { font-size: 1.2rem; font-weight: bold; color: #1e3a8a; }
-        .aksi-cell { white-space: nowrap; }
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-content {
-            background: white; border-radius: 20px; padding: 20px; width: 90%; max-width: 500px;
-            max-height: 80vh; overflow-y: auto;
-        }
-        .modal-content h3 { margin-bottom: 16px; color: #1e3a8a; }
-        .close-modal { background: #64748b; margin-top: 16px; }
-        .cetak-option { margin-bottom: 15px; padding: 10px; background: #f1f5f9; border-radius: 12px; }
-        .cetak-option label { margin-top: 0; }
-        .cetak-option select, .cetak-option input { margin-top: 5px; }
-        input[type="date"] { font-family: inherit; }
-        @media print {
-            body * { visibility: hidden; }
-            .print-area, .print-area * { visibility: visible; }
-            .print-area { position: absolute; top: 0; left: 0; width: 100%; margin: 0; padding: 10px; }
-            .no-print { display: none; }
-            button { display: none; }
-        }
-    </style>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aplikasi Gudang</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    
+    body {
+      background: #f0f2f5;
+      margin: 0;
+      padding: 16px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, #1a3c34, #0d2818);
+      color: white;
+      padding: 20px;
+      border-radius: 16px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+    }
+    
+    .header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    
+    /* Stats Cards */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    
+    .stat-card.belum .stat-number { color: #e53935; }
+    .stat-card.proses .stat-number { color: #fb8c00; }
+    .stat-card.selesai .stat-number { color: #43a047; }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .tab-btn {
+      background: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 24px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+    
+    .tab-btn.active {
+      background: #1a3c34;
+      color: white;
+    }
+    
+    /* Form */
+    .form-panel {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .form-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #1a3c34;
+    }
+    
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .form-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    
+    .form-group input, .form-group select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    button {
+      background: #1a3c34;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    button:hover {
+      background: #0d2818;
+    }
+    
+    button.secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+    
+    /* Search & Filter */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .search-bar input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    .search-bar select {
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    
+    /* Table */
+    .table-wrapper {
+      overflow-x: auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+    
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .status-belum { background: #ffebee; color: #c62828; }
+    .status-proses { background: #fff3e0; color: #ef6c00; }
+    .status-selesai { background: #e8f5e9; color: #2e7d32; }
+    
+    .action-btn {
+      background: none;
+      border: none;
+      padding: 6px 10px;
+      margin: 0 2px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 6px;
+    }
+    
+    .action-btn.edit { background: #e3f2fd; color: #1565c0; }
+    .action-btn.kirim { background: #f3e5f5; color: #7b1fa2; }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      th, td { padding: 8px 6px; font-size: 11px; }
+      .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 <body>
 <div class="container">
-    <div class="tab-bar">
-        <div class="tab active" data-page="page1">📦 Timbang</div>
-        <div class="tab" data-page="page2">📜 Riwayat (Cloud)</div>
+  <div class="header">
+    <h1>📦 Aplikasi Gudang</h1>
+    <p>Data PO - Barang Masuk & Pengiriman</p>
+  </div>
+  
+  <div id="stats" class="stats">
+    <div class="stat-card"><div class="stat-number" id="totalPO">-</div><div class="stat-label">Total PO</div></div>
+    <div class="stat-card belum"><div class="stat-number" id="belum">-</div><div class="stat-label">BELUM</div></div>
+    <div class="stat-card proses"><div class="stat-number" id="proses">-</div><div class="stat-label">PROSES</div></div>
+    <div class="stat-card selesai"><div class="stat-number" id="selesai">-</div><div class="stat-label">SELESAI</div></div>
+  </div>
+  
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('list')">📋 Daftar PO</button>
+    <button class="tab-btn" onclick="showTab('add')">➕ Tambah PO</button>
+    <button class="tab-btn" onclick="showTab('log')">📜 Log Kirim</button>
+  </div>
+  
+  <!-- Tab Daftar PO -->
+  <div id="tab-list" class="tab-content">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="🔍 Cari No PO, Brand, atau Jenis..." onkeyup="filterTable()">
+      <select id="statusFilter" onchange="filterTable()">
+        <option value="">Semua Status</option>
+        <option value="BELUM">BELUM</option>
+        <option value="PROSES">PROSES</option>
+        <option value="SELESAI">SELESAI</option>
+      </select>
     </div>
-
-    <!-- HALAMAN 1: TIMBANG -->
-    <div id="page1" class="page active-page">
-        <div class="card">
-            <h1>📦 TIMBANG 1 BOX KERTAS</h1>
-            <div class="note">✅ Bundles dibulatkan KE ATAS | PO & Brand TETAP setelah simpan</div>
-
-            <label>📅 Tanggal</label>
-            <input type="date" id="tanggal" value="2026-04-23">
-
-            <label>📄 No. PO</label>
-            <input type="text" id="noPo" placeholder="PO-001">
-
-            <label>🏷️ Brand</label>
-            <input type="text" id="brand" placeholder="Contoh: RONSON, ROYO">
-
-            <label>📏 Size Kertas</label>
-            <select id="size">
-                <option value="SINGLE 36X69">SINGLE 36X69</option>
-                <option value="1 1/4 44X78">1 1/4 44X78</option>
-                <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
-                <option value="KS 54X97">KS 54X97</option>
-                <option value="KSS 44X108">KSS 44X108</option>
-                <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
-                <option value="SKS 54X108">SKS 54X108</option>
-                <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
-            </select>
-
-            <div class="row-2">
-                <div><label>📄 GSM</label><select id="gsm">
-                    <option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option>
-                </select></div>
-                <div><label>📑 Leaves/Bundle</label><select id="leaves">
-                    <option value="32">32</option><option value="33">33</option><option value="34">34</option>
-                    <option value="35">35</option><option value="40">40</option><option value="42">42</option>
-                    <option value="50">50</option><option value="51">51</option><option value="52">52</option>
-                    <option value="60">60</option>
-                </select></div>
-            </div>
-
-            <div class="row-2">
-                <div><label>📦 Jenis Box</label><select id="box">
-                    <option value="White">White (0.90 kg)</option>
-                    <option value="White New">White New (0.80 kg)</option>
-                    <option value="Grey">Grey (1.25 kg)</option>
-                    <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
-                </select></div>
-                <div><label>📚 Jumlah Layer</label><input type="number" id="layer" step="1" value="0"></div>
-            </div>
-
-            <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
-            <input type="number" id="berat" step="0.01" placeholder="Contoh: 2.50">
-
-            <button id="hitungBtn">✅ HITUNG & SIMPAN KE CLOUD</button>
-            <button id="resetFormBtn" class="btn-reset">🔄 Reset Form (Kosongkan PO & Brand)</button>
-            <div id="statusMsg" class="status"></div>
-        </div>
-
-        <div class="card" id="hasilCard" style="display:none">
-            <h2>📊 HASIL PERHITUNGAN</h2>
-            <div style="padding:12px; background:#f1f5f9; border-radius:12px">
-                <div><strong>⚖️ Berat Bersih Kertas:</strong> <span id="beratBersih" class="berat-bersih">0</span> kg</div>
-                <div style="margin-top:10px"><strong>📦 JUMLAH BUNDLES:</strong> <span id="jumlahBundles" style="font-size:1.8rem; color:#1e3a8a; font-weight:bold">0</span> bundle</div>
-            </div>
-        </div>
+    <div class="table-wrapper">
+      <table id="dataTable">
+        <thead id="tableHeader"><tr><th>Loading...</th></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
     </div>
-
-    <!-- HALAMAN 2: RIWAYAT -->
-    <div id="page2" class="page">
-        <div class="card">
-            <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
-            <div class="search-row">
-                <input type="text" id="searchInput" placeholder="Cari No. PO atau Brand...">
-                <button id="cariBtn">🔍 Cari</button>
-                <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Export Excel</button>
-                <button id="cetakBtn" class="btn-cetak">🖨️ Cetak Multi Timbang</button>
-            </div>
-            <div class="row-2" style="margin-top:8px;">
-                <button id="urutPOBtn" class="btn-urut" style="background:#06b6d4;">🔼 Urutkan PO (A-Z)</button>
-                <button id="urutPOTerbalikBtn" class="btn-urut" style="background:#0891b2;">🔽 Urutkan PO (Z-A)</button>
-            </div>
-            <button id="resetCariBtn" style="background:#64748b; margin-top:0; border:none; border-radius:40px; padding:10px; color:white; font-weight:bold; cursor:pointer;">↺ Reset</button>
-
-            <div style="overflow-x:auto; margin-top:12px">
-                <table id="riwayatTable">
-                    <thead>
-                        <tr><th><input type="checkbox" id="selectAllCheckbox"></th><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Aksi</th></tr>
-                    </thead>
-                    <tbody id="riwayatBody"></tbody>
-                </table>
-            </div>
-            <div class="pagination" id="pagination"></div>
-            <button id="hapusSemuaBtn" class="btn-hapus">🗑️ Hapus Semua Data</button>
-        </div>
+  </div>
+  
+  <!-- Tab Tambah PO -->
+  <div id="tab-add" class="tab-content" style="display:none">
+    <div class="form-panel">
+      <div class="form-title">➕ Tambah Purchase Order Baru</div>
+      <div class="form-grid">
+        <div class="form-group"><label>No. PO *</label><input type="text" id="newNoPO" placeholder="Contoh: 57.02.26.ZIZ"></div>
+        <div class="form-group"><label>Tanggal PO *</label><input type="date" id="newTanggal"></div>
+        <div class="form-group"><label>Brand *</label><input type="text" id="newBrand" placeholder="Contoh: ZIZZLE"></div>
+        <div class="form-group"><label>JENIS *</label><input type="text" id="newJenis" placeholder="Contoh: BOOKLET"></div>
+        <div class="form-group"><label>Paper</label><input type="text" id="newPaper" placeholder="Contoh: 33 LEAVES"></div>
+        <div class="form-group"><label>Size</label><input type="text" id="newSize" placeholder="Contoh: 1 1/4"></div>
+        <div class="form-group"><label>Qty Order *</label><input type="number" id="newQty" placeholder="0"></div>
+        <div class="form-group"><label>Status</label><select id="newStatus"><option value="BELUM">BELUM</option><option value="PROSES">PROSES</option><option value="SELESAI">SELESAI</option></select></div>
+      </div>
+      <button onclick="submitNewPO()" style="margin-top:16px">💾 Simpan PO</button>
     </div>
+  </div>
+  
+  <!-- Tab Log Kirim -->
+  <div id="tab-log" class="tab-content" style="display:none">
+    <div class="table-wrapper">
+      <table id="logTable">
+        <thead><tr><th>Tanggal</th><th>No. PO</th><th>JENIS</th><th>Qty Kirim</th><th>Tujuan Produksi</th></tr></thead>
+        <tbody id="logBody"><tr><td colspan="5" style="text-align:center">Loading...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<!-- LIBRARY UNTUK XLSX -->
-<script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
-
-<!-- MODAL CETAK -->
-<div id="cetakModal" class="modal">
-    <div class="modal-content">
-        <h3>🖨️ Cetak Multi Timbang</h3>
-        <div class="cetak-option">
-            <label>Pilih Metode Cetak:</label>
-            <select id="cetakMetode">
-                <option value="po">📦 Cetak per No. PO</option>
-                <option value="brand">🏷️ Cetak per Brand</option>
-                <option value="tanggal">📅 Cetak per Rentang Tanggal</option>
-                <option value="checklist">✅ Cetak yang di-checklist</option>
-                <option value="semua">📄 Cetak Semua Data</option>
-            </select>
-        </div>
-        <div id="cetakPoInput" class="cetak-option">
-            <label>Masukkan No. PO:</label>
-            <input type="text" id="cetakPoValue" placeholder="Contoh: PO-001">
-        </div>
-        <div id="cetakBrandInput" class="cetak-option" style="display:none;">
-            <label>Masukkan Brand:</label>
-            <input type="text" id="cetakBrandValue" placeholder="Contoh: RONSON">
-        </div>
-        <div id="cetakTanggalInput" class="cetak-option" style="display:none;">
-            <label>Rentang Tanggal:</label>
-            <input type="date" id="cetakTglAwal"> s/d <input type="date" id="cetakTglAkhir">
-        </div>
-        <button id="prosesCetakBtn">✅ Proses Cetak</button>
-        <button id="closeCetakModalBtn" class="close-modal">❌ Batal</button>
+<!-- Modal untuk update status & catat kirim -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle">Update</h3>
+    <div id="modalBody"></div>
+    <div style="margin-top:20px; display:flex; gap:10px; justify-content:flex-end">
+      <button class="secondary" onclick="closeModal()">Batal</button>
+      <button id="modalActionBtn" onclick="modalAction()">Simpan</button>
     </div>
+  </div>
 </div>
 
-<!-- MODAL EDIT -->
-<div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>✏️ Edit Data</h3>
-        <label>Tanggal</label>
-        <input type="date" id="editTanggal">
-        <label>No. PO</label>
-        <input type="text" id="editNoPo">
-        <label>Brand</label>
-        <input type="text" id="editBrand">
-        <label>Size Kertas</label>
-        <select id="editSize">
-            <option value="SINGLE 36X69">SINGLE 36X69</option>
-            <option value="1 1/4 44X78">1 1/4 44X78</option>
-            <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
-            <option value="KS 54X97">KS 54X97</option>
-            <option value="KSS 44X108">KSS 44X108</option>
-            <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
-            <option value="SKS 54X108">SKS 54X108</option>
-            <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
-        </select>
-        <label>GSM</label>
-        <select id="editGsm"><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select>
-        <label>Jumlah Bundles</label>
-        <input type="number" id="editBundles" step="1">
-        <button id="saveEditBtn">💾 Simpan Perubahan</button>
-        <button id="closeModalBtn" class="close-modal">❌ Batal</button>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    (function() {
-        const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let allData = [];
+let currentAction = null;
+let currentRowData = null;
 
-        const beratBundleDB = {
-            "SINGLE 36X69|13|32":1.09, "SINGLE 36X69|13|33":1.10, "SINGLE 36X69|13|40":1.33,
-            "SINGLE 36X69|13|50":1.67, "SINGLE 36X69|13|51":1.69, "SINGLE 36X69|13|60":2.00,
-            "SINGLE 36X69|14|32":1.39, "SINGLE 36X69|14|33":1.43, "SINGLE 36X69|14|40":1.67,
-            "SINGLE 36X69|14|50":2.04, "SINGLE 36X69|14|51":2.08, "SINGLE 36X69|14|60":2.40,
-            "1 1/4 44X78|13|32":1.48, "1 1/4 44X78|13|33":1.54, "1 1/4 44X78|13|40":1.90, "1 1/4 44X78|13|50":2.34,
-            "1 1/4 44X78|14|32":1.62, "1 1/4 44X78|14|33":1.65, "1 1/4 44X78|14|35":1.75,
-            "1 1/4 44X78|14|40":2.08, "1 1/4 44X78|14|42":2.21, "1 1/4 44X78|14|50":2.50,
-            "1 1/4 44X78|14|51":2.58, "1 1/4 44X78|14|52":2.64,
-            "CLEAR PAPER 1 1/4 44X78|35|50":5.75,
-            "KS 54X97|14|32":2.50, "KS 54X97|14|33":2.58, "KS 54X97|14|40":3.05, "KS 54X97|14|50":3.82,
-            "KS 54X97|20|32":4.34, "KS 54X97|20|33":4.42, "KS 54X97|20|40":5.22, "KS 54X97|20|50":6.32,
-            "KSS 44X108|13|32":2.19, "KSS 44X108|13|33":2.26, "KSS 44X108|13|40":2.76, "KSS 44X108|13|50":3.44,
-            "KSS 44X108|14|33":2.31, "KSS 44X108|14|35":2.49, "KSS 44X108|14|40":2.79,
-            "KSS 44X108|14|42":2.89, "KSS 44X108|14|50":3.49, "KSS 44X108|14|51":3.56, "KSS 44X108|14|52":3.58,
-            "KSS SLIM 36X108|14|32":1.88, "KSS SLIM 36X108|14|33":1.95, "KSS SLIM 36X108|14|34":2.00,
-            "KSS SLIM 36X108|14|40":2.35, "KSS SLIM 36X108|14|50":2.95,
-            "SKS 54X108|13|33":2.63, "SKS 54X108|13|40":3.20, "SKS 54X108|13|50":4.02,
-            "SKS 54X108|14|33":2.92, "SKS 54X108|14|40":3.52, "SKS 54X108|14|50":4.40,
-            "CLEAR PAPER SKS 54X108|35|50":10.28
-        };
+function showTab(tab) {
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+  document.getElementById(`tab-${tab}`).style.display = 'block';
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  if (tab === 'list') loadData();
+  if (tab === 'log') loadLog();
+}
 
-        const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
-        const BERAT_LAYER_KG = 0.00618;
+function loadData() {
+  google.script.run.withSuccessHandler(function(data) {
+    allData = data;
+    renderTable();
+    loadStats();
+  }).getData();
+}
 
-        let currentPage = 1;
-        let currentSearch = "";
-        let currentEditId = null;
-        let currentOrderBy = "id";
-        let currentOrderAsc = false;
-        let allDataCache = [];
-        const rowsPerPage = 10;
+function loadStats() {
+  google.script.run.withSuccessHandler(function(stats) {
+    document.getElementById('totalPO').innerText = stats.totalPO;
+    document.getElementById('belum').innerText = stats.belum;
+    document.getElementById('proses').innerText = stats.proses;
+    document.getElementById('selesai').innerText = stats.selesai;
+  }).getStats();
+}
 
-        function formatDateToDB(dateStr) {
-            if(!dateStr) return "";
-            let parts = dateStr.split('-');
-            if(parts.length === 3) return `${parts[1]}/${parts[2]}/${parts[0]}`;
-            return dateStr;
-        }
+function renderTable() {
+  let filtered = [...allData];
+  const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+  const statusFilter = document.getElementById('statusFilter')?.value || '';
+  
+  if (searchTerm) {
+    filtered = filtered.filter(row => 
+      (row['No. PO'] && row['No. PO'].toLowerCase().includes(searchTerm)) ||
+      (row['Brand'] && row['Brand'].toLowerCase().includes(searchTerm)) ||
+      (row['JENIS'] && row['JENIS'].toLowerCase().includes(searchTerm))
+    );
+  }
+  if (statusFilter) {
+    filtered = filtered.filter(row => row['Status'] === statusFilter);
+  }
+  
+  if (filtered.length === 0) {
+    document.getElementById('tableBody').innerHTML = '<tr><td colspan="8" style="text-align:center">Tidak ada data</td></tr>';
+    return;
+  }
+  
+  const headers = Object.keys(filtered[0]);
+  document.getElementById('tableHeader').innerHTML = '<tr>' + headers.map(h => `<th>${h}</th><th>Aksi</th>`).join('') + '</tr>';
+  
+  document.getElementById('tableBody').innerHTML = filtered.map(row => {
+    let statusClass = '';
+    if (row['Status'] === 'BELUM') statusClass = 'status-belum';
+    else if (row['Status'] === 'PROSES') statusClass = 'status-proses';
+    else if (row['Status'] === 'SELESAI') statusClass = 'status-selesai';
+    
+    return `<tr>
+      ${headers.map(h => {
+        if (h === 'Status') return `<td><span class="status-badge ${statusClass}">${row[h] || '-'}</span></td>`;
+        return `<td>${row[h] !== undefined && row[h] !== null ? row[h] : '-'}</td>`;
+      }).join('')}
+      <td>
+        <button class="action-btn edit" onclick="openUpdateStatus('${row['No. PO']}', '${row['JENIS']}', '${row['Status']}')">✏️ Status</button>
+        <button class="action-btn kirim" onclick="openQtyKirim('${row['No. PO']}', '${row['JENIS']}')">📦 Catat Kirim</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
 
-        function formatDateForInput(dateStr) {
-            if(!dateStr) return "";
-            let parts = dateStr.split('/');
-            if(parts.length === 3) return `${parts[2]}-${parts[0]}-${parts[1]}`;
-            return dateStr;
-        }
+function filterTable() {
+  renderTable();
+}
 
-        function showStatus(msg, type) {
-            let el = document.getElementById('statusMsg');
-            if(el) { el.innerText = msg; el.className = `status ${type}`; }
-            setTimeout(() => { if(el && el.innerText === msg) el.innerText = ''; }, 3000);
-        }
+function openUpdateStatus(noPO, jenis, currentStatus) {
+  currentAction = 'updateStatus';
+  currentRowData = { noPO, jenis };
+  
+  document.getElementById('modalTitle').innerText = `Update Status - ${noPO}`;
+  document.getElementById('modalBody').innerHTML = `
+    <p><strong>JENIS:</strong> ${jenis}</p>
+    <p><strong>Status sekarang:</strong> ${currentStatus}</p>
+    <div class="form-group" style="margin-top:12px">
+      <label>Status Baru</label>
+      <select id="newStatusSelect">
+        <option value="BELUM" ${currentStatus === 'BELUM' ? 'selected' : ''}>BELUM</option>
+        <option value="PROSES" ${currentStatus === 'PROSES' ? 'selected' : ''}>PROSES</option>
+        <option value="SELESAI" ${currentStatus === 'SELESAI' ? 'selected' : ''}>SELESAI</option>
+      </select>
+    </div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
 
-        function getBeratBundleKG() {
-            const size = document.getElementById('size').value;
-            const gsm = document.getElementById('gsm').value;
-            const leaves = document.getElementById('leaves').value;
-            const key = `${size}|${gsm}|${leaves}`;
-            const gram = beratBundleDB[key];
-            if(!gram) return null;
-            return gram / 1000;
-        }
+function openQtyKirim(noPO, jenis) {
+  currentAction = 'recordKirim';
+  currentRowData = { noPO, jenis };
+  
+  document.getElementById('modalTitle').innerText = `Catat Kirim - ${noPO}`;
+  document.getElementById('modalBody').innerHTML = `
+    <p><strong>JENIS:</strong> ${jenis}</p>
+    <div class="form-group"><label>Qty Kirim *</label><input type="number" id="qtyKirim" placeholder="Jumlah yang diterima"></div>
+    <div class="form-group"><label>Tujuan Produksi</label><input type="text" id="tujuanProduksi" placeholder="Opsional"></div>
+  `;
+  document.getElementById('modal').style.display = 'flex';
+}
 
-        document.getElementById('hitungBtn').onclick = async () => {
-            const beratTimbang = parseFloat(document.getElementById('berat').value);
-            if(isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
-            
-            const boxType = document.getElementById('box').value;
-            const beratBox = beratBoxMap[boxType];
-            const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
-            const beratLayer = jumlahLayer * BERAT_LAYER_KG;
-            const beratBersih = beratTimbang - beratBox - beratLayer;
-            
-            if(beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
-            
-            const beratBundleKG = getBeratBundleKG();
-            if(!beratBundleKG) { 
-                alert(`Data tidak ditemukan! Size: ${document.getElementById('size').value} | GSM: ${document.getElementById('gsm').value} | Leaves: ${document.getElementById('leaves').value}`);
-                return; 
-            }
-            
-            const bundlesDesimal = beratBersih / beratBundleKG;
-            const bundlesBulat = Math.ceil(bundlesDesimal);
-            
-            document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
-            document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
-            document.getElementById('hasilCard').style.display = "block";
-            
-            const tanggalRaw = document.getElementById('tanggal').value;
-            const tanggalFormatted = formatDateToDB(tanggalRaw);
-            
-            const dataToSave = {
-                tanggal: tanggalFormatted,
-                no_po: document.getElementById('noPo').value || "-",
-                brand: document.getElementById('brand').value || "-",
-                size_kertas: document.getElementById('size').value,
-                gsm: parseInt(document.getElementById('gsm').value),
-                leaves_per_bundle: parseInt(document.getElementById('leaves').value),
-                jenis_box: boxType,
-                jumlah_layer: jumlahLayer,
-                berat_timbang_kg: beratTimbang,
-                berat_bersih_kg: beratBersih,
-                jumlah_bundles: bundlesBulat,
-                bundles_desimal: bundlesDesimal
-            };
-            
-            showStatus('⏳ Menyimpan ke cloud...', 'loading');
-            const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
-            
-            if(error) { 
-                showStatus('❌ Gagal: ' + error.message, 'error'); 
-                alert('Gagal simpan! ' + error.message); 
-            } else { 
-                showStatus('✅ Tersimpan ke cloud!', 'success'); 
-                document.getElementById('berat').value = '';
-                currentPage = 1; 
-                currentSearch = ""; 
-                document.getElementById('searchInput').value = "";
-                loadAllData();
-            }
-        };
+function modalAction() {
+  if (currentAction === 'updateStatus') {
+    const newStatus = document.getElementById('newStatusSelect').value;
+    google.script.run.withSuccessHandler(function(result) {
+      alert(result.message);
+      closeModal();
+      loadData();
+    }).updateStatus(currentRowData.noPO, currentRowData.jenis, newStatus);
+  } else if (currentAction === 'recordKirim') {
+    const qty = document.getElementById('qtyKirim').value;
+    const tujuan = document.getElementById('tujuanProduksi').value;
+    if (!qty) {
+      alert('Qty Kirim harus diisi');
+      return;
+    }
+    google.script.run.withSuccessHandler(function(result) {
+      alert(result.message);
+      closeModal();
+      loadData();
+      loadLog();
+    }).recordQtyKirim(currentRowData.noPO, currentRowData.jenis, parseFloat(qty), tujuan);
+  }
+}
 
-        document.getElementById('resetFormBtn').onclick = () => {
-            if(confirm("Reset form? PO dan Brand akan dikosongkan.")) {
-                document.getElementById('noPo').value = '';
-                document.getElementById('brand').value = '';
-                document.getElementById('berat').value = '';
-                document.getElementById('hasilCard').style.display = 'none';
-                showStatus('Form direset', 'success');
-            }
-        };
+function submitNewPO() {
+  const newPO = {
+    'No. PO': document.getElementById('newNoPO').value,
+    'Tanggal PO': document.getElementById('newTanggal').value,
+    'Brand': document.getElementById('newBrand').value,
+    'JENIS': document.getElementById('newJenis').value,
+    'Paper': document.getElementById('newPaper').value,
+    'Size': document.getElementById('newSize').value,
+    'Qty Order': parseFloat(document.getElementById('newQty').value) || 0,
+    'Status': document.getElementById('newStatus').value
+  };
+  
+  if (!newPO['No. PO'] || !newPO['Brand'] || !newPO['JENIS'] || !newPO['Qty Order']) {
+    alert('Lengkapi field yang wajib (*)');
+    return;
+  }
+  if (!newPO['Tanggal PO']) newPO['Tanggal PO'] = new Date().toISOString().split('T')[0];
+  
+  google.script.run.withSuccessHandler(function(result) {
+    alert(result.message);
+    document.getElementById('newNoPO').value = '';
+    document.getElementById('newBrand').value = '';
+    document.getElementById('newJenis').value = '';
+    document.getElementById('newPaper').value = '';
+    document.getElementById('newSize').value = '';
+    document.getElementById('newQty').value = '';
+    loadData();
+  }).addPO(newPO);
+}
 
-        async function loadAllData() {
-            let query = supabase.from('riwayat_timbang').select('*');
-            if(currentSearch) {
-                query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
-            }
-            const { data, error } = await query;
-            if(error) { console.error(error); return; }
-            allDataCache = data || [];
-            displayDataWithPagination();
-        }
+function loadLog() {
+  google.script.run.withSuccessHandler(function(logs) {
+    const tbody = document.getElementById('logBody');
+    if (!logs || logs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center">Belum ada catatan kirim</td></tr>';
+      return;
+    }
+    tbody.innerHTML = logs.map(log => `
+      <tr>
+        <td>${log['Tanggal'] || '-'}</td>
+        <td>${log['No. PO'] || '-'}</td>
+        <td>${log['JENIS'] || '-'}</td>
+        <td>${log['Qty Kirim'] || '-'}</td>
+        <td>${log['Tujuan Produksi'] || '-'}</td>
+      </tr>
+    `).join('');
+  }).getLogKirim();
+}
 
-        function displayDataWithPagination() {
-            let filtered = [...allDataCache];
-            if(currentOrderBy === "no_po") {
-                filtered.sort((a, b) => {
-                    let valA = a.no_po || "";
-                    let valB = b.no_po || "";
-                    if(currentOrderAsc) return valA.localeCompare(valB);
-                    else return valB.localeCompare(valA);
-                });
-            } else {
-                filtered.sort((a, b) => {
-                    let valA = a.id;
-                    let valB = b.id;
-                    if(currentOrderAsc) return valA - valB;
-                    else return valB - valA;
-                });
-            }
-            
-            const totalData = filtered.length;
-            const totalPages = Math.ceil(totalData / rowsPerPage);
-            const start = (currentPage - 1) * rowsPerPage;
-            const pageData = filtered.slice(start, start + rowsPerPage);
-            
-            const tbody = document.getElementById('riwayatBody');
-            if(pageData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.<\/td><\/tr>';
-                document.getElementById('pagination').innerHTML = '';
-                return;
-            }
-            
-            tbody.innerHTML = "";
-            for(let i=0; i<pageData.length; i++) {
-                const d = pageData[i];
-                const tanggalDisplay = d.tanggal || '';
-                tbody.innerHTML += `<tr>
-                    <td style="text-align:center"><input type="checkbox" class="rowCheckbox" data-id="${d.id}"><\/td>
-                    <td style="text-align:center">${start+i+1}<\/td>
-                    <td>${tanggalDisplay}<\/td>
-                    <td>${d.no_po || '-'}<\/td>
-                    <td>${d.brand || '-'}<\/td>
-                    <td>${(d.size_kertas || '').substring(0,18)}<\/td>
-                    <td>${d.gsm}<\/td>
-                    <td>${d.leaves_per_bundle || '-'}<\/td>
-                    <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}<\/td>
-                    <td class="aksi-cell">
-                        <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit<\/button>
-                        <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus<\/button>
-                    <\/td>
-                <\/tr>`;
-            }
-            
-            let pagHtml = '';
-            for(let i=1; i<=totalPages; i++) {
-                pagHtml += `<button onclick="goToPage(${i})" class="${i===currentPage?'active-page-btn':''}">${i}</button>`;
-            }
-            document.getElementById('pagination').innerHTML = pagHtml;
-        }
+function closeModal() {
+  document.getElementById('modal').style.display = 'none';
+  currentAction = null;
+  currentRowData = null;
+}
 
-        document.getElementById('urutPOBtn').onclick = () => {
-            currentOrderBy = "no_po";
-            currentOrderAsc = true;
-            currentPage = 1;
-            loadAllData();
-        };
-
-        document.getElementById('urutPOTerbalikBtn').onclick = () => {
-            currentOrderBy = "no_po";
-            currentOrderAsc = false;
-            currentPage = 1;
-            loadAllData();
-        };
-
-        window.goToPage = (p) => { currentPage = p; loadAllData(); };
-
-        window.editData = (id, tanggal, noPo, brand, size, gsm, box, bundles) => {
-            currentEditId = id;
-            let tanggalForInput = formatDateForInput(tanggal);
-            document.getElementById('editTanggal').value = tanggalForInput;
-            document.getElementById('editNoPo').value = noPo;
-            document.getElementById('editBrand').value = brand;
-            document.getElementById('editSize').value = size;
-            document.getElementById('editGsm').value = gsm;
-            document.getElementById('editBox').value = box;
-            document.getElementById('editBundles').value = bundles;
-            document.getElementById('editModal').style.display = 'flex';
-        };
-
-        window.hapusSatuData = async (id) => {
-            if(confirm("Hapus data ini?")) {
-                const { error } = await supabase.from('riwayat_timbang').delete().eq('id', id);
-                if(error) alert("Gagal hapus: " + error.message);
-                else { alert("Data terhapus!"); loadAllData(); }
-            }
-        };
-
-        document.getElementById('saveEditBtn').onclick = async () => {
-            let tanggalRaw = document.getElementById('editTanggal').value;
-            let tanggalFormatted = formatDateToDB(tanggalRaw);
-            const updatedData = {
-                tanggal: tanggalFormatted,
-                no_po: document.getElementById('editNoPo').value,
-                brand: document.getElementById('editBrand').value,
-                size_kertas: document.getElementById('editSize').value,
-                gsm: parseInt(document.getElementById('editGsm').value),
-                jenis_box: document.getElementById('editBox').value,
-                jumlah_bundles: parseInt(document.getElementById('editBundles').value)
-            };
-            const { error } = await supabase.from('riwayat_timbang').update(updatedData).eq('id', currentEditId);
-            if(error) alert("Gagal update: " + error.message);
-            else { alert("Data berhasil diupdate!"); document.getElementById('editModal').style.display = 'none'; loadAllData(); }
-        };
-
-        document.getElementById('cariBtn').onclick = () => {
-            currentSearch = document.getElementById('searchInput').value.trim();
-            currentPage = 1;
-            loadAllData();
-        };
-
-        document.getElementById('resetCariBtn').onclick = () => {
-            currentSearch = '';
-            document.getElementById('searchInput').value = '';
-            currentPage = 1;
-            loadAllData();
-        };
-
-        document.getElementById('hapusSemuaBtn').onclick = async () => {
-            if(confirm("⚠️ Hapus SEMUA data dari cloud?")) {
-                const { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
-                if(error) alert("Gagal hapus: " + error.message);
-                else { alert("✅ Semua data telah dihapus!"); loadAllData(); }
-            }
-        };
-
-        // EXPORT KE XLSX (EXCEL NATIVE)
-        document.getElementById('exportExcelBtn').onclick = async () => {
-            let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
-            if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
-            const { data, error } = await query;
-            if(error) { alert("Gagal export!"); return; }
-            if(!data || data.length===0) { alert("Tidak ada data untuk di export!"); return; }
-            
-            // Format data untuk Excel
-            const excelData = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang (kg)", "Berat Bersih (kg)"]];
-            
-            for(let i=0; i<data.length; i++) {
-                const d = data[i];
-                excelData.push([
-                    i+1,
-                    d.tanggal || '',
-                    d.no_po || '-',
-                    d.brand || '-',
-                    d.size_kertas || '',
-                    d.gsm || '',
-                    d.leaves_per_bundle || '',
-                    d.jenis_box || '',
-                    d.jumlah_bundles || 0,
-                    d.berat_timbang_kg || 0,
-                    d.berat_bersih_kg || 0
-                ]);
-            }
-            
-            // Buat worksheet
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-            
-            // Set lebar kolom otomatis
-            ws['!cols'] = [
-                {wch:5},   // No
-                {wch:12},  // Tanggal
-                {wch:15},  // No. PO
-                {wch:15},  // Brand
-                {wch:20},  // Size
-                {wch:6},   // GSM
-                {wch:8},   // Leaves
-                {wch:15},  // Jenis Box
-                {wch:12},  // Jumlah Bundles
-                {wch:15},  // Berat Timbang
-                {wch:15}   // Berat Bersih
-            ];
-            
-            // Style header (bold)
-            const range = XLSX.utils.decode_range(ws['!ref']);
-            for(let C = range.s.c; C <= range.e.c; ++C) {
-                const address = XLSX.utils.encode_cell({r:0, c:C});
-                if(!ws[address]) continue;
-                ws[address].s = { font: { bold: true, sz: 11 }, fill: { fgColor: { rgb: "1E3A8A" } }, fontColor: { rgb: "FFFFFF" } };
-            }
-            
-            // Buat workbook
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Laporan Timbangan");
-            
-            // Download file XLSX
-            XLSX.writeFile(wb, `laporan_timbangan_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
-            alert("Export Excel berhasil!");
-        };
-
-        // CETAK MODAL
-        const cetakModal = document.getElementById('cetakModal');
-        const cetakMetode = document.getElementById('cetakMetode');
-        const cetakPoInput = document.getElementById('cetakPoInput');
-        const cetakBrandInput = document.getElementById('cetakBrandInput');
-        const cetakTanggalInput = document.getElementById('cetakTanggalInput');
-
-        document.getElementById('cetakBtn').onclick = () => {
-            cetakModal.style.display = 'flex';
-        };
-
-        cetakMetode.onchange = () => {
-            const metode = cetakMetode.value;
-            cetakPoInput.style.display = metode === 'po' ? 'block' : 'none';
-            cetakBrandInput.style.display = metode === 'brand' ? 'block' : 'none';
-            cetakTanggalInput.style.display = metode === 'tanggal' ? 'block' : 'none';
-        };
-        cetakMetode.onchange();
-
-        document.getElementById('prosesCetakBtn').onclick = async () => {
-            const metode = cetakMetode.value;
-            let dataToPrint = [];
-            let title = "";
-            
-            if(metode === 'po') {
-                const poValue = document.getElementById('cetakPoValue').value.trim();
-                if(!poValue) { alert("Masukkan No. PO!"); return; }
-                title = `LAPORAN TIMBANGAN - NO. PO: ${poValue}`;
-                let query = supabase.from('riwayat_timbang').select('*').eq('no_po', poValue).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            } 
-            else if(metode === 'brand') {
-                const brandValue = document.getElementById('cetakBrandValue').value.trim();
-                if(!brandValue) { alert("Masukkan Brand!"); return; }
-                title = `LAPORAN TIMBANGAN - BRAND: ${brandValue}`;
-                let query = supabase.from('riwayat_timbang').select('*').eq('brand', brandValue).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            else if(metode === 'tanggal') {
-                const tglAwal = document.getElementById('cetakTglAwal').value;
-                const tglAkhir = document.getElementById('cetakTglAkhir').value;
-                if(!tglAwal || !tglAkhir) { alert("Pilih rentang tanggal!"); return; }
-                const tglAwalFormatted = formatDateToDB(tglAwal);
-                const tglAkhirFormatted = formatDateToDB(tglAkhir);
-                title = `LAPORAN TIMBANGAN - TANGGAL: ${tglAwalFormatted} s/d ${tglAkhirFormatted}`;
-                let query = supabase.from('riwayat_timbang').select('*').gte('tanggal', tglAwalFormatted).lte('tanggal', tglAkhirFormatted).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            else if(metode === 'checklist') {
-                const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
-                const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
-                if(ids.length === 0) { alert("Pilih data yang ingin dicetak!"); return; }
-                title = `LAPORAN TIMBANGAN - DATA TERPILIH (${ids.length} box)`;
-                let query = supabase.from('riwayat_timbang').select('*').in('id', ids).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            else {
-                title = `LAPORAN SEMUA DATA TIMBANGAN`;
-                let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            
-            if(dataToPrint.length === 0) {
-                alert("Tidak ada data untuk dicetak!");
-                return;
-            }
-            
-            // Kelompokkan berdasarkan PO
-            const groupedByPO = {};
-            for(const item of dataToPrint) {
-                const po = item.no_po || "-";
-                if(!groupedByPO[po]) groupedByPO[po] = [];
-                groupedByPO[po].push(item);
-            }
-            
-            let printHtml = `<!DOCTYPE html>
-            <html>
-            <head><meta charset="UTF-8"><title>Laporan Timbangan</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 20px; }
-                .header { text-align: center; margin-bottom: 30px; }
-                .header h1 { margin: 0; color: #1e3a8a; }
-                .header h3 { margin: 5px 0; color: #555; }
-                .po-group { margin-bottom: 30px; page-break-inside: avoid; }
-                .po-title { background: #1e3a8a; color: white; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
-                table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-                th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-                th { background: #e2e8f0; }
-                .total-row { background: #f1f5f9; font-weight: bold; }
-                .footer { text-align: center; margin-top: 30px; font-size: 12px; color: #666; }
-            </style>
-            </head>
-            <body>
-            <div class="header">
-                <h1>📦 LAPORAN TIMBANGAN KERTAS</h1>
-                <h3>${title}</h3>
-                <p>Dicetak: ${new Date().toLocaleString('id-ID')}</p>
-            </div>`;
-            
-            for(const [po, items] of Object.entries(groupedByPO)) {
-                const brand = items[0].brand || "-";
-                const size = items[0].size_kertas || "-";
-                const gsm = items[0].gsm || "-";
-                const leaves = items[0].leaves_per_bundle || "-";
-                const box = items[0].jenis_box || "-";
-                
-                let totalBundles = 0;
-                let tableRows = "";
-                for(let i=0; i<items.length; i++) {
-                    const item = items[i];
-                    totalBundles += item.jumlah_bundles;
-                    tableRows += `<tr>
-                        <td style="text-align:center">${i+1}</td>
-                        <td>${item.tanggal || ''}</td>
-                        <td>${item.berat_timbang_kg} kg</td>
-                        <td>${item.berat_bersih_kg} kg</td>
-                        <td style="text-align:center; font-weight:bold">${item.jumlah_bundles.toLocaleString('id-ID')}</td>
-                    </tr>`;
-                }
-                const rataRata = Math.round(totalBundles / items.length);
-                
-                printHtml += `
-                <div class="po-group">
-                    <div class="po-title">
-                        <strong>📄 NO. PO:</strong> ${po} &nbsp;|&nbsp;
-                        <strong>🏷️ BRAND:</strong> ${brand} &nbsp;|&nbsp;
-                        <strong>📏 SIZE:</strong> ${size} &nbsp;|&nbsp;
-                        <strong>📄 GSM:</strong> ${gsm} &nbsp;|&nbsp;
-                        <strong>📑 LEAVES:</strong> ${leaves} &nbsp;|&nbsp;
-                        <strong>📦 BOX:</strong> ${box}
-                    </div>
-                    <table>
-                        <thead>
-                            <tr><th>No</th><th>Tanggal</th><th>Berat Timbang</th><th>Berat Bersih</th><th>Jumlah Bundles</th></tr>
-                        </thead>
-                        <tbody>${tableRows}
-                        <tr class="total-row"><td colspan="4"><strong>TOTAL</strong></td><td><strong>${totalBundles.toLocaleString('id-ID')} bundles</strong></td></tr>
-                        <tr class="total-row"><td colspan="4"><strong>RATA-RATA</strong></td><td><strong>${rataRata.toLocaleString('id-ID')} bundles/box</strong></td></tr>
-                        </tbody>
-                    </table>
-                </div>`;
-            }
-            
-            printHtml += `<div class="footer">Dicetak oleh Aplikasi Timbangan Kertas</div></body></html>`;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(printHtml);
-            printWindow.document.close();
-            printWindow.print();
-            
-            cetakModal.style.display = 'none';
-        };
-
-        document.getElementById('closeCetakModalBtn').onclick = () => { cetakModal.style.display = 'none'; };
-        document.getElementById('closeModalBtn').onclick = () => { document.getElementById('editModal').style.display = 'none'; };
-        window.onclick = (e) => { if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none'; if(e.target === cetakModal) cetakModal.style.display = 'none'; };
-
-        document.getElementById('selectAllCheckbox').onclick = (e) => {
-            const checkboxes = document.querySelectorAll('.rowCheckbox');
-            checkboxes.forEach(cb => cb.checked = e.target.checked);
-        };
-
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.onclick = () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-                document.getElementById(tab.dataset.page).classList.add('active-page');
-                if(tab.dataset.page === 'page2') loadAllData();
-            };
-        });
-
-        async function cekKoneksi() {
-            const { error } = await supabase.from('riwayat_timbang').select('id', { count: 'exact', head: true });
-            if(error) showStatus('⚠️ ' + error.message, 'error');
-            else showStatus('✅ Terhubung ke Supabase Cloud!', 'success');
-        }
-        cekKoneksi();
-        loadAllData();
-    })();
+// Load data saat halaman dibuka
+loadData();
 </script>
 </body>
 </html>
