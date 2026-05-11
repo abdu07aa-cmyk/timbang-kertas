@@ -749,6 +749,36 @@
                 body { font-family: 'Times New Roman', Arial, sans-serif; margin: 0; padding: 20px; background: white; }
                 .print-area { max-width: 1100px; margin: 0 auto; }
                 .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
+                .logo-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; }
+                .logo-fire { 
+                    width: 60px; 
+                    height: 60px; 
+                    background: linear-gradient(135deg, #ff6b00 0%, #ffb347 50%, #ffcc00 100%);
+                    border-radius: 50% 50% 40% 40%;
+                    position: relative;
+                    box-shadow: 0 8px 20px rgba(255,107,0,0.3);
+                    display: inline-block;
+                }
+                .logo-fire::before {
+                    content: "🔥";
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    font-size: 32px;
+                }
+                .logo-fire::after {
+                    content: "";
+                    position: absolute;
+                    bottom: -8px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 30px;
+                    height: 10px;
+                    background: #ff6b00;
+                    border-radius: 50%;
+                    filter: blur(3px);
+                }
                 .header h1 { font-size: 24px; color: #1e3a8a; letter-spacing: 2px; margin: 0; }
                 .header h2 { font-size: 18px; color: #333; margin: 5px 0; }
                 .address { font-size: 12px; color: #444; margin-top: 8px; font-style: normal; }
@@ -783,10 +813,16 @@
             <body>
             <div class="print-area">
                 <div class="header">
-                    <h1>THE ROLLING PAPER COMPANY</h1>
-                    <h2>SURAT JALAN / SERAH TERIMA PRODUKSI</h2>
+                    <div class="logo-container">
+                        <div class="logo-fire"></div>
+                        <div>
+                            <h1>THE ROLLING PAPER COMPANY</h1>
+                            <h2>SURAT JALAN / SERAH TERIMA PRODUKSI</h2>
+                        </div>
+                        <div class="logo-fire"></div>
+                    </div>
                     <div class="address">Jl.Kampung Legon RT 3 RW 4, Kel. Jatimulya, Kec. Tambun Selatan, Kab. Bekasi 1751, Jawa Barat, Indonesia</div>
-                    <p>Telp. (031) 1234567 | Email: admin@rollingpaper.com</p>
+                    <p>Telp. (021) 12345678 | Email: admin@rollingpaper.com</p>
                 </div>
                 
                 <div class="nomor-dokumen">
