@@ -739,28 +739,34 @@
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body { font-family: 'Times New Roman', Arial, sans-serif; margin: 0; padding: 20px; background: white; }
                 .print-area { max-width: 1100px; margin: 0 auto; }
-             .header { 
+           .header { 
     text-align: center; 
-    margin-bottom: 25px; 
-    border-bottom: 3px solid #1e3a8a; 
-    padding-bottom: 15px; 
+    margin-bottom: 20px; 
+    border-bottom: 2px solid #1e3a8a; 
+    padding-bottom: 12px; 
+}
+.logo-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
 }
 .logo {
-    max-width: 350px;
+    max-width: 200px;
     width: auto;
     height: auto;
-    max-height: 180px;
     display: block;
-    margin: 0 auto 10px auto;
-    object-fit: contain;
 }
 .address { 
     font-size: 11px; 
-    color: #444; 
-    margin-top: 5px; 
-    font-style: normal; 
+    color: #333; 
+    margin: 8px 0 3px 0; 
     line-height: 1.4;
-    text-align: center;
+}
+.header p { 
+    font-size: 10px; 
+    color: #666; 
+    margin: 0; 
 }
 .header p { 
     font-size: 10px; 
@@ -790,11 +796,13 @@
             </head>
             <body>
             <div class="print-area">
-                <div class="header">
-                    <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo" onerror="this.style.display='none'">
-                    <div class="address">Jl.Kampung Legon RT 3 RW 4, Kel. Jatimulya, Kec. Tambun Selatan, Kab. Bekasi 1751, Jawa Barat, Indonesia</div>
-                    <p>Telp. (021) 12345678 | Email: admin@rollingpaper.com</p>
-                </div>
+              <div class="header">
+    <div class="logo-container">
+        <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo">
+    </div>
+    <div class="address">Jl.Kampung Legon RT 3 RW 4, Kel. Jatimulya, Kec. Tambun Selatan, Kab. Bekasi 1751, Jawa Barat, Indonesia</div>
+    <p>Telp. (021) 12345678 | Email: admin@rollingpaper.com</p>
+</div>
                 
                 <div class="nomor-dokumen">
                     No. Dokumen: ${nomorDokumen}
