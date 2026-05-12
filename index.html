@@ -58,7 +58,6 @@
         .cetak-option select, .cetak-option input { margin-top: 5px; }
         input[type="date"] { font-family: inherit; }
         
-        /* FORM PENGIRIM PENERIMA DI MODAL CETAK */
         .serah-terima-form {
             background: #f1f5f9;
             border-radius: 12px;
@@ -90,7 +89,6 @@
         <div class="tab" data-page="page2">📜 Riwayat (Cloud)</div>
     </div>
 
-    <!-- HALAMAN 1: TIMBANG -->
     <div id="page1" class="page active-page">
         <div class="card">
             <h1>📦 THE ROLLING PAPER COMPANY</h1>
@@ -156,7 +154,6 @@
         </div>
     </div>
 
-    <!-- HALAMAN 2: RIWAYAT -->
     <div id="page2" class="page">
         <div class="card">
             <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
@@ -186,15 +183,12 @@
     </div>
 </div>
 
-<!-- LIBRARY UNTUK XLSX -->
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
 
-<!-- MODAL CETAK DENGAN FORM PENGIRIM PENERIMA -->
 <div id="cetakModal" class="modal">
     <div class="modal-content">
         <h3>🖨️ CETAK SERAH TERIMA PRODUKSI</h3>
         
-        <!-- FORM DATA PENGIRIM & PENERIMA -->
         <div class="serah-terima-form">
             <h4>✍️ DATA SERAH TERIMA</h4>
             <div class="row-2">
@@ -264,7 +258,6 @@
     </div>
 </div>
 
-<!-- MODAL EDIT -->
 <div id="editModal" class="modal">
     <div class="modal-content">
         <h3>✏️ Edit Data</h3>
@@ -300,6 +293,11 @@
         const SUPABASE_URL = 'https://gnpjzhwbjeidabxdturx.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ========== INI PATH LOGO ANDA ==========
+        // GANTI 'file_00000000b51071faa63fa436c7855272.png' DENGAN NAMA FILE LOGO ANDA
+        const LOGO_URL = './file_00000000b51071faa63fa436c7855272.png';
+        // ========================================
 
         const beratBundleDB = {
             "SINGLE 36X69|13|32":1.09, "SINGLE 36X69|13|33":1.10, "SINGLE 36X69|13|40":1.33,
@@ -476,7 +474,7 @@
             
             const tbody = document.getElementById('riwayatBody');
             if(pageData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.<\/td><\/tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.</td></tr>';
                 document.getElementById('pagination').innerHTML = '';
                 return;
             }
@@ -486,20 +484,20 @@
                 const d = pageData[i];
                 const tanggalDisplay = d.tanggal || '';
                 tbody.innerHTML += `<tr>
-                    <td style="text-align:center"><input type="checkbox" class="rowCheckbox" data-id="${d.id}"><\/td>
-                    <td style="text-align:center">${start+i+1}<\/td>
-                    <td>${tanggalDisplay}<\/td>
-                    <td>${d.no_po || '-'}<\/td>
-                    <td>${d.brand || '-'}<\/td>
-                    <td>${(d.size_kertas || '').substring(0,18)}<\/td>
-                    <td>${d.gsm}<\/td>
-                    <td>${d.leaves_per_bundle || '-'}<\/td>
-                    <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}<\/td>
+                    <td style="text-align:center"><input type="checkbox" class="rowCheckbox" data-id="${d.id}"></td>
+                    <td style="text-align:center">${start+i+1}</td>
+                    <td>${tanggalDisplay}</td>
+                    <td>${d.no_po || '-'}</td>
+                    <td>${d.brand || '-'}</td>
+                    <td>${(d.size_kertas || '').substring(0,18)}</td>
+                    <td>${d.gsm}</td>
+                    <td>${d.leaves_per_bundle || '-'}</td>
+                    <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}</td>
                     <td class="aksi-cell">
-                        <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit<\/button>
-                        <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus<\/button>
-                    <\/td>
-                <\/tr>`;
+                        <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit</button>
+                        <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus</button>
+                    </td>
+                </tr>`;
             }
             
             let pagHtml = '';
@@ -584,7 +582,6 @@
             }
         };
 
-        // EXPORT KE XLSX
         document.getElementById('exportExcelBtn').onclick = async () => {
             let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
             if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
@@ -623,14 +620,12 @@
             alert("Export Excel berhasil!");
         };
 
-        // CETAK MODAL DENGAN FORM PENGIRIM PENERIMA
         const cetakModal = document.getElementById('cetakModal');
         const cetakMetode = document.getElementById('cetakMetode');
         const cetakPoInput = document.getElementById('cetakPoInput');
         const cetakBrandInput = document.getElementById('cetakBrandInput');
         const cetakTanggalInput = document.getElementById('cetakTanggalInput');
 
-        // Set default values untuk form serah terima
         const today = new Date().toISOString().split('T')[0];
         const now = new Date();
         const currentTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
@@ -662,7 +657,6 @@
             let dataToPrint = [];
             let title = "";
             
-            // Ambil data dari form serah terima
             const pengirim = document.getElementById('pengirimNama').value || "_______________";
             const penerima = document.getElementById('penerimaNama').value || "_______________";
             const tglSerah = document.getElementById('tglSerahTerima').value || today;
@@ -672,7 +666,6 @@
             const catatan = document.getElementById('catatanTambahan').value || "-";
             const nomorDokumen = generateNomorDokumen();
             
-            // Format tanggal serah terima ke format Indonesia
             const tglSerahFormatted = tglSerah.split('-').reverse().join('/');
             
             if(metode === 'po') {
@@ -728,7 +721,6 @@
                 return;
             }
             
-            // Kelompokkan berdasarkan PO dan hitung total
             const groupedByPO = {};
             let grandTotalBundles = 0;
             let grandTotalBerat = 0;
@@ -749,39 +741,15 @@
                 body { font-family: 'Times New Roman', Arial, sans-serif; margin: 0; padding: 20px; background: white; }
                 .print-area { max-width: 1100px; margin: 0 auto; }
                 .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
-                .logo-container { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 10px; flex-wrap: wrap; }
-                .logo-fire { 
-                    width: 60px; 
-                    height: 60px; 
-                    background: linear-gradient(135deg, #ff6b00 0%, #ffb347 50%, #ffcc00 100%);
-                    border-radius: 50% 50% 40% 40%;
-                    position: relative;
-                    box-shadow: 0 8px 20px rgba(255,107,0,0.3);
-                    display: inline-block;
-                }
-                .logo-fire::before {
-                    content: "🔥";
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 32px;
-                }
-                .logo-fire::after {
-                    content: "";
-                    position: absolute;
-                    bottom: -8px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    width: 30px;
-                    height: 10px;
-                    background: #ff6b00;
-                    border-radius: 50%;
-                    filter: blur(3px);
+                .logo-container { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 10px; flex-wrap: wrap; }
+                .logo {
+                    width: 80px;
+                    height: 80px;
+                    object-fit: contain;
                 }
                 .header h1 { font-size: 24px; color: #1e3a8a; letter-spacing: 2px; margin: 0; }
                 .header h2 { font-size: 18px; color: #333; margin: 5px 0; }
-                .address { font-size: 12px; color: #444; margin-top: 8px; font-style: normal; }
+                .address { font-size: 12px; color: #444; margin-top: 8px; font-style: normal; line-height: 1.5; }
                 .header p { font-size: 12px; color: #666; margin-top: 5px; }
                 .nomor-dokumen { text-align: center; background: #f1f5f9; padding: 8px; margin: 15px 0; font-weight: bold; border-radius: 5px; }
                 .serah-terima-box { 
@@ -806,20 +774,21 @@
                 .ttd-box { text-align: center; width: 45%; }
                 .ttd-line { margin-top: 50px; border-top: 1px solid #000; width: 100%; }
                 .stempel { text-align: center; margin-top: 20px; font-style: italic; }
-                .print-date { font-size: 10px; text-align: right; color: #666; margin-top: 20px; }
-                .page-break { page-break-before: always; }
+                @media print {
+                    .no-print { display: none; }
+                }
             </style>
             </head>
             <body>
             <div class="print-area">
                 <div class="header">
                     <div class="logo-container">
-                        <div class="logo-fire"></div>
+                        <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo" onerror="this.style.display='none'">
                         <div>
                             <h1>THE ROLLING PAPER COMPANY</h1>
                             <h2>SURAT JALAN / SERAH TERIMA PRODUKSI</h2>
                         </div>
-                        <div class="logo-fire"></div>
+                        <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo" onerror="this.style.display='none'">
                     </div>
                     <div class="address">Jl.Kampung Legon RT 3 RW 4, Kel. Jatimulya, Kec. Tambun Selatan, Kab. Bekasi 1751, Jawa Barat, Indonesia</div>
                     <p>Telp. (021) 12345678 | Email: admin@rollingpaper.com</p>
@@ -865,13 +834,11 @@
                 <h3 style="margin: 15px 0 5px 0;">📋 RINCIAN KERTAS YANG DISERAHKAN</h3>
                 <h4 style="margin-bottom: 10px; color: #555;">${title}</h4>`;
             
-            // Looping per PO
             for(const [po, items] of Object.entries(groupedByPO)) {
                 const brand = items[0].brand || "-";
                 const size = items[0].size_kertas || "-";
                 const gsm = items[0].gsm || "-";
                 const leaves = items[0].leaves_per_bundle || "-";
-                const box = items[0].jenis_box || "-";
                 
                 let totalBundlesPO = 0;
                 let totalBeratPO = 0;
@@ -910,17 +877,16 @@
                             <td colspan="7"><strong>TOTAL ${po}</strong></td>
                             <td style="text-align:center"><strong>${totalBundlesPO.toLocaleString('id-ID')}</strong></td>
                             <td><strong>${totalBeratPO.toFixed(2)} kg</strong></td>
-                        </tr>
+                         </tr>
                         <tr class="total-row">
                             <td colspan="7"><strong>RATA-RATA ${po}</strong></td>
                             <td style="text-align:center"><strong>${rataRataPO.toLocaleString('id-ID')}/box</strong></td>
                             <td><strong>${(totalBeratPO/items.length).toFixed(2)} kg/box</strong></td>
-                        </tr>
+                         </tr>
                     </tbody>
                 </table>`;
             }
             
-            // Grand Total
             printHtml += `
                 <table style="width: 50%; float: right; margin-top: 10px;">
                     <tr class="total-row"><td><strong>📦 GRAND TOTAL BUNDLES</strong></td><td style="text-align:center"><strong>${grandTotalBundles.toLocaleString('id-ID')} bundles</strong></td></tr>
@@ -1001,8 +967,6 @@
         cekKoneksi();
         loadAllData();
         
-        // Tambahkan editBox di modal edit
-        const editModalContent = document.querySelector('#editModal .modal-content');
         if(!document.getElementById('editBox')) {
             const boxLabel = document.createElement('label');
             boxLabel.innerHTML = 'Jenis Box';
