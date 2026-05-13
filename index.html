@@ -73,6 +73,28 @@
             margin-bottom: 8px;
         }
         
+        /* Multi-brand checkbox style */
+        .brand-checkbox-list {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+        }
+        .brand-checkbox-list label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 5px 0;
+            font-weight: normal;
+            font-size: 0.8rem;
+        }
+        .brand-checkbox-list input {
+            width: auto;
+            margin: 0;
+        }
+        
         @media print {
             body * { visibility: hidden; }
             .print-area, .print-area * { visibility: visible; }
@@ -235,7 +257,7 @@
             <label>Pilih Data yang Dicetak:</label>
             <select id="cetakMetode">
                 <option value="po">📦 Cetak per No. PO</option>
-                <option value="brand">🏷️ Cetak per Brand</option>
+                <option value="brand">🏷️ Cetak per Brand (bisa pilih banyak)</option>
                 <option value="tanggal">📅 Cetak per Rentang Tanggal</option>
                 <option value="checklist">✅ Cetak yang di-checklist</option>
                 <option value="semua">📄 Cetak Semua Data</option>
@@ -246,8 +268,11 @@
             <input type="text" id="cetakPoValue" placeholder="Contoh: PO-001">
         </div>
         <div id="cetakBrandInput" class="cetak-option" style="display:none;">
-            <label>Masukkan Brand:</label>
-            <input type="text" id="cetakBrandValue" placeholder="Contoh: RONSON">
+            <label>Pilih Brand (centang yang ingin dicetak):</label>
+            <div id="brandCheckboxList" class="brand-checkbox-list">
+                <!-- Brand checkboxes akan diisi otomatis -->
+                <div style="color:gray; text-align:center;">Memuat daftar brand...</div>
+            </div>
         </div>
         <div id="cetakTanggalInput" class="cetak-option" style="display:none;">
             <label>Rentang Tanggal:</label>
@@ -282,6 +307,13 @@
         <select id="editGsm"><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select>
         <label>Jumlah Bundles</label>
         <input type="number" id="editBundles" step="1">
+        <label>Jenis Box</label>
+        <select id="editBox">
+            <option value="White">White (0.90 kg)</option>
+            <option value="White New">White New (0.80 kg)</option>
+            <option value="Grey">Grey (1.25 kg)</option>
+            <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
+        </select>
         <button id="saveEditBtn">💾 Simpan Perubahan</button>
         <button id="closeModalBtn" class="close-modal">❌ Batal</button>
     </div>
@@ -294,9 +326,7 @@
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImducGp6aHdiamVpZGFieGR0dXJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc3ODc4NTUsImV4cCI6MjA4MzM2Mzg1NX0.Lsdt0mC1MCPeUATPukRRnXFwEpsaQdNzs927086vxjY';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ========== LOGO ANDA ==========
         const LOGO_URL = 'logoTRPC.jpeg';
-        // ================================
 
         const beratBundleDB = {
             "SINGLE 36X69|13|32":1.09, "SINGLE 36X69|13|33":1.10, "SINGLE 36X69|13|40":1.33,
@@ -330,6 +360,9 @@
         let currentOrderAsc = false;
         let allDataCache = [];
         const rowsPerPage = 10;
+        
+        // STORAGE KEY untuk menyimpan ID yang di-checklist
+        const CHECKED_IDS_KEY = 'rollingpaper_checked_ids';
 
         function formatDateToDB(dateStr) {
             if(!dateStr) return "";
@@ -368,86 +401,92 @@
             return gram / 1000;
         }
 
-        document.getElementById('hitungBtn').onclick = async () => {
-            const beratTimbang = parseFloat(document.getElementById('berat').value);
-            if(isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
+        // ========== FUNGSI UNTUK CHECKLIST YANG PERSISTEN ==========
+        function getCheckedIds() {
+            const stored = localStorage.getItem(CHECKED_IDS_KEY);
+            if(stored) {
+                try {
+                    return new Set(JSON.parse(stored));
+                } catch(e) { return new Set(); }
+            }
+            return new Set();
+        }
+        
+        function saveCheckedIds(idsSet) {
+            localStorage.setItem(CHECKED_IDS_KEY, JSON.stringify([...idsSet]));
+        }
+        
+        function addCheckedId(id) {
+            const ids = getCheckedIds();
+            ids.add(id);
+            saveCheckedIds(ids);
+        }
+        
+        function removeCheckedId(id) {
+            const ids = getCheckedIds();
+            ids.delete(id);
+            saveCheckedIds(ids);
+        }
+        
+        function isChecked(id) {
+            return getCheckedIds().has(id);
+        }
+        
+        function clearAllChecked() {
+            saveCheckedIds(new Set());
+        }
+        
+        // Update checkbox UI berdasarkan data yang ditampilkan
+        function updateCheckboxUI() {
+            const checkboxes = document.querySelectorAll('.rowCheckbox');
+            checkboxes.forEach(cb => {
+                const id = parseInt(cb.dataset.id);
+                if(isChecked(id)) {
+                    cb.checked = true;
+                } else {
+                    cb.checked = false;
+                }
+            });
             
-            const boxType = document.getElementById('box').value;
-            const beratBox = beratBoxMap[boxType];
-            const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
-            const beratLayer = jumlahLayer * BERAT_LAYER_KG;
-            const beratBersih = beratTimbang - beratBox - beratLayer;
+            // Update select all checkbox
+            const selectAll = document.getElementById('selectAllCheckbox');
+            if(selectAll) {
+                const allVisible = document.querySelectorAll('.rowCheckbox');
+                const allChecked = Array.from(allVisible).every(cb => cb.checked);
+                selectAll.checked = allChecked && allVisible.length > 0;
+            }
+        }
+        
+        // ========== FUNGSI UNTUK MENGISI DAFTAR BRAND ==========
+        async function loadBrandList() {
+            const { data, error } = await supabase.from('riwayat_timbang').select('brand');
+            if(error) {
+                console.error('Gagal load brand:', error);
+                return;
+            }
+            const brands = [...new Set(data.map(item => item.brand).filter(b => b && b !== '-'))];
+            const container = document.getElementById('brandCheckboxList');
+            if(!container) return;
             
-            if(beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
-            
-            const beratBundleKG = getBeratBundleKG();
-            if(!beratBundleKG) { 
-                alert(`Data tidak ditemukan! Size: ${document.getElementById('size').value} | GSM: ${document.getElementById('gsm').value} | Leaves: ${document.getElementById('leaves').value}`);
-                return; 
+            if(brands.length === 0) {
+                container.innerHTML = '<div style="color:gray; text-align:center;">Belum ada data brand</div>';
+                return;
             }
             
-            const bundlesDesimal = beratBersih / beratBundleKG;
-            const bundlesBulat = Math.ceil(bundlesDesimal);
-            
-            document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
-            document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
-            document.getElementById('hasilCard').style.display = "block";
-            
-            const tanggalRaw = document.getElementById('tanggal').value;
-            const tanggalFormatted = formatDateToDB(tanggalRaw);
-            
-            const dataToSave = {
-                tanggal: tanggalFormatted,
-                no_po: document.getElementById('noPo').value || "-",
-                brand: document.getElementById('brand').value || "-",
-                size_kertas: document.getElementById('size').value,
-                gsm: parseInt(document.getElementById('gsm').value),
-                leaves_per_bundle: parseInt(document.getElementById('leaves').value),
-                jenis_box: boxType,
-                jumlah_layer: jumlahLayer,
-                berat_timbang_kg: beratTimbang,
-                berat_bersih_kg: beratBersih,
-                jumlah_bundles: bundlesBulat,
-                bundles_desimal: bundlesDesimal
-            };
-            
-            showStatus('⏳ Menyimpan ke cloud...', 'loading');
-            const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
-            
-            if(error) { 
-                showStatus('❌ Gagal: ' + error.message, 'error'); 
-                alert('Gagal simpan! ' + error.message); 
-            } else { 
-                showStatus('✅ Tersimpan ke cloud!', 'success'); 
-                document.getElementById('berat').value = '';
-                currentPage = 1; 
-                currentSearch = ""; 
-                document.getElementById('searchInput').value = "";
-                loadAllData();
-            }
-        };
-
-        document.getElementById('resetFormBtn').onclick = () => {
-            if(confirm("Reset form? PO dan Brand akan dikosongkan.")) {
-                document.getElementById('noPo').value = '';
-                document.getElementById('brand').value = '';
-                document.getElementById('berat').value = '';
-                document.getElementById('hasilCard').style.display = 'none';
-                showStatus('Form direset', 'success');
-            }
-        };
-
-        async function loadAllData() {
-            let query = supabase.from('riwayat_timbang').select('*');
-            if(currentSearch) {
-                query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
-            }
-            const { data, error } = await query;
-            if(error) { console.error(error); return; }
-            allDataCache = data || [];
-            displayDataWithPagination();
+            container.innerHTML = brands.map(brand => `
+                <label>
+                    <input type="checkbox" class="brand-checkbox" value="${brand.replace(/"/g, '&quot;')}">
+                    ${brand}
+                </label>
+            `).join('');
+        }
+        
+        function getSelectedBrands() {
+            const checkboxes = document.querySelectorAll('.brand-checkbox:checked');
+            return Array.from(checkboxes).map(cb => cb.value);
         }
 
+        // ========== DISPLAY DATA ==========
         function displayDataWithPagination() {
             let filtered = [...allDataCache];
             if(currentOrderBy === "no_po") {
@@ -482,8 +521,10 @@
             for(let i=0; i<pageData.length; i++) {
                 const d = pageData[i];
                 const tanggalDisplay = d.tanggal || '';
+                const isItemChecked = isChecked(d.id) ? 'checked' : '';
                 tbody.innerHTML += `<tr>
-                    <td style="text-align:center"><input type="checkbox" class="rowCheckbox" data-id="${d.id}"></td>
+                    <td style="text-align:center"><input type="checkbox" class="rowCheckbox" data-id="${d.id}" ${isItemChecked}>
+                    <tr>
                     <td style="text-align:center">${start+i+1}</td>
                     <td>${tanggalDisplay}</td>
                     <td>${d.no_po || '-'}</td>
@@ -498,6 +539,19 @@
                     </td>
                 </tr>`;
             }
+            
+            // Attach event listeners untuk checkbox yang baru dibuat
+            document.querySelectorAll('.rowCheckbox').forEach(cb => {
+                cb.addEventListener('change', function(e) {
+                    const id = parseInt(this.dataset.id);
+                    if(this.checked) {
+                        addCheckedId(id);
+                    } else {
+                        removeCheckedId(id);
+                    }
+                    updateCheckboxUI();
+                });
+            });
             
             let pagHtml = '';
             for(let i=1; i<=totalPages; i++) {
@@ -539,7 +593,12 @@
             if(confirm("Hapus data ini?")) {
                 const { error } = await supabase.from('riwayat_timbang').delete().eq('id', id);
                 if(error) alert("Gagal hapus: " + error.message);
-                else { alert("Data terhapus!"); loadAllData(); }
+                else { 
+                    // Hapus juga dari storage checklist jika ada
+                    removeCheckedId(id);
+                    alert("Data terhapus!"); 
+                    loadAllData(); 
+                }
             }
         };
 
@@ -577,7 +636,11 @@
             if(confirm("⚠️ Hapus SEMUA data dari cloud?")) {
                 const { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
                 if(error) alert("Gagal hapus: " + error.message);
-                else { alert("✅ Semua data telah dihapus!"); loadAllData(); }
+                else { 
+                    clearAllChecked();
+                    alert("✅ Semua data telah dihapus!"); 
+                    loadAllData(); 
+                }
             }
         };
 
@@ -619,6 +682,7 @@
             alert("Export Excel berhasil!");
         };
 
+        // ========== FUNGSI CETAK ==========
         const cetakModal = document.getElementById('cetakModal');
         const cetakMetode = document.getElementById('cetakMetode');
         const cetakPoInput = document.getElementById('cetakPoInput');
@@ -631,7 +695,8 @@
         document.getElementById('tglSerahTerima').value = today;
         document.getElementById('jamSerahTerima').value = currentTime;
 
-        document.getElementById('cetakBtn').onclick = () => {
+        document.getElementById('cetakBtn').onclick = async () => {
+            await loadBrandList();
             cetakModal.style.display = 'flex';
         };
 
@@ -677,10 +742,10 @@
                 dataToPrint = data || [];
             } 
             else if(metode === 'brand') {
-                const brandValue = document.getElementById('cetakBrandValue').value.trim();
-                if(!brandValue) { alert("Masukkan Brand!"); return; }
-                title = `BRAND: ${brandValue}`;
-                let query = supabase.from('riwayat_timbang').select('*').eq('brand', brandValue).order('id', { ascending: true });
+                const selectedBrands = getSelectedBrands();
+                if(selectedBrands.length === 0) { alert("Pilih minimal 1 brand!"); return; }
+                title = `BRAND: ${selectedBrands.join(', ')}`;
+                let query = supabase.from('riwayat_timbang').select('*').in('brand', selectedBrands).order('id', { ascending: true });
                 const { data, error } = await query;
                 if(error) { alert("Gagal ambil data!"); return; }
                 dataToPrint = data || [];
@@ -698,9 +763,9 @@
                 dataToPrint = data || [];
             }
             else if(metode === 'checklist') {
-                const checkboxes = document.querySelectorAll('.rowCheckbox:checked');
-                const ids = Array.from(checkboxes).map(cb => parseInt(cb.dataset.id));
-                if(ids.length === 0) { alert("Pilih data yang ingin dicetak!"); return; }
+                const checkedIds = getCheckedIds();
+                const ids = [...checkedIds];
+                if(ids.length === 0) { alert("Tidak ada data yang di-checklist! Silakan centang data terlebih dahulu."); return; }
                 title = `DATA TERPILIH (${ids.length} box)`;
                 let query = supabase.from('riwayat_timbang').select('*').in('id', ids).order('id', { ascending: true });
                 const { data, error } = await query;
@@ -739,41 +804,11 @@
                 * { margin: 0; padding: 0; box-sizing: border-box; }
                 body { font-family: 'Times New Roman', Arial, sans-serif; margin: 0; padding: 20px; background: white; }
                 .print-area { max-width: 1100px; margin: 0 auto; }
-           .header { 
-    text-align: center; 
-    margin-bottom: 20px; 
-    border-bottom: 2px solid #1e3a8a; 
-    padding-bottom: 12px; 
-}
-.logo-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-bottom: 10px;
-}
-.logo {
-    max-width: 200px;
-    width: auto;
-    height: auto;
-    display: block;
-}
-.address { 
-    font-size: 11px; 
-    color: #333; 
-    margin: 8px 0 3px 0; 
-    line-height: 1.4;
-}
-.header p { 
-    font-size: 10px; 
-    color: #666; 
-    margin: 0; 
-}
-.header p { 
-    font-size: 10px; 
-    color: #666; 
-    margin-top: 3px; 
-
-                }
+                .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 12px; }
+                .logo-container { display: flex; justify-content: center; align-items: center; margin-bottom: 10px; }
+                .logo { max-width: 200px; width: auto; height: auto; display: block; }
+                .address { font-size: 11px; color: #333; margin: 8px 0 3px 0; line-height: 1.4; }
+                .header p { font-size: 10px; color: #666; margin: 0; margin-top: 3px; }
                 .row { display: flex; margin-bottom: 10px; }
                 .col-label { width: 140px; font-weight: bold; }
                 .col-value { flex: 1; border-bottom: 1px dotted #999; }
@@ -789,20 +824,18 @@
                 .ttd-box { text-align: center; width: 45%; }
                 .ttd-line { margin-top: 50px; border-top: 1px solid #000; width: 100%; }
                 .stempel { text-align: center; margin-top: 20px; font-style: italic; }
-                @media print {
-                    .no-print { display: none; }
-                }
+                @media print { .no-print { display: none; } }
             </style>
             </head>
             <body>
             <div class="print-area">
-              <div class="header">
-    <div class="logo-container">
-        <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo">
-    </div>
-    <div class="address">Jl.Kampung Legon RT 3 RW 4, Kel. Jatimulya, Kec. Tambun Selatan, Kab. Bekasi 1751, Jawa Barat, Indonesia</div>
-    <p>Telp. (021) 12345678 | Email: admin@rollingpaper.com</p>
-</div>
+                <div class="header">
+                    <div class="logo-container">
+                        <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo">
+                    </div>
+                    <div class="address">Jl.Kampung Legon RT 3 RW 4, Kel. Jatimulya, Kec. Tambun Selatan, Kab. Bekasi 1751, Jawa Barat, Indonesia</div>
+                    <p>Telp. (021) 12345678 | Email: admin@rollingpaper.com</p>
+                </div>
                 
                 <div class="nomor-dokumen">
                     No. Dokumen: ${nomorDokumen}
@@ -870,7 +903,7 @@
                         <td>${(item.berat_timbang_kg || 0).toFixed(2)} kg</td>
                     </tr>`;
                 }
-                const rataRataPO = Math.round(totalBundlesPO / items.length);
+                const rataRataPO = items.length > 0 ? Math.round(totalBundlesPO / items.length) : 0;
                 
                 printHtml += `
                 <table>
@@ -954,9 +987,19 @@
         document.getElementById('closeModalBtn').onclick = () => { document.getElementById('editModal').style.display = 'none'; };
         window.onclick = (e) => { if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none'; if(e.target === cetakModal) cetakModal.style.display = 'none'; };
 
+        // Select All checkbox handler
         document.getElementById('selectAllCheckbox').onclick = (e) => {
             const checkboxes = document.querySelectorAll('.rowCheckbox');
-            checkboxes.forEach(cb => cb.checked = e.target.checked);
+            const isChecked = e.target.checked;
+            checkboxes.forEach(cb => {
+                cb.checked = isChecked;
+                const id = parseInt(cb.dataset.id);
+                if(isChecked) {
+                    addCheckedId(id);
+                } else {
+                    removeCheckedId(id);
+                }
+            });
         };
 
         document.querySelectorAll('.tab').forEach(tab => {
@@ -969,6 +1012,17 @@
             };
         });
 
+        async function loadAllData() {
+            let query = supabase.from('riwayat_timbang').select('*');
+            if(currentSearch) {
+                query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
+            }
+            const { data, error } = await query;
+            if(error) { console.error(error); return; }
+            allDataCache = data || [];
+            displayDataWithPagination();
+        }
+
         async function cekKoneksi() {
             const { error } = await supabase.from('riwayat_timbang').select('id', { count: 'exact', head: true });
             if(error) showStatus('⚠️ ' + error.message, 'error');
@@ -977,17 +1031,74 @@
         cekKoneksi();
         loadAllData();
         
-        if(!document.getElementById('editBox')) {
-            const boxLabel = document.createElement('label');
-            boxLabel.innerHTML = 'Jenis Box';
-            boxLabel.setAttribute('for', 'editBox');
-            const boxSelect = document.createElement('select');
-            boxSelect.id = 'editBox';
-            boxSelect.innerHTML = '<option value="White">White (0.90 kg)</option><option value="White New">White New (0.80 kg)</option><option value="Grey">Grey (1.25 kg)</option><option value="Green Jumbo">Green Jumbo (3.80 kg)</option>';
-            const editBundles = document.getElementById('editBundles');
-            editBundles.parentNode.insertBefore(boxLabel, editBundles);
-            editBundles.parentNode.insertBefore(boxSelect, editBundles);
-        }
+        document.getElementById('hitungBtn').onclick = async () => {
+            const beratTimbang = parseFloat(document.getElementById('berat').value);
+            if(isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
+            
+            const boxType = document.getElementById('box').value;
+            const beratBox = beratBoxMap[boxType];
+            const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
+            const beratLayer = jumlahLayer * BERAT_LAYER_KG;
+            const beratBersih = beratTimbang - beratBox - beratLayer;
+            
+            if(beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
+            
+            const beratBundleKG = getBeratBundleKG();
+            if(!beratBundleKG) { 
+                alert(`Data tidak ditemukan! Size: ${document.getElementById('size').value} | GSM: ${document.getElementById('gsm').value} | Leaves: ${document.getElementById('leaves').value}`);
+                return; 
+            }
+            
+            const bundlesDesimal = beratBersih / beratBundleKG;
+            const bundlesBulat = Math.ceil(bundlesDesimal);
+            
+            document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
+            document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
+            document.getElementById('hasilCard').style.display = "block";
+            
+            const tanggalRaw = document.getElementById('tanggal').value;
+            const tanggalFormatted = formatDateToDB(tanggalRaw);
+            
+            const dataToSave = {
+                tanggal: tanggalFormatted,
+                no_po: document.getElementById('noPo').value || "-",
+                brand: document.getElementById('brand').value || "-",
+                size_kertas: document.getElementById('size').value,
+                gsm: parseInt(document.getElementById('gsm').value),
+                leaves_per_bundle: parseInt(document.getElementById('leaves').value),
+                jenis_box: boxType,
+                jumlah_layer: jumlahLayer,
+                berat_timbang_kg: beratTimbang,
+                berat_bersih_kg: beratBersih,
+                jumlah_bundles: bundlesBulat,
+                bundles_desimal: bundlesDesimal
+            };
+            
+            showStatus('⏳ Menyimpan ke cloud...', 'loading');
+            const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
+            
+            if(error) { 
+                showStatus('❌ Gagal: ' + error.message, 'error'); 
+                alert('Gagal simpan! ' + error.message); 
+            } else { 
+                showStatus('✅ Tersimpan ke cloud!', 'success'); 
+                document.getElementById('berat').value = '';
+                currentPage = 1; 
+                currentSearch = ""; 
+                document.getElementById('searchInput').value = "";
+                loadAllData();
+            }
+        };
+
+        document.getElementById('resetFormBtn').onclick = () => {
+            if(confirm("Reset form? PO dan Brand akan dikosongkan.")) {
+                document.getElementById('noPo').value = '';
+                document.getElementById('brand').value = '';
+                document.getElementById('berat').value = '';
+                document.getElementById('hasilCard').style.display = 'none';
+                showStatus('Form direset', 'success');
+            }
+        };
     })();
 </script>
 </body>
