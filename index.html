@@ -101,6 +101,52 @@
             .print-area { position: absolute; top: 0; left: 0; width: 100%; margin: 0; padding: 10px; }
             .no-print { display: none; }
             button { display: none; }
+            /* Perbaikan ukuran font untuk hasil PRINT */
+@media print {
+    .print-area {
+        font-size: 14px;
+    }
+    .print-area table {
+        font-size: 13px;
+    }
+    .print-area th {
+        font-size: 14px;
+        padding: 8px 6px;
+    }
+    .print-area td {
+        font-size: 12px;
+        padding: 6px 4px;
+    }
+    .print-area .total-row td,
+    .print-area .total-row th {
+        font-size: 13px;
+        font-weight: bold;
+    }
+    .print-area h3 {
+        font-size: 16px;
+    }
+    .print-area h4 {
+        font-size: 14px;
+    }
+    .print-area .col-label {
+        font-size: 13px;
+    }
+    .print-area .col-value {
+        font-size: 13px;
+    }
+    .print-area .ttd-box div {
+        font-size: 12px;
+    }
+    .print-area .ttd-box strong {
+        font-size: 13px;
+    }
+    .print-area .stempel {
+        font-size: 10px;
+    }
+    .print-area .kondisi-box {
+        font-size: 13px;
+    }
+}
         }
     </style>
 </head>
