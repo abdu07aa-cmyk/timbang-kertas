@@ -763,7 +763,7 @@
             return `ST/${tahun}/${bulan}/${random}`;
         }
 
-        document.getElementById('prosesCetakBtn').onclick = async () => {
+               document.getElementById('prosesCetakBtn').onclick = async () => {
             const metode = cetakMetode.value;
             let dataToPrint = [];
             let title = "";
@@ -810,14 +810,32 @@
                 dataToPrint = data || [];
             }
             else if(metode === 'checklist') {
+                // ========== PERBAIKAN DI SINI ==========
+                // Ambil semua ID yang disimpan di localStorage (dari semua halaman)
                 const checkedIds = getCheckedIds();
                 const ids = [...checkedIds];
-                if(ids.length === 0) { alert("Tidak ada data yang di-checklist! Silakan centang data terlebih dahulu."); return; }
-                title = `DATA TERPILIH (${ids.length} box)`;
+                
+                if(ids.length === 0) { 
+                    alert("⚠️ Tidak ada data yang di-checklist! Silakan centang data terlebih dahulu di halaman Riwayat."); 
+                    return; 
+                }
+                
+                title = `✅ DATA TERPILIH (${ids.length} box)`;
+                
+                // Ambil data dari Supabase berdasarkan ID yang dipilih
                 let query = supabase.from('riwayat_timbang').select('*').in('id', ids).order('id', { ascending: true });
                 const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
+                if(error) { 
+                    alert("Gagal ambil data checklist: " + error.message); 
+                    return; 
+                }
                 dataToPrint = data || [];
+                
+                if(dataToPrint.length === 0) {
+                    alert("Data yang dipilih tidak ditemukan di database!");
+                    return;
+                }
+                // ========== AKHIR PERBAIKAN ==========
             }
             else {
                 title = `SEMUA DATA TIMBANGAN`;
@@ -831,6 +849,10 @@
                 alert("Tidak ada data untuk dicetak!");
                 return;
             }
+            
+            // ========== TAMPILAN POPUP KONFIRMASI ==========
+            const confirmPrint = confirm(`📋 Akan mencetak ${dataToPrint.length} data yang dipilih.\n\nTotal Bundles: ${dataToPrint.reduce((sum, item) => sum + (item.jumlah_bundles || 0), 0).toLocaleString('id-ID')} bundles\n\nLanjutkan cetak?`);
+            if(!confirmPrint) return;
             
             const groupedByPO = {};
             let grandTotalBundles = 0;
@@ -878,7 +900,7 @@
             <div class="print-area">
                 <div class="header">
                     <div class="logo-container">
-                        <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo">
+                        <img src="${LOGO_URL}" alt="Logo The Rolling Paper" class="logo" onerror="this.style.display='none'">
                     </div>
                     <div class="address">Jl.Kampung Legon RT 3 RW 4, Kel. Jatimulya, Kec. Tambun Selatan, Kab. Bekasi 1751, Jawa Barat, Indonesia</div>
                     <p>Telp. (021) 12345678 | Email: admin@rollingpaper.com</p>
@@ -948,7 +970,7 @@
                         <td style="text-align:center">${item.leaves_per_bundle || '-'}</td>
                         <td style="text-align:center; font-weight:bold">${(item.jumlah_bundles || 0).toLocaleString('id-ID')}</td>
                         <td>${(item.berat_timbang_kg || 0).toFixed(2)} kg</td>
-                    </tr>`;
+                    </table>`;
                 }
                 const rataRataPO = items.length > 0 ? Math.round(totalBundlesPO / items.length) : 0;
                 
@@ -1029,7 +1051,6 @@
             
             cetakModal.style.display = 'none';
         };
-
         document.getElementById('closeCetakModalBtn').onclick = () => { cetakModal.style.display = 'none'; };
         document.getElementById('closeModalBtn').onclick = () => { document.getElementById('editModal').style.display = 'none'; };
         window.onclick = (e) => { if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none'; if(e.target === cetakModal) cetakModal.style.display = 'none'; };
