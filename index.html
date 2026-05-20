@@ -945,8 +945,7 @@
                 
                 <h3 style="margin: 15px 0 5px 0;">📋 RINCIAN KERTAS YANG DISERAHKAN</h3>
                 <h4 style="margin-bottom: 10px; color: #555;">${title}</h4>`;
-            
-            for(const [po, items] of Object.entries(groupedByPO)) {
+                        for(const [po, items] of Object.entries(groupedByPO)) {
                 const brand = items[0].brand || "-";
                 const size = items[0].size_kertas || "-";
                 const gsm = items[0].gsm || "-";
@@ -955,24 +954,29 @@
                 let totalBundlesPO = 0;
                 let totalBeratPO = 0;
                 let tableRows = "";
+                
                 for(let i=0; i<items.length; i++) {
                     const item = items[i];
                     totalBundlesPO += (item.jumlah_bundles || 0);
                     totalBeratPO += (item.berat_timbang_kg || 0);
                     const tanggalDisplay = formatTanggalIndonesia(item.tanggal || '');
-                    tableRows += `<tr>
-                        <td style="text-align:center">${i+1}</td>
-                        <td>${tanggalDisplay}</td>
-                        <td>${item.no_po || '-'}</td>
-                        <td>${item.brand || '-'}</td>
-                        <td>${item.size_kertas || '-'}</td>
-                        <td style="text-align:center">${item.gsm || '-'}</td>
-                        <td style="text-align:center">${item.leaves_per_bundle || '-'}</td>
-                        <td style="text-align:center; font-weight:bold">${(item.jumlah_bundles || 0).toLocaleString('id-ID')}</td>
-                        <td>${(item.berat_timbang_kg || 0).toFixed(2)} kg</td>
-                    </table>`;
+                    tableRows += `
+                        <tr>
+                            <td style="text-align:center">${i+1}</td>
+                            <td style="text-align:center">${tanggalDisplay}</td>
+                            <td style="text-align:center">${item.no_po || '-'}</td>
+                            <td style="text-align:center">${item.brand || '-'}</td>
+                            <td style="text-align:center">${item.size_kertas || '-'}</td>
+                            <td style="text-align:center">${item.gsm || '-'}</td>
+                            <td style="text-align:center">${item.leaves_per_bundle || '-'}</td>
+                            <td style="text-align:center; font-weight:bold">${(item.jumlah_bundles || 0).toLocaleString('id-ID')}</td>
+                            <td style="text-align:center">${(item.berat_timbang_kg || 0).toFixed(2)} kg</td>
+                        </tr>
+                    `;
                 }
+                
                 const rataRataPO = items.length > 0 ? Math.round(totalBundlesPO / items.length) : 0;
+                const rataRataBeratPO = items.length > 0 ? (totalBeratPO / items.length).toFixed(2) : 0;
                 
                 printHtml += `
                 <table>
@@ -984,16 +988,17 @@
                             <th>No</th><th>Tanggal</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat</th>
                         </tr>
                     </thead>
-                    <tbody>${tableRows}
+                    <tbody>
+                        ${tableRows}
                         <tr class="total-row">
                             <td colspan="7"><strong>TOTAL ${po}</strong></td>
                             <td style="text-align:center"><strong>${totalBundlesPO.toLocaleString('id-ID')}</strong></td>
-                            <td><strong>${totalBeratPO.toFixed(2)} kg</strong></td>
+                            <td style="text-align:center"><strong>${totalBeratPO.toFixed(2)} kg</strong></td>
                         </tr>
                         <tr class="total-row">
                             <td colspan="7"><strong>RATA-RATA ${po}</strong></td>
                             <td style="text-align:center"><strong>${rataRataPO.toLocaleString('id-ID')}/box</strong></td>
-                            <td><strong>${(totalBeratPO/items.length).toFixed(2)} kg/box</strong></td>
+                            <td style="text-align:center"><strong>${rataRataBeratPO} kg/box</strong></td>
                         </tr>
                     </tbody>
                 </table>`;
