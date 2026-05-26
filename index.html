@@ -161,12 +161,13 @@
     <div id="page2" class="page">
         <div class="card">
             <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
-            <div class="search-row">
-                <input type="text" id="searchInput" placeholder="Cari No. PO atau Brand...">
-                <button id="cariBtn">🔍 Cari</button>
-                <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Export Excel</button>
-                <button id="cetakBtn" class="btn-cetak">🖨️ Cetak Serah Terima</button>
-            </div>
+           <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Cari No. PO atau Brand...">
+    <button id="cariBtn">🔍 Cari</button>
+    <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Export Excel</button>
+    <button id="cetakBtn" class="btn-cetak">🖨️ Cetak Serah Terima</button>
+    <button id="cetakTimbanganBtn" class="btn-cetak" style="background:#06b6d4;">📄 Cetak Timbangan</button>
+</div>
             <div class="row-2" style="margin-top:8px;">
                 <button id="urutPOBtn" class="btn-urut" style="background:#06b6d4;">🔼 Urutkan PO (A-Z)</button>
                 <button id="urutPOTerbalikBtn" class="btn-urut" style="background:#0891b2;">🔽 Urutkan PO (Z-A)</button>
@@ -1005,7 +1006,157 @@
         document.getElementById('closeCetakModalBtn').onclick = () => { cetakModal.style.display = 'none'; };
         document.getElementById('closeModalBtn').onclick = () => { document.getElementById('editModal').style.display = 'none'; };
         window.onclick = (e) => { if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none'; if(e.target === cetakModal) cetakModal.style.display = 'none'; };
-
+        // ========== CETAK TIMBANGAN (LANGSUNG, TANPA FORM SERAH TERIMA) ==========
+        document.getElementById('cetakTimbanganBtn').onclick = async () => {
+            const checkedIds = getCheckedIds();
+            const ids = [...checkedIds];
+            
+            if(ids.length === 0) { 
+                alert("⚠️ Tidak ada data yang di-checklist! Silakan centang data terlebih dahulu."); 
+                return; 
+            }
+            
+            // Ambil data dari Supabase berdasarkan ID yang dipilih
+            const { data, error } = await supabase
+                .from('riwayat_timbang')
+                .select('*')
+                .in('id', ids)
+                .order('id', { ascending: true });
+            
+            if(error) { 
+                alert("Gagal ambil data: " + error.message); 
+                return; 
+            }
+            
+            if(!data || data.length === 0) {
+                alert("Data yang dipilih tidak ditemukan!");
+                return;
+            }
+            
+            // Kelompokkan berdasarkan PO
+            const groupedByPO = {};
+            let grandTotalBundles = 0;
+            let grandTotalBerat = 0;
+            
+            for(const item of data) {
+                const po = item.no_po || "-";
+                if(!groupedByPO[po]) groupedByPO[po] = [];
+                groupedByPO[po].push(item);
+                grandTotalBundles += (item.jumlah_bundles || 0);
+                grandTotalBerat += (item.berat_timbang_kg || 0);
+            }
+            
+            const tanggalCetak = new Date().toLocaleDateString('id-ID', { 
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
+            });
+            
+            let printHtml = `<!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"><title>Laporan Timbangan - The Rolling Paper</title>
+            <style>
+                * { margin: 0; padding: 0; box-sizing: border-box; }
+                body { font-family: 'Times New Roman', Arial, sans-serif; margin: 0; padding: 20px; background: white; }
+                .print-area { max-width: 1200px; margin: 0 auto; }
+                .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
+                .header h1 { font-size: 28px; color: #1e3a8a; letter-spacing: 2px; margin: 0; }
+                .header h2 { font-size: 20px; color: #333; margin: 5px 0; }
+                .header p { font-size: 12px; color: #666; margin-top: 5px; }
+                .address { font-size: 11px; color: #444; text-align: center; margin: 5px 0; }
+                .info-cetak { display: flex; justify-content: space-between; margin: 15px 0; font-size: 12px; }
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11px; }
+                th, td { border: 1px solid #999; padding: 8px; text-align: center; }
+                th { background: #1e3a8a; color: white; font-weight: bold; }
+                .total-row { background: #e2e8f0; font-weight: bold; }
+                .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; }
+                .page-break { page-break-before: always; }
+            </style>
+            </head>
+            <body>
+            <div class="print-area">
+                <div class="header">
+                    <h1>THE ROLLING PAPER COMPANY</h1>
+                    <h2>LAPORAN TIMBANGAN KERTAS</h2>
+                    <div class="address">Jl. Raya Industri Kertas No. 123 | Telp. (031) 1234567 | Email: admin@rollingpaper.com</div>
+                </div>
+                
+                <div class="info-cetak">
+                    <span>📅 Dicetak: ${tanggalCetak}</span>
+                    <span>📦 Total Data: ${data.length} box</span>
+                    <span>✅ Data dipilih: ${ids.length} box</span>
+                </div>`;
+            
+            for(const [po, items] of Object.entries(groupedByPO)) {
+                const brand = items[0].brand || "-";
+                const size = items[0].size_kertas || "-";
+                const gsm = items[0].gsm || "-";
+                const leaves = items[0].leaves_per_bundle || "-";
+                
+                let totalBundlesPO = 0;
+                let totalBeratPO = 0;
+                let tableRows = "";
+                
+                for(let i=0; i<items.length; i++) {
+                    const item = items[i];
+                    totalBundlesPO += (item.jumlah_bundles || 0);
+                    totalBeratPO += (item.berat_timbang_kg || 0);
+                    const tanggalDisplay = item.tanggal || '';
+                    tableRows += `<tr>
+                        <td style="text-align:center">${i+1}</td>
+                        <td style="text-align:center">${tanggalDisplay}</td>
+                        <td style="text-align:center">${item.no_po || '-'}</td>
+                        <td style="text-align:center">${item.brand || '-'}</td>
+                        <td style="text-align:center">${item.size_kertas || '-'}</td>
+                        <td style="text-align:center">${item.gsm || '-'}</td>
+                        <td style="text-align:center">${item.leaves_per_bundle || '-'}</td>
+                        <td style="text-align:center; font-weight:bold">${(item.jumlah_bundles || 0).toLocaleString('id-ID')}</td>
+                        <td style="text-align:center">${(item.berat_timbang_kg || 0).toFixed(2)} kg</td>
+                    </tr>`;
+                }
+                
+                const rataRataPO = items.length > 0 ? Math.round(totalBundlesPO / items.length) : 0;
+                
+                printHtml += `
+                <h3 style="margin: 20px 0 5px 0; background:#e2e8f0; padding:5px;">📄 PO: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}</h3>
+                <table>
+                    <thead>
+                        <tr><th>No</th><th>Tanggal</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat Timbang</th></tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                        <tr class="total-row">
+                            <td colspan="7"><strong>TOTAL ${po}</strong></td>
+                            <td style="text-align:center"><strong>${totalBundlesPO.toLocaleString('id-ID')}</strong></td>
+                            <td style="text-align:center"><strong>${totalBeratPO.toFixed(2)} kg</strong></td>
+                         </tr>
+                        <tr class="total-row">
+                            <td colspan="7"><strong>RATA-RATA ${po}</strong></td>
+                            <td style="text-align:center"><strong>${rataRataPO.toLocaleString('id-ID')}/box</strong></td>
+                            <td style="text-align:center"><strong>${(totalBeratPO/items.length).toFixed(2)} kg/box</strong></td>
+                         </tr>
+                    </tbody>
+                </table>`;
+            }
+            
+            printHtml += `
+                <table style="width: 50%; float: right; margin-top: 15px;">
+                    <tr class="total-row"><td><strong>📦 GRAND TOTAL BUNDLES</strong></td><td style="text-align:center"><strong>${grandTotalBundles.toLocaleString('id-ID')} bundles</strong></td></tr>
+                    <tr class="total-row"><td><strong>⚖️ GRAND TOTAL BERAT</strong></td><td style="text-align:center"><strong>${grandTotalBerat.toFixed(2)} kg</strong></td></tr>
+                </table>
+                <div style="clear:both"></div>
+                
+                <div class="footer">
+                    <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+                    <p>Dokumen ini sah tanpa stempel basah</p>
+                </div>
+            </div>
+            </body>
+            </html>`;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHtml);
+            printWindow.document.close();
+            printWindow.print();
+        };
         document.getElementById('selectAllCheckbox').onclick = (e) => {
             const checkboxes = document.querySelectorAll('.rowCheckbox');
             const isChecked = e.target.checked;
