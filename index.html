@@ -247,7 +247,7 @@
             </select>
         </div>
         <div id="cetakPoInput" class="cetak-option">
-            <label>Masukkan No. PO:</label>
+            <label>Masukkan No. PI:</label>
             <input type="text" id="cetakPoValue" placeholder="Contoh: PI-001">
         </div>
         <div id="cetakBrandInput" class="cetak-option" style="display:none;">
@@ -749,8 +749,8 @@
             
             if(metode === 'pi') {
                 const poValue = document.getElementById('cetakPoValue').value.trim();
-                if(!poValue) { alert("Masukkan No. PO!"); return; }
-                title = `NO. PO: ${poValue}`;
+                if(!poValue) { alert("Masukkan No. PI!"); return; }
+                title = `NO. PI: ${poValue}`;
                 let query = supabase.from('riwayat_timbang').select('*').eq('no_po', poValue).order('id', { ascending: true });
                 const { data, error } = await query;
                 if(error) { alert("Gagal ambil data!"); return; }
@@ -932,7 +932,7 @@
     📄 PI: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}
 </th>></tr>
                         <tr>
-                            <th>No</th><th>Tanggal</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat</th>
+                            <th>No</th><th>Tanggal</th><th>PI</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat</th>
                         </tr>
                     </thead>
                     <tbody>${tableRows}
