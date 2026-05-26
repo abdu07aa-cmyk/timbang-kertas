@@ -97,8 +97,8 @@
             <label>📅 Tanggal</label>
             <input type="date" id="tanggal" value="2026-04-23">
 
-            <label>📄 No. PO</label>
-            <input type="text" id="noPo" placeholder="PO-001">
+            <label>📄 No. PI</label>
+<input type="text" id="noPo" placeholder="PI-001">
 
             <label>🏷️ Brand</label>
             <input type="text" id="brand" placeholder="Contoh: RONSON, ROYO">
@@ -162,22 +162,22 @@
         <div class="card">
             <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
            <div class="search-row">
-    <input type="text" id="searchInput" placeholder="Cari No. PO atau Brand...">
+    <input type="text" id="searchInput" placeholder="Cari No. PI atau Brand...">
     <button id="cariBtn">🔍 Cari</button>
     <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Export Excel</button>
     <button id="cetakBtn" class="btn-cetak">🖨️ Cetak Serah Terima</button>
     <button id="cetakTimbanganBtn" class="btn-cetak" style="background:#06b6d4;">📄 Cetak Timbangan</button>
 </div>
             <div class="row-2" style="margin-top:8px;">
-                <button id="urutPOBtn" class="btn-urut" style="background:#06b6d4;">🔼 Urutkan PO (A-Z)</button>
-                <button id="urutPOTerbalikBtn" class="btn-urut" style="background:#0891b2;">🔽 Urutkan PO (Z-A)</button>
+                <button id="urutPOBtn" class="btn-urut" style="background:#06b6d4;">🔼 Urutkan PI (A-Z)</button>
+<button id="urutPOTerbalikBtn" class="btn-urut" style="background:#0891b2;">🔽 Urutkan PI (Z-A)</button>>
             </div>
             <button id="resetCariBtn" style="background:#64748b; margin-top:0; border:none; border-radius:40px; padding:10px; color:white; font-weight:bold; cursor:pointer;">↺ Reset</button>
 
             <div style="overflow-x:auto; margin-top:12px">
                 <table id="riwayatTable">
                     <thead>
-                        <tr><th><input type="checkbox" id="selectAllCheckbox"></th><th>No</th><th>Tgl</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Aksi</th></tr>
+                        <tr><th><input type="checkbox" id="selectAllCheckbox"></th><th>No</th><th>Tgl</th><th>PI</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Aksi</th></tr>
                     </thead>
                     <tbody id="riwayatBody"></tbody>
                 </table>
@@ -239,7 +239,7 @@
         <div class="cetak-option">
             <label>Pilih Data yang Dicetak:</label>
             <select id="cetakMetode">
-                <option value="po">📦 Cetak per No. PO</option>
+                <option value="pi">📦 Cetak per No. PI</option>
                 <option value="brand">🏷️ Cetak per Brand</option>
                 <option value="tanggal">📅 Cetak per Rentang Tanggal</option>
                 <option value="checklist">✅ Cetak yang di-checklist</option>
@@ -248,7 +248,7 @@
         </div>
         <div id="cetakPoInput" class="cetak-option">
             <label>Masukkan No. PO:</label>
-            <input type="text" id="cetakPoValue" placeholder="Contoh: PO-001">
+            <input type="text" id="cetakPoValue" placeholder="Contoh: PI-001">
         </div>
         <div id="cetakBrandInput" class="cetak-option" style="display:none;">
             <label>Masukkan Brand:</label>
@@ -268,7 +268,7 @@
         <h3>✏️ Edit Data</h3>
         <label>Tanggal</label>
         <input type="date" id="editTanggal">
-        <label>No. PO</label>
+        <label>No. PI</label>
         <input type="text" id="editNoPo">
         <label>Brand</label>
         <input type="text" id="editBrand">
@@ -469,7 +469,7 @@
         };
 
         document.getElementById('resetFormBtn').onclick = () => {
-            if(confirm("Reset form? PO dan Brand akan dikosongkan.")) {
+            if(confirm("Reset form? PI dan Brand akan dikosongkan.")) {
                 document.getElementById('noPo').value = '';
                 document.getElementById('brand').value = '';
                 document.getElementById('berat').value = '';
@@ -667,7 +667,7 @@
             if(error) { alert("Gagal export!"); return; }
             if(!data || data.length===0) { alert("Tidak ada data untuk di export!"); return; }
             
-            const excelData = [["No", "Tanggal", "No. PO", "Brand", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang (kg)", "Berat Bersih (kg)"]];
+            const excelData = [["No", "Tanggal", "No. PI", "Brand", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang (kg)", "Berat Bersih (kg)"]];
             
             for(let i=0; i<data.length; i++) {
                 const d = data[i];
@@ -717,7 +717,7 @@
 
         cetakMetode.onchange = () => {
             const metode = cetakMetode.value;
-            cetakPoInput.style.display = metode === 'po' ? 'block' : 'none';
+            cetakPoInput.style.display = metode === 'pi' ? 'block' : 'none';
             cetakBrandInput.style.display = metode === 'brand' ? 'block' : 'none';
             cetakTanggalInput.style.display = metode === 'tanggal' ? 'block' : 'none';
         };
@@ -747,7 +747,7 @@
             
             const tglSerahFormatted = tglSerah.split('-').reverse().join('/');
             
-            if(metode === 'po') {
+            if(metode === 'pi') {
                 const poValue = document.getElementById('cetakPoValue').value.trim();
                 if(!poValue) { alert("Masukkan No. PO!"); return; }
                 title = `NO. PO: ${poValue}`;
@@ -929,8 +929,8 @@
                 <table>
                     <thead>
                         <tr><th colspan="9" style="background:#2563eb; text-align:left;">
-                            📄 PO: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}
-                        </th></tr>
+    📄 PI: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}
+</th>></tr>
                         <tr>
                             <th>No</th><th>Tanggal</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat</th>
                         </tr>
@@ -1116,7 +1116,7 @@
                 const rataRataPO = items.length > 0 ? Math.round(totalBundlesPO / items.length) : 0;
                 
                 printHtml += `
-                <h3 style="margin: 20px 0 5px 0; background:#e2e8f0; padding:5px;">📄 PO: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}</h3>
+                <h3 style="margin: 20px 0 5px 0; background:#e2e8f0; padding:5px;">📄 PI: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}</h3>
                 <table>
                     <thead>
                         <tr><th>No</th><th>Tanggal</th><th>PO</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat Timbang</th></tr>
