@@ -167,6 +167,7 @@
     <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Export Excel</button>
     <button id="cetakBtn" class="btn-cetak">🖨️ Cetak Serah Terima</button>
     <button id="cetakTimbanganBtn" class="btn-cetak" style="background:#06b6d4;">📄 Cetak Timbangan</button>
+    <button id="cetakBarcodeBtn" class="btn-cetak" style="background:#f59e0b;">📱 Cetak Barcode</button>
 </div>
             <div class="row-2" style="margin-top:8px;">
                 <button id="urutPOBtn" class="btn-urut" style="background:#06b6d4;">🔼 Urutkan PI (A-Z)</button>
@@ -291,7 +292,59 @@
         <button id="closeModalBtn" class="close-modal">❌ Batal</button>
     </div>
 </div>
-
+<!-- MODAL CETAK BARCODE -->
+<div id="cetakBarcodeModal" class="modal">
+    <div class="modal-content">
+        <h3>📱 CETAK BARCODE</h3>
+        
+        <div class="cetak-option">
+            <label>Pilih Data yang Dicetak:</label>
+            <select id="cetakBarcodeMetode">
+                <option value="pi">📦 Cetak per No. PI</option>
+                <option value="brand">🏷️ Cetak per Brand</option>
+                <option value="tanggal">📅 Cetak per Rentang Tanggal</option>
+                <option value="checklist">✅ Cetak yang di-checklist</option>
+                <option value="semua">📄 Cetak Semua Data</option>
+            </select>
+        </div>
+        
+        <div id="cetakBarcodePoInput" class="cetak-option">
+            <label>Masukkan No. PI:</label>
+            <input type="text" id="cetakBarcodePoValue" placeholder="Contoh: PI-001">
+        </div>
+        <div id="cetakBarcodeBrandInput" class="cetak-option" style="display:none;">
+            <label>Masukkan Brand:</label>
+            <input type="text" id="cetakBarcodeBrandValue" placeholder="Contoh: RONSON">
+        </div>
+        <div id="cetakBarcodeTanggalInput" class="cetak-option" style="display:none;">
+            <label>Rentang Tanggal:</label>
+            <input type="date" id="cetakBarcodeTglAwal"> s/d <input type="date" id="cetakBarcodeTglAkhir">
+        </div>
+        
+        <div class="cetak-option">
+            <label>Ukuran Barcode:</label>
+            <select id="barcodeUkuran">
+                <option value="small">Kecil (2cm)</option>
+                <option value="medium" selected>Sedang (3cm)</option>
+                <option value="large">Besar (5cm)</option>
+            </select>
+        </div>
+        
+        <div class="cetak-option">
+            <label>Informasi yang Ditampilkan:</label>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:5px;">
+                <label style="font-weight:normal; margin:0;"><input type="checkbox" id="barcodeTampilPI" checked> No. PI</label>
+                <label style="font-weight:normal; margin:0;"><input type="checkbox" id="barcodeTampilBrand" checked> Brand</label>
+                <label style="font-weight:normal; margin:0;"><input type="checkbox" id="barcodeTampilSize" checked> Size</label>
+                <label style="font-weight:normal; margin:0;"><input type="checkbox" id="barcodeTampilBundles" checked> Bundles</label>
+                <label style="font-weight:normal; margin:0;"><input type="checkbox" id="barcodeTampilTanggal"> Tanggal</label>
+            </div>
+        </div>
+        
+        <button id="prosesCetakBarcodeBtn">✅ Cetak Barcode</button>
+        <button id="closeCetakBarcodeModalBtn" class="close-modal">❌ Batal</button>
+    </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function() {
@@ -1189,7 +1242,7 @@
         cekKoneksi();
         loadAllData();
         
-        // Tambahkan editBox jika belum ada
+            // Tambahkan editBox jika belum ada
         if(!document.getElementById('editBox')) {
             const editBundles = document.getElementById('editBundles');
             const boxLabel = document.createElement('label');
@@ -1200,8 +1253,187 @@
             boxSelect.innerHTML = '<option value="White">White (0.90 kg)</option><option value="White New">White New (0.80 kg)</option><option value="Grey">Grey (1.25 kg)</option><option value="Green Jumbo">Green Jumbo (3.80 kg)</option>';
             editBundles.parentNode.insertBefore(boxLabel, editBundles);
             editBundles.parentNode.insertBefore(boxSelect, editBundles);
-        }
-    })();
+        } // <-- TUTUP BLOK IF DI SINI!
+
+        // ========== FITUR CETAK BARCODE ==========
+        const cetakBarcodeModal = document.getElementById('cetakBarcodeModal');
+        const cetakBarcodeMetode = document.getElementById('cetakBarcodeMetode');
+        const cetakBarcodePoInput = document.getElementById('cetakBarcodePoInput');
+        const cetakBarcodeBrandInput = document.getElementById('cetakBarcodeBrandInput');
+        const cetakBarcodeTanggalInput = document.getElementById('cetakBarcodeTanggalInput');
+
+        // Toggle input berdasarkan metode
+        cetakBarcodeMetode.onchange = function() {
+            const metode = this.value;
+            cetakBarcodePoInput.style.display = metode === 'pi' ? 'block' : 'none';
+            cetakBarcodeBrandInput.style.display = metode === 'brand' ? 'block' : 'none';
+            cetakBarcodeTanggalInput.style.display = metode === 'tanggal' ? 'block' : 'none';
+        };
+        cetakBarcodeMetode.onchange();
+
+        // Tombol buka modal
+        document.getElementById('cetakBarcodeBtn').onclick = function() {
+            cetakBarcodeModal.style.display = 'flex';
+        };
+
+        // Tombol tutup modal
+        document.getElementById('closeCetakBarcodeModalBtn').onclick = function() {
+            cetakBarcodeModal.style.display = 'none';
+        };
+
+        // Proses cetak barcode
+        document.getElementById('prosesCetakBarcodeBtn').onclick = async function() {
+            const metode = cetakBarcodeMetode.value;
+            let dataToPrint = [];
+            let title = "";
+
+            try {
+                if(metode === 'pi') {
+                    const poValue = document.getElementById('cetakBarcodePoValue').value.trim();
+                    if(!poValue) { alert("Masukkan No. PI!"); return; }
+                    title = `NO. PI: ${poValue}`;
+                    const { data, error } = await supabase.from('riwayat_timbang').select('*').eq('no_po', poValue).order('id', { ascending: true });
+                    if(error) { alert("Gagal ambil data!"); return; }
+                    dataToPrint = data || [];
+                } 
+                else if(metode === 'brand') {
+                    const brandValue = document.getElementById('cetakBarcodeBrandValue').value.trim();
+                    if(!brandValue) { alert("Masukkan Brand!"); return; }
+                    title = `BRAND: ${brandValue}`;
+                    const { data, error } = await supabase.from('riwayat_timbang').select('*').eq('brand', brandValue).order('id', { ascending: true });
+                    if(error) { alert("Gagal ambil data!"); return; }
+                    dataToPrint = data || [];
+                }
+                else if(metode === 'tanggal') {
+                    const tglAwal = document.getElementById('cetakBarcodeTglAwal').value;
+                    const tglAkhir = document.getElementById('cetakBarcodeTglAkhir').value;
+                    if(!tglAwal || !tglAkhir) { alert("Pilih rentang tanggal!"); return; }
+                    const tglAwalFormatted = formatDateToDB(tglAwal);
+                    const tglAkhirFormatted = formatDateToDB(tglAkhir);
+                    title = `TANGGAL: ${tglAwal.split('-').reverse().join('/')} s/d ${tglAkhir.split('-').reverse().join('/')}`;
+                    const { data, error } = await supabase.from('riwayat_timbang').select('*').gte('tanggal', tglAwalFormatted).lte('tanggal', tglAkhirFormatted).order('id', { ascending: true });
+                    if(error) { alert("Gagal ambil data!"); return; }
+                    dataToPrint = data || [];
+                }
+                else if(metode === 'checklist') {
+                    const checkedIds = getCheckedIds();
+                    const ids = [...checkedIds];
+                    if(ids.length === 0) { alert("Pilih data yang ingin dicetak terlebih dahulu!"); return; }
+                    title = `DATA TERPILIH (${ids.length} box)`;
+                    const { data, error } = await supabase.from('riwayat_timbang').select('*').in('id', ids).order('id', { ascending: true });
+                    if(error) { alert("Gagal ambil data!"); return; }
+                    dataToPrint = data || [];
+                }
+                else {
+                    title = `SEMUA DATA TIMBANGAN`;
+                    const { data, error } = await supabase.from('riwayat_timbang').select('*').order('id', { ascending: true });
+                    if(error) { alert("Gagal ambil data!"); return; }
+                    dataToPrint = data || [];
+                }
+
+                if(dataToPrint.length === 0) {
+                    alert("Tidak ada data untuk dicetak!");
+                    return;
+                }
+
+                // Ambil setting
+                const ukuran = document.getElementById('barcodeUkuran').value;
+                const tampilPI = document.getElementById('barcodeTampilPI').checked;
+                const tampilBrand = document.getElementById('barcodeTampilBrand').checked;
+                const tampilSize = document.getElementById('barcodeTampilSize').checked;
+                const tampilBundles = document.getElementById('barcodeTampilBundles').checked;
+                const tampilTanggal = document.getElementById('barcodeTampilTanggal').checked;
+
+                // Ukuran barcode
+                const ukuranMap = {
+                    small: { width: 150, height: 60, fontSize: 10, perRow: 4 },
+                    medium: { width: 200, height: 80, fontSize: 12, perRow: 3 },
+                    large: { width: 280, height: 100, fontSize: 14, perRow: 2 }
+                };
+                const size = ukuranMap[ukuran];
+
+                // Generate barcode
+                let barcodeHTML = '';
+                for(let i = 0; i < dataToPrint.length; i++) {
+                    const item = dataToPrint[i];
+                    const barcodeText = `${item.no_po || 'N/A'}-${item.id || i+1}`;
+                    
+                    let infoText = '';
+                    if(tampilPI) infoText += `${item.no_po || '-'} `;
+                    if(tampilBrand) infoText += `${item.brand || '-'} `;
+                    if(tampilSize) infoText += `${item.size_kertas || ''} `;
+                    if(tampilBundles) infoText += `${item.jumlah_bundles || 0} bundles`;
+                    if(tampilTanggal) infoText += ` ${item.tanggal || ''}`;
+
+                    // Generate barcode simpel
+                    let bars = '';
+                    for(let j = 0; j < barcodeText.length; j++) {
+                        const charCode = barcodeText.charCodeAt(j);
+                        const barWidth = 2 + (charCode % 4);
+                        const barHeight = 30 + (charCode % 30);
+                        bars += `<div style="display:inline-block;width:${barWidth}px;height:${barHeight}px;background:black;margin:0 1px;"></div>`;
+                    }
+
+                    barcodeHTML += `
+                    <div style="display:inline-block;border:1px solid #ccc;border-radius:8px;padding:12px;margin:8px;text-align:center;width:${size.width + 40}px;page-break-inside:avoid;">
+                        <div style="font-size:${size.fontSize - 2}px;font-weight:bold;color:#1e3a8a;margin-bottom:4px;">THE ROLLING PAPER</div>
+                        <div style="padding:8px 0;">${bars}</div>
+                        <div style="font-size:${size.fontSize - 2}px;letter-spacing:1px;font-family:monospace;">${barcodeText}</div>
+                        <div style="font-size:${size.fontSize - 4}px;color:#333;margin-top:4px;border-top:1px solid #eee;padding-top:4px;">${infoText}</div>
+                    </div>`;
+                }
+
+                // Cetak HTML
+                const printHtml = `<!DOCTYPE html>
+                <html>
+                <head><meta charset="UTF-8"><title>Cetak Barcode - The Rolling Paper</title>
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { font-family: Arial, sans-serif; padding: 20px; background: white; }
+                    .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; }
+                    .header h1 { color: #1e3a8a; font-size: 20px; }
+                    .header p { color: #666; font-size: 12px; }
+                    .barcode-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 10px; color: #666; }
+                    @media print {
+                        body { padding: 10px; }
+                    }
+                </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>THE ROLLING PAPER COMPANY</h1>
+                        <p>📱 Cetak Barcode - ${title}</p>
+                        <p style="font-size:11px;">Total: ${dataToPrint.length} barcode | Dicetak: ${new Date().toLocaleString('id-ID')}</p>
+                    </div>
+                    <div class="barcode-grid">
+                        ${barcodeHTML}
+                    </div>
+                    <div class="footer">
+                        <p>Dokumen ini sah tanpa stempel basah</p>
+                    </div>
+                </body>
+                </html>`;
+
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(printHtml);
+                printWindow.document.close();
+                printWindow.print();
+                cetakBarcodeModal.style.display = 'none';
+
+            } catch(err) {
+                alert("Terjadi error: " + err.message);
+            }
+        };
+
+        // Tutup modal saat klik di luar
+        window.onclick = function(e) {
+            if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
+            if(e.target === cetakModal) cetakModal.style.display = 'none';
+            if(e.target === cetakBarcodeModal) cetakBarcodeModal.style.display = 'none';
+        };
+
+    })(); // <-- INI PENUTUP IIFE YANG BENAR
 </script>
 </body>
 </html>
