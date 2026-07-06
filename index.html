@@ -161,13 +161,15 @@
     <div id="page2" class="page">
         <div class="card">
             <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
-           <div class="search-row" style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
-    <input type="text" id="searchInput" placeholder="Cari No. PI atau Brand..." style="grid-column: span 2;">
+           <div class="search-row">
+    <input type="text" id="searchInput" placeholder="Cari No. PI atau Brand...">
     <button id="cariBtn">🔍 Cari</button>
-    <button id="exportExcelBtn" class="btn-export" style="background:#10b981;">📎 Excel</button>
-    <button id="cetakBtn" class="btn-cetak">🖨️ Serah Terima</button>
-    <button id="cetakTimbanganBtn" class="btn-cetak" style="background:#06b6d4;">📄 Timbangan</button>
-    <button id="cetakBarcodeBtn" class="btn-cetak" style="background:#f59e0b;">📱 Barcode</button>
+</div>
+<div class="search-row" style="margin-top:4px;">
+    <button id="exportExcelBtn" class="btn-export" style="background:#10b981; flex:1;">📎 Excel</button>
+    <button id="cetakBtn" class="btn-cetak" style="flex:1;">🖨️ Serah Terima</button>
+    <button id="cetakTimbanganBtn" class="btn-cetak" style="background:#06b6d4; flex:1;">📄 Timbangan</button>
+    <button id="cetakBarcodeBtn" class="btn-cetak" style="background:#f59e0b; flex:1;">📱 Barcode</button>
 </div>
             <div class="row-2" style="margin-top:8px;">
                 <button id="urutPOBtn" class="btn-urut" style="background:#06b6d4;">🔼 Urutkan PI (A-Z)</button>
