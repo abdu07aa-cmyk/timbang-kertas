@@ -295,6 +295,35 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     (function() {
+        // ========== SET TANGGAL OTOMATIS SAAT BUKA APLIKASI ==========
+        function setTanggalOtomatis() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayStr = `${year}-${month}-${day}`;
+            
+            // Set tanggal di form timbang
+            const tanggalInput = document.getElementById('tanggal');
+            if(tanggalInput) {
+                tanggalInput.value = todayStr;
+            }
+            
+            // Set tanggal serah terima di modal cetak
+            const tglSerah = document.getElementById('tglSerahTerima');
+            if(tglSerah) {
+                tglSerah.value = todayStr;
+            }
+            
+            // Set jam sekarang
+            const jam = document.getElementById('jamSerahTerima');
+            if(jam) {
+                const hours = String(today.getHours()).padStart(2, '0');
+                const minutes = String(today.getMinutes()).padStart(2, '0');
+                jam.value = `${hours}:${minutes}`;
+            }
+        }
+
         // ========== KONEKSI SUPABASE BARU ==========
         const SUPABASE_URL = 'https://dggspzjibisapdaowkkj.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnZ3NwemppYmlzYXBkYW93a2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NjMxNzksImV4cCI6MjA4MzQzOTE3OX0.DtDb10SzKfwJg3bbVq53nG9RIXbZYtitXn67ZtdBMFY';
@@ -408,6 +437,9 @@
             if(!gram) return null;
             return gram / 1000;
         }
+
+        // ========== PANGGIL SET TANGGAL OTOMATIS ==========
+        setTanggalOtomatis();
 
         document.getElementById('hitungBtn').onclick = async () => {
             const beratTimbang = parseFloat(document.getElementById('berat').value);
