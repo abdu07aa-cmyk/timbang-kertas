@@ -209,20 +209,15 @@
     <div id="page3" class="page">
         <div class="card">
             <h2>📝 BUAT PERMINTAAN KE LEADER MESIN</h2>
-            <div class="note">Pilih No. PI yang sudah terdaftar. Brand terisi otomatis. Leader akan menyiapkan dari stok atau memproduksi.</div>
+            <div class="note">Pilih No. PI lalu item kertasnya. Brand, jenis, size, GSM, dan leaves terisi otomatis, Anda tinggal isi qty.</div>
             <label>📄 No. PI</label>
             <input type="text" id="pmPi" list="piList" placeholder="Pilih / ketik No. PI" autocomplete="off">
             <div id="pmPiHint" class="hint"></div>
             <label>🏷️ Brand</label>
             <input type="text" id="pmBrand" readonly placeholder="Otomatis terisi">
-            <label>🧻 Jenis Kertas</label>
-            <select id="pmJenis"></select>
-            <label>📏 Size Kertas</label>
-            <select id="pmSize"></select>
-            <div class="row-2">
-                <div><label>📄 GSM</label><select id="pmGsm"></select></div>
-                <div><label>📑 Leaves/Bundle</label><select id="pmLeaves"></select></div>
-            </div>
+            <label>📋 Item kertas PI</label>
+            <select id="pmItem"><option value="">— pilih PI dulu —</option></select>
+            <div id="pmItemInfo" class="hint"></div>
             <label>📦 Qty diminta (bundles)</label>
             <input type="number" id="pmQty" step="1" min="1" placeholder="Contoh: 500">
             <label>📝 Catatan (opsional)</label>
@@ -273,6 +268,7 @@
                 <option value="KOREKSI_TAMBAH">Koreksi tambah (wajib alasan)</option>
                 <option value="KOREKSI_KURANG">Koreksi kurang (wajib alasan)</option>
             </select>
+            <label>🔗 Isi otomatis dari PI (opsional)</label><select id="stPiItem"></select>
             <label>🧻 Jenis Kertas</label><select id="stJenis"></select>
             <label>📏 Size Kertas</label><select id="stSize"></select>
             <div class="row-2">
@@ -296,17 +292,27 @@
     <div id="page6" class="page">
         <div class="card">
             <h2>📄 MASTER NO. PI</h2>
-            <div class="note">Admin maupun Leader bisa membuat No. PI. Sistem menolak PI kembar atau yang mirip (mis. "PI-001" dan "PI001").</div>
+            <div class="note">Isi lengkap sekali di sini. Untuk PI yang sudah ada dengan item kertas lain, ketik No. PI yang sama: brand dan tanggal otomatis, lalu isi rincian kertas berikutnya.</div>
+            <label>No. PI</label>
+            <input type="text" id="mpNo" list="piList" placeholder="PI-001" autocomplete="off">
+            <div id="mpHint" class="hint"></div>
             <div class="row-2">
-                <div><label>No. PI</label><input type="text" id="mpNo" placeholder="PI-001" autocomplete="off"></div>
-                <div><label>Brand</label><input type="text" id="mpBrand" list="brandList" placeholder="RONSON" autocomplete="off"></div>
+                <div><label>📅 Tgl PI turun</label><input type="date" id="mpTgl"></div>
+                <div><label>🏷️ Brand</label><input type="text" id="mpBrand" list="brandList" placeholder="RONSON" autocomplete="off"></div>
             </div>
             <datalist id="brandList"></datalist>
-            <button id="mpSimpanBtn">➕ Simpan PI Baru</button>
+            <label>🧻 Jenis Kertas</label><select id="mpJenis"></select>
+            <label>📏 Size Kertas</label><select id="mpSize"></select>
+            <div class="row-2">
+                <div><label>📄 GSM</label><select id="mpGsm"></select></div>
+                <div><label>📑 Leaves/Bundle</label><select id="mpLeaves"></select></div>
+            </div>
+            <label>📦 Qty PI (bundles)</label><input type="number" id="mpQty" step="1" min="1" placeholder="Contoh: 5000">
+            <button id="mpSimpanBtn">➕ Simpan PI / Item</button>
             <button id="mpImporBtn" class="btn-reset" style="display:none;">📥 Impor PI dari riwayat timbang lama</button>
             <input type="text" id="mpSearch" placeholder="Cari PI / Brand..." style="margin-top:12px;">
             <div style="overflow-x:auto;margin-top:8px;max-height:260px;overflow-y:auto;">
-                <table><thead><tr><th>No. PI</th><th>Brand</th><th>Dibuat oleh</th><th>Tanggal</th></tr></thead>
+                <table><thead><tr><th>No. PI</th><th>Tgl PI</th><th>Brand</th><th>Jenis</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Qty PI</th><th>Diminta</th><th>Sisa</th></tr></thead>
                 <tbody id="mpBody"></tbody></table>
             </div>
         </div>
@@ -530,7 +536,7 @@
 
     // ========== STATE ==========
     let user = null;
-    let piList = [], jenisList = [], customBerat = [];
+    let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {};
     let pmData = [], pmTimbang = {}, stokMap = {};
     let currentPage = 1, currentSearch = "", currentEditId = null, currentOrderBy = "id", currentOrderAsc = false;
     let allDataCache = [];
@@ -674,27 +680,39 @@
     function allSizes() { return [...new Set([...BASE_SIZES, ...customBerat.map(c => c.size_kertas)])]; }
     function allGsm() { return [...new Set([...BASE_GSM, ...customBerat.map(c => c.gsm)])].sort((a, b) => a - b); }
     function allLeaves() { return [...new Set([...BASE_LEAVES, ...customBerat.map(c => c.leaves)])].sort((a, b) => a - b); }
+    function itemLabel(i) { const p = piList.find(x => x.id === i.pi_id) || {}; return `${p.no_pi || '?'} · ${p.brand || ''} · ${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv`; }
+    function qtyPiSpan(r) { const pit = piItems.find(x => x.id === r.pi_item_id); return pit ? `<span>Qty PI: <b>${pit.qty_pi}</b></span>` : ''; }
+    function fillStPi() {
+        const el = $('stPiItem'); if (!el) return;
+        const prev = el.value;
+        el.innerHTML = '<option value="">— isi manual —</option>' + piItems.map(i => `<option value="${i.id}">${esc(itemLabel(i))}</option>`).join('');
+        el.value = prev;
+    }
     function refreshSelects() {
         const jn = jenisList.map(j => j.nama);
-        ['jenis', 'pmJenis', 'stJenis', 'editJenis'].forEach(id => fillSelect(id, jn));
+        ['jenis', 'mpJenis', 'stJenis', 'editJenis'].forEach(id => fillSelect(id, jn));
         fillSelect('cbJenis', ['', ...jn], v => v === '' ? '(Semua jenis)' : v);
-        ['size', 'pmSize', 'stSize', 'editSize'].forEach(id => fillSelect(id, allSizes()));
-        ['gsm', 'pmGsm', 'stGsm', 'editGsm'].forEach(id => fillSelect(id, allGsm()));
-        ['leaves', 'pmLeaves', 'stLeaves'].forEach(id => fillSelect(id, allLeaves()));
+        ['size', 'mpSize', 'stSize', 'editSize'].forEach(id => fillSelect(id, allSizes()));
+        ['gsm', 'mpGsm', 'stGsm', 'editGsm'].forEach(id => fillSelect(id, allGsm()));
+        ['leaves', 'mpLeaves', 'stLeaves'].forEach(id => fillSelect(id, allLeaves()));
         $('piList').innerHTML = piList.map(p => `<option value="${esc(p.no_pi)}">${esc(p.brand)}</option>`).join('');
         $('brandList').innerHTML = [...new Set(piList.map(p => p.brand))].map(b => `<option value="${esc(b)}">`).join('');
-        $('sizeList').innerHTML = allSizes().map(s => `<option value="${esc(s)}">`).join('');
+        fillStPi(); $('sizeList').innerHTML = allSizes().map(s => `<option value="${esc(s)}">`).join('');
         const f = (id, list) => fillSelect(id, list, v => v === 'AKTIF' ? 'Aktif (belum selesai)' : v === 'SEMUA' ? 'Semua status' : v);
         f('pmFilter', ['AKTIF', 'SEMUA', 'Diminta', 'Diproses', 'Produksi', 'Siap', 'Diterima', 'Dibatalkan']);
         f('qFilter', ['AKTIF', 'SEMUA', 'Diminta', 'Diproses', 'Produksi', 'Siap', 'Diterima', 'Dibatalkan']);
     }
     async function loadMasterData() {
-        const [a, b, c] = await Promise.all([
+        const [d, e, a, b, c] = await Promise.all([
+            fetchAll(() => supabase.from('pi_item').select('*').order('id')),
+            fetchAll(() => supabase.from('pi_item_status').select('*').order('pi_item_id')),
             fetchAll(() => supabase.from('master_pi').select('*').order('id', { ascending: false })),
             supabase.from('jenis_kertas').select('*').order('id'),
             supabase.from('berat_bundle_custom').select('*').order('id')
         ]);
         piList = a.data || [];
+        piItems = (d.data || []).map(x => ({ ...x, gsm: Number(x.gsm), leaves: Number(x.leaves), qty_pi: Number(x.qty_pi) }));
+        piStatus = {}; (e.data || []).forEach(x => piStatus[x.pi_item_id] = Number(x.qty_diminta));
         jenisList = b.data || [];
         customBerat = (c.data || []).map(x => ({ ...x, gsm: Number(x.gsm), leaves: Number(x.leaves), gram_per_bundle: Number(x.gram_per_bundle) }));
         refreshSelects();
@@ -1165,42 +1183,72 @@
     };
 
     // ========== PERMINTAAN (Admin buat, Leader proses) ==========
-    $('pmPi').addEventListener('input', () => {
-        const p = findPI($('pmPi').value), h = $('pmPiHint');
+    function itemOpsiLabel(i) { const dm = piStatus[i.id] || 0; return `${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · PI ${i.qty_pi} · sisa ${i.qty_pi - dm}`; }
+    function onPmPiInput() {
+        const raw = $('pmPi').value.trim(), p = findPI($('pmPi').value), h = $('pmPiHint'), sel = $('pmItem');
+        const prev = sel.value;
         $('pmBrand').value = p ? p.brand : '';
-        if (p) { h.className = 'hint ok'; h.textContent = '✅ PI terdaftar'; }
-        else if ($('pmPi').value.trim()) { h.className = 'hint bad'; h.textContent = '❌ PI belum terdaftar. Buat dulu di menu Master.'; }
-        else { h.className = 'hint'; h.textContent = ''; }
-    });
+        if (!p) {
+            sel.innerHTML = '<option value="">— pilih PI dulu —</option>'; $('pmItemInfo').textContent = '';
+            h.className = raw ? 'hint bad' : 'hint'; h.textContent = raw ? '❌ PI belum terdaftar. Buat dulu di menu Master.' : '';
+            return;
+        }
+        const its = piItems.filter(i => i.pi_id === p.id);
+        if (!its.length) {
+            sel.innerHTML = '<option value="">— belum ada rincian —</option>'; $('pmItemInfo').textContent = '';
+            h.className = 'hint bad'; h.textContent = '⚠️ PI ini belum punya rincian kertas. Lengkapi dulu di menu Master.';
+            return;
+        }
+        h.className = 'hint ok'; h.textContent = '✅ PI terdaftar' + (p.tgl_pi ? ' · tgl PI ' + p.tgl_pi.split('-').reverse().join('/') : '');
+        sel.innerHTML = (its.length > 1 ? '<option value="">— pilih item kertas —</option>' : '') + its.map(i => `<option value="${i.id}">${esc(itemOpsiLabel(i))}</option>`).join('');
+        if (its.length === 1) sel.value = its[0].id; else if (prev && its.some(i => String(i.id) === prev)) sel.value = prev;
+        onPmItemChange();
+    }
+    function onPmItemChange() {
+        const i = piItems.find(x => x.id === Number($('pmItem').value)), el = $('pmItemInfo');
+        if (!i) { el.className = 'hint'; el.textContent = ''; return; }
+        const dm = piStatus[i.id] || 0, sisa = i.qty_pi - dm;
+        el.className = 'hint ' + (sisa <= 0 ? 'bad' : 'ok');
+        el.textContent = `Qty PI ${i.qty_pi} | sudah diminta ${dm} | sisa ${sisa} bundle`;
+        $('pmQty').value = sisa > 0 ? sisa : '';
+    }
+    $('pmPi').addEventListener('input', onPmPiInput);
+    $('pmPi').addEventListener('change', onPmPiInput);
+    $('pmItem').addEventListener('change', onPmItemChange);
     $('pmKirimBtn').onclick = async () => {
         if (!requireRole('admin')) return;
         const p = findPI($('pmPi').value);
         if (!p) { alert('No. PI belum terdaftar. Buat dulu di menu Master.'); return; }
+        const i = piItems.find(x => x.id === Number($('pmItem').value));
+        if (!i) { alert('Pilih item kertas PI terlebih dahulu'); return; }
         const qty = parseInt($('pmQty').value);
         if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
-        const rec = { no_pi: p.no_pi, brand: p.brand, size_kertas: $('pmSize').value, gsm: parseInt($('pmGsm').value), leaves: parseInt($('pmLeaves').value), jenis_kertas: $('pmJenis').value, qty_minta: qty, catatan: $('pmCatatan').value.trim() || null, diminta_oleh: user.nama };
-        if (!beratBundleKG(rec.size_kertas, rec.gsm, rec.leaves, rec.jenis_kertas)) {
-            if (!confirm('⚠️ Berat bundle untuk spesifikasi ini belum terdaftar, jadi nanti belum bisa ditimbang.\nTambahkan di Master > Spesifikasi.\nTetap kirim permintaan?')) return;
+        if (!beratBundleKG(i.size_kertas, i.gsm, i.leaves, i.jenis_kertas) &&
+            !confirm('⚠️ Berat bundle untuk spesifikasi ini belum terdaftar, jadi nanti belum bisa ditimbang.\nTambahkan di Master > Spesifikasi.\nTetap kirim permintaan?')) return;
+        if (!confirm(`Kirim permintaan?\nPI ${p.no_pi} (${p.brand})\n${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\nQty: ${qty} bundle`)) return;
+        const args = { p_pi_item_id: i.id, p_qty: qty, p_catatan: $('pmCatatan').value.trim() || null, p_oleh: user.nama, p_izinkan_lebih: false };
+        let { error } = await supabase.rpc('buat_permintaan', args);
+        if (error && /Melebihi qty PI/.test(error.message)) {
+            if (!confirm('⚠️ ' + error.message + '\n\nTetap kirim permintaan melebihi qty PI?')) return;
+            ({ error } = await supabase.rpc('buat_permintaan', { ...args, p_izinkan_lebih: true }));
         }
-        const dup = pmData.find(r => AKTIF.includes(r.status) && r.no_pi === rec.no_pi && r.size_kertas === rec.size_kertas && r.gsm === rec.gsm && r.leaves === rec.leaves && r.jenis_kertas === rec.jenis_kertas);
-        if (dup && !confirm(`⚠️ Sudah ada permintaan aktif #${dup.id} untuk PI ${dup.no_pi} dengan spesifikasi yang sama (${dup.qty_minta} bundle, status ${dup.status}).\nTetap buat permintaan baru?`)) return;
-        if (!confirm(`Kirim permintaan?\nPI ${rec.no_pi} (${rec.brand})\n${rec.jenis_kertas} · ${rec.size_kertas} · ${rec.gsm}gsm · ${rec.leaves}lv\nQty: ${qty} bundle`)) return;
-        const { data, error } = await supabase.from('permintaan').insert([rec]).select();
         if (error) { alert('❌ ' + error.message); return; }
-        catatLog('BUAT_PERMINTAAN', `#${data[0].id} PI ${rec.no_pi} ${rec.jenis_kertas} ${rec.size_kertas} ${rec.gsm}gsm ${rec.leaves}lv qty ${qty}`);
         $('pmQty').value = ''; $('pmCatatan').value = '';
-        loadPermintaan();
+        await loadPermintaan();
+        onPmPiInput();
     };
 
     async function loadPermintaan() {
         if (!user) return;
-        const [a, b, c] = await Promise.all([
+        const [a, b, c, d] = await Promise.all([
             supabase.from('permintaan').select('*').order('id', { ascending: false }).limit(500),
             supabase.from('ditimbang_per_permintaan').select('*'),
-            supabase.from('stok_saat_ini').select('*')
+            supabase.from('stok_saat_ini').select('*'),
+            supabase.from('pi_item_status').select('*')
         ]);
         if (a.error) { console.error(a.error); return; }
         pmData = a.data || [];
+        piStatus = {}; (d.data || []).forEach(x => piStatus[x.pi_item_id] = Number(x.qty_diminta));
         pmTimbang = {}; (b.data || []).forEach(x => pmTimbang[x.permintaan_id] = x.bundles);
         stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas)] = x.qty);
         renderPermintaan();
@@ -1232,7 +1280,7 @@
         return `<div class="pcard" style="border-left-color:${warna}">
             <div class="top"><span class="pi">#${r.id} · ${esc(r.no_pi)} · ${esc(r.brand)}</span><span class="badge" style="background:${warna}">${esc(r.status)}</span></div>
             <div class="spec">🧻 <b>${esc(r.jenis_kertas)}</b> · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves</div>
-            <div class="nums"><span>Diminta: <b>${r.qty_minta}</b></span><span>Siap: <b>${r.qty_siap}</b></span>${AKTIF.includes(r.status) && sisa > 0 ? `<span>Kurang: <b>${sisa}</b></span>` : ''}${stokInfo ? `<span>${stokInfo}</span>` : ''}${sel ? `<span>${sel}</span>` : ''}</div>
+            <div class="nums">${qtyPiSpan(r)}<span>Diminta: <b>${r.qty_minta}</b></span><span>Siap: <b>${r.qty_siap}</b></span>${AKTIF.includes(r.status) && sisa > 0 ? `<span>Kurang: <b>${sisa}</b></span>` : ''}${stokInfo ? `<span>${stokInfo}</span>` : ''}${sel ? `<span>${sel}</span>` : ''}</div>
             ${r.catatan ? `<div class="meta">📝 Admin: ${esc(r.catatan)}</div>` : ''}
             ${r.catatan_leader ? `<div class="meta">🏭 Leader: ${esc(r.catatan_leader)}</div>` : ''}
             <div class="meta">Diminta ${esc(r.diminta_oleh || '-')} · ${fmtWaktu(r.created_at)}${r.disiapkan_oleh ? ' · Disiapkan ' + esc(r.disiapkan_oleh) : ''}${r.diterima_oleh ? ' · Diterima ' + esc(r.diterima_oleh) : ''}</div>
@@ -1318,6 +1366,10 @@
         $('stokBody').innerHTML = rows.map(r => `<tr><td>${esc(r.jenis_kertas)}</td><td>${esc(r.size_kertas)}</td><td>${r.gsm}</td><td>${r.leaves}</td><td style="font-weight:bold;text-align:center">${r.qty}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center">📭 Belum ada stok tercatat</td></tr>';
     }
     $('stSearch').addEventListener('input', renderStok);
+    $('stPiItem').addEventListener('change', () => {
+        const i = piItems.find(x => x.id === Number($('stPiItem').value)); if (!i) return;
+        $('stJenis').value = i.jenis_kertas; $('stSize').value = i.size_kertas; $('stGsm').value = i.gsm; $('stLeaves').value = i.leaves;
+    });
     $('stSimpanBtn').onclick = async () => {
         if (!requireRole('leader')) return;
         const qty = parseInt($('stQty').value);
@@ -1332,22 +1384,52 @@
     // ========== MASTER ==========
     function renderMaster() {
         const s = $('mpSearch').value.trim().toLowerCase();
-        $('mpBody').innerHTML = piList.filter(p => !s || `${p.no_pi} ${p.brand}`.toLowerCase().includes(s)).map(p => `<tr><td><b>${esc(p.no_pi)}</b></td><td>${esc(p.brand)}</td><td>${esc(p.dibuat_oleh || '-')}</td><td>${fmtWaktu(p.created_at)}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada PI</td></tr>';
+        const rows = [];
+        piList.forEach(p => {
+            if (s && !`${p.no_pi} ${p.brand}`.toLowerCase().includes(s)) return;
+            const its = piItems.filter(i => i.pi_id === p.id);
+            const tgl = p.tgl_pi ? p.tgl_pi.split('-').reverse().join('/') : '-';
+            if (!its.length) rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td colspan="7" style="color:#b45309">belum ada rincian kertas</td></tr>`);
+            its.forEach(i => {
+                const dm = piStatus[i.id] || 0, sisa = i.qty_pi - dm;
+                rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td>${esc(i.jenis_kertas)}</td><td>${esc(i.size_kertas)}</td><td>${i.gsm}</td><td>${i.leaves}</td><td><b>${i.qty_pi}</b></td><td>${dm}</td><td class="${sisa < 0 ? 'bad' : sisa === 0 ? 'good' : ''}">${sisa}</td></tr>`);
+            });
+        });
+        $('mpBody').innerHTML = rows.join('') || '<tr><td colspan="10" style="text-align:center">Belum ada PI</td></tr>';
         $('mjList').innerHTML = jenisList.map(j => `<span class="chip">${esc(j.nama)}</span>`).join('');
         $('cbBody').innerHTML = customBerat.map(c => `<tr><td>${esc(c.size_kertas)}</td><td>${c.gsm}</td><td>${c.leaves}</td><td>${esc(c.jenis_kertas || 'Semua')}</td><td>${c.gram_per_bundle}</td><td><button class="btn-hapus-small" data-id="${c.id}">🗑️</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center">Belum ada spesifikasi tambahan</td></tr>';
     }
     $('mpSearch').addEventListener('input', renderMaster);
+    $('mpNo').addEventListener('input', () => {
+        const p = findPI($('mpNo').value), hh = $('mpHint');
+        if (p) {
+            $('mpBrand').value = p.brand === '-' ? '' : p.brand; $('mpBrand').readOnly = p.brand !== '-';
+            $('mpTgl').value = p.tgl_pi || ''; $('mpTgl').disabled = !!p.tgl_pi;
+            hh.className = 'hint ok'; hh.textContent = '✅ PI sudah ada. Brand & tanggal otomatis; yang disimpan adalah item kertas tambahan.';
+        } else {
+            $('mpBrand').readOnly = false; $('mpTgl').disabled = false;
+            hh.className = 'hint'; hh.textContent = $('mpNo').value.trim() ? 'PI baru' : '';
+        }
+    });
     $('mpSimpanBtn').onclick = async () => {
         const no = normPI($('mpNo').value), br = $('mpBrand').value.trim().toUpperCase();
+        const tgl = $('mpTgl').value, qty = parseInt($('mpQty').value);
+        const jenis = $('mpJenis').value, size = $('mpSize').value, gsm = parseInt($('mpGsm').value), leaves = parseInt($('mpLeaves').value);
         if (!no || !br) { alert('No. PI dan Brand wajib diisi'); return; }
-        const sim = piList.find(p => canon(p.no_pi) === canon(no));
-        if (sim) { alert(`❌ No. PI sudah ada / mirip: ${sim.no_pi} (${sim.brand}), dibuat oleh ${sim.dibuat_oleh || '-'} pada ${fmtWaktu(sim.created_at)}`); return; }
-        if (!confirm(`Simpan PI baru?\nNo. PI: ${no}\nBrand: ${br}\n\nPI tidak bisa diubah setelah dibuat.`)) return;
-        const { error } = await supabase.from('master_pi').insert([{ no_pi: no, brand: br, dibuat_oleh: user.nama }]);
-        if (error) { alert(error.code === '23505' ? '❌ No. PI sudah ada (kemungkinan baru dibuat orang lain). Muat ulang.' : '❌ ' + error.message); await loadMasterData(); return; }
-        catatLog('BUAT_PI', `${no} - ${br}`);
-        $('mpNo').value = ''; $('mpBrand').value = '';
+        if (!tgl) { alert('Tanggal PI turun wajib diisi'); return; }
+        if (!(qty > 0)) { alert('Qty PI harus lebih dari 0'); return; }
+        if (!findPI(no)) {
+            const sim = piList.find(p => canon(p.no_pi) === canon(no));
+            if (sim) { alert(`❌ No. PI mirip dengan yang sudah ada: ${sim.no_pi} (${sim.brand}). Pakai penulisan yang sama persis.`); return; }
+        }
+        if (!beratBundleKG(size, gsm, leaves, jenis) &&
+            !confirm('⚠️ Berat bundle spesifikasi ini belum terdaftar (belum bisa ditimbang). Tambahkan nanti di bagian Spesifikasi di bawah.\nTetap simpan?')) return;
+        if (!confirm(`Simpan?\nNo. PI: ${no} | Brand: ${br} | Tgl PI: ${tgl.split('-').reverse().join('/')}\n${jenis} · ${size} · ${gsm}gsm · ${leaves}lv\nQty PI: ${qty} bundle\n\nItem PI tidak bisa diubah setelah disimpan.`)) return;
+        const { error } = await supabase.rpc('simpan_pi_item', { p_no: no, p_brand: br, p_tgl: tgl, p_jenis: jenis, p_size: size, p_gsm: gsm, p_leaves: leaves, p_qty: qty, p_oleh: user.nama });
+        if (error) { alert(error.code === '23505' ? '❌ Item kertas yang sama sudah ada di PI ini.' : '❌ ' + error.message); await loadMasterData(); return; }
+        $('mpQty').value = '';
         await loadMasterData();
+        alert('✅ Tersimpan. Untuk item kertas lain di PI yang sama, ganti jenis/size/GSM/leaves/qty lalu simpan lagi.');
     };
     $('mpImporBtn').onclick = async () => {
         if (!requireRole('admin')) return;
