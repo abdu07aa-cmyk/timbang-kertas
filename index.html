@@ -10,23 +10,20 @@
         .container { max-width: 650px; margin: 0 auto; }
         .card { background: white; border-radius: 20px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
         h1 { font-size: 1.3rem; color: #1e3a8a; text-align: center; }
-        .tab-bar { display: flex; gap: 8px; margin-bottom: 16px; }
-        .tab { flex: 1; text-align: center; padding: 10px; background: #cbd5e1; border-radius: 40px; font-weight: bold; cursor: pointer; }
+        h2 { font-size: 1.05rem; color: #1e3a8a; margin-bottom: 8px; }
+        h3.sec { font-size: .95rem; color: #1e3a8a; margin: 4px 0 8px; }
+        .tab-bar { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+        .tab { flex: 1; min-width: 22%; text-align: center; padding: 9px 4px; background: #cbd5e1; border-radius: 40px; font-weight: bold; cursor: pointer; font-size: .78rem; }
         .tab.active { background: #1e3a8a; color: white; }
         .page { display: none; }
         .page.active-page { display: block; }
         label { font-weight: bold; display: block; margin-top: 12px; margin-bottom: 5px; font-size: 0.85rem; }
         input, select { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid #ccc; }
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            min-width: 20px;
-            min-height: 20px;
-            accent-color: #1e3a8a;
-            cursor: pointer;
-            vertical-align: middle;
-        }
+        input[readonly] { background: #f1f5f9; color: #334155; }
+        input[type="checkbox"] { width: 20px; height: 20px; min-width: 20px; min-height: 20px; accent-color: #1e3a8a; cursor: pointer; vertical-align: middle; }
         button { background: #3b82f6; color: white; border: none; padding: 12px; border-radius: 40px; width: 100%; margin-top: 16px; cursor: pointer; font-weight: bold; }
+        button:disabled { opacity: .5; cursor: not-allowed; }
+        select:disabled { background: #f1f5f9; }
         .btn-reset { background: #64748b; margin-top: 8px; }
         .btn-hapus { background: #ef4444; margin-top: 8px; }
         .btn-edit-small { background: #f59e0b; padding: 4px 8px; font-size: 0.7rem; width: auto; margin: 0; border-radius: 12px; cursor: pointer; color: white; border: none; }
@@ -34,6 +31,7 @@
         .btn-export { background: #10b981; margin-top: 8px; }
         .btn-cetak { background: #8b5cf6; margin-top: 8px; }
         .btn-urut { background: #06b6d4; margin-top: 8px; }
+        .mini { width: auto; margin: 0; padding: 6px 12px; font-size: .75rem; border-radius: 20px; }
         table { width: 100%; border-collapse: collapse; font-size: 0.7rem; }
         th, td { border: 1px solid #ccc; padding: 6px; text-align: left; vertical-align: middle; }
         th { background: #e2e8f0; }
@@ -42,8 +40,11 @@
         .pagination button.active-page-btn { background: #1e3a8a; color: white; }
         .search-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
         .search-row input { flex: 2; margin-top: 0; }
+        .search-row select { flex: 1; margin-top: 0; }
         .search-row button { flex: 1; margin-top: 0; background: #8b5cf6; border: none; border-radius: 40px; cursor: pointer; color: white; font-weight: bold; padding: 10px; }
         .note { background: #dbeafe; padding: 8px; border-radius: 12px; font-size: 0.7rem; margin-bottom: 12px; }
+        .hint { font-size: .72rem; margin-top: 4px; color: #475569; min-height: 14px; }
+        .hint.ok { color: #166534; } .hint.bad { color: #b91c1c; }
         .status { font-size: 0.7rem; text-align: center; padding: 6px; border-radius: 10px; margin-top: 8px; }
         .status.success { background: #dcfce7; color: #166534; }
         .status.error { background: #fee2e2; color: #991b1b; }
@@ -52,92 +53,96 @@
         .row-2 > div { flex: 1; }
         .berat-bersih { font-size: 1.2rem; font-weight: bold; color: #1e3a8a; }
         .aksi-cell { white-space: nowrap; }
-        .modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;
-        }
-        .modal-content {
-            background: white; border-radius: 20px; padding: 20px; width: 90%; max-width: 500px;
-            max-height: 80vh; overflow-y: auto;
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; border-radius: 20px; padding: 20px; width: 90%; max-width: 500px; max-height: 85vh; overflow-y: auto; }
         .modal-content h3 { margin-bottom: 16px; color: #1e3a8a; }
-        .close-modal { background: #64748b; margin-top: 16px; }
+        .close-modal { background: #64748b; margin-top: 8px; }
         .cetak-option { margin-bottom: 15px; padding: 10px; background: #f1f5f9; border-radius: 12px; }
         .cetak-option label { margin-top: 0; }
         .cetak-option select, .cetak-option input { margin-top: 5px; }
-        input[type="date"] { font-family: inherit; }
-        
-        .serah-terima-form {
-            background: #f1f5f9;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 15px;
-        }
-        .serah-terima-form h4 {
-            color: #1e3a8a;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-        .serah-terima-form .row-2 {
-            margin-bottom: 8px;
-        }
-        
-        @media print {
-            body * { visibility: hidden; }
-            .print-area, .print-area * { visibility: visible; }
-            .print-area { position: absolute; top: 0; left: 0; width: 100%; margin: 0; padding: 10px; }
-            .no-print { display: none; }
-            button { display: none; }
-        }
+        .serah-terima-form { background: #f1f5f9; border-radius: 12px; padding: 12px; margin-bottom: 15px; }
+        .serah-terima-form h4 { color: #1e3a8a; margin-bottom: 10px; font-size: 0.9rem; }
+        .serah-terima-form .row-2 { margin-bottom: 8px; }
+
+        /* login & user bar */
+        #loginOverlay { position: fixed; inset: 0; background: #e0e7ff; z-index: 2000; display: flex; justify-content: center; align-items: center; padding: 16px; }
+        #loginBox { background: white; border-radius: 20px; padding: 22px; width: 100%; max-width: 380px; box-shadow: 0 4px 16px rgba(0,0,0,.15); }
+        .userbar { display: none; align-items: center; justify-content: space-between; gap: 8px; background: white; border-radius: 40px; padding: 8px 14px; margin-bottom: 10px; font-size: .78rem; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+        .userbar .who { font-weight: bold; color: #1e3a8a; }
+        .rolebadge { display:inline-block; padding: 2px 8px; border-radius: 10px; color: white; font-size: .68rem; margin-left: 6px; }
+
+        /* permintaan cards */
+        .pcard { border: 1px solid #cbd5e1; border-left-width: 6px; border-radius: 14px; padding: 10px; margin-top: 10px; background: #fff; font-size: .78rem; }
+        .pcard .top { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+        .pcard .pi { font-weight: bold; color: #1e3a8a; font-size: .9rem; }
+        .badge { color: white; padding: 2px 10px; border-radius: 12px; font-size: .7rem; font-weight: bold; white-space: nowrap; }
+        .pcard .spec { margin: 6px 0; color: #334155; }
+        .pcard .nums { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+        .pcard .nums span { background: #f1f5f9; padding: 3px 8px; border-radius: 10px; }
+        .pcard .meta { font-size: .68rem; color: #64748b; margin-top: 4px; }
+        .pcard .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+        .good { color: #166534; font-weight: bold; } .bad { color: #b91c1c; font-weight: bold; } .warn { color: #b45309; font-weight: bold; }
+        .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+        .pill { padding: 3px 10px; border-radius: 12px; font-size: .7rem; font-weight: bold; color: white; }
+        .chip { display: inline-block; background: #e0e7ff; color: #1e3a8a; padding: 4px 10px; border-radius: 14px; margin: 3px 3px 0 0; font-size: .75rem; }
+        .stok-nol { color: #b91c1c; }
+        hr.sep { border: none; border-top: 1px dashed #cbd5e1; margin: 16px 0; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="tab-bar">
-        <div class="tab active" data-page="page1">📦 Timbang</div>
-        <div class="tab" data-page="page2">📜 Riwayat (Cloud)</div>
+<div id="loginOverlay">
+    <div id="loginBox">
+        <h1>📦 THE ROLLING PAPER</h1>
+        <p style="text-align:center;font-size:.8rem;color:#475569;margin:6px 0 10px;">Silakan masuk sesuai peran Anda</p>
+        <label>👤 Pengguna</label>
+        <select id="loginUser"></select>
+        <label>🔑 PIN</label>
+        <input type="password" id="loginPin" inputmode="numeric" autocomplete="off" placeholder="Masukkan PIN">
+        <button id="loginBtn">Masuk</button>
+        <div id="loginMsg" class="status"></div>
     </div>
+</div>
 
-    <div id="page1" class="page active-page">
+<div class="container">
+    <div class="userbar" id="userBar">
+        <span><span class="who" id="userInfo"></span><span class="rolebadge" id="roleBadge"></span></span>
+        <span style="display:flex;gap:6px;">
+            <button class="mini" id="pinBtn" style="background:#64748b;">🔑 PIN</button>
+            <button class="mini" id="logoutBtn" style="background:#ef4444;">🚪 Keluar</button>
+        </span>
+    </div>
+    <div class="tab-bar" id="tabBar"></div>
+
+    <!-- ===== PAGE 1: TIMBANG (Admin) ===== -->
+    <div id="page1" class="page">
         <div class="card">
             <h1>📦 THE ROLLING PAPER COMPANY</h1>
-            <div class="note">✅ Bundles dibulatkan KE ATAS | PO & Brand TETAP setelah simpan</div>
+            <div class="note">✅ Bundles dibulatkan KE ATAS | No. PI harus terdaftar | Pilih permintaan agar spesifikasi terkunci sesuai yang disiapkan Leader</div>
 
             <label>📅 Tanggal</label>
             <input type="date" id="tanggal">
 
             <label>📄 No. PI</label>
-<input type="text" id="noPo" placeholder="PI-001">
+            <input type="text" id="noPo" list="piList" placeholder="Pilih / ketik No. PI" autocomplete="off">
+            <datalist id="piList"></datalist>
+            <div id="piHint" class="hint"></div>
 
-            <label>🏷️ Brand</label>
-            <input type="text" id="brand" placeholder="Contoh: RONSON, ROYO">
+            <label>🏷️ Brand (otomatis dari No. PI)</label>
+            <input type="text" id="brand" readonly placeholder="Otomatis terisi">
+
+            <label>🔗 Permintaan ke Leader Mesin (disarankan)</label>
+            <select id="permintaanTerkait"><option value="">— tanpa permintaan —</option></select>
+            <div id="pmInfo" class="hint"></div>
+
+            <label>🧻 Jenis Kertas</label>
+            <select id="jenis"></select>
 
             <label>📏 Size Kertas</label>
-            <select id="size">
-                <option value="SINGLE 36X69">SINGLE 36X69</option>
-                <option value="1 1/4 44X78">1 1/4 44X78</option>
-                <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
-                <option value="KS 54X97">KS 54X97</option>
-                <option value="KSS 44X108">KSS 44X108</option>
-                <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
-                <option value="SKS 54X108">SKS 54X108</option>
-                <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
-            </select>
+            <select id="size"></select>
 
             <div class="row-2">
-                <div><label>📄 GSM</label><select id="gsm">
-                    <option value="11">11</option>
-                    <option value="13">13</option>
-                    <option value="14">14</option>
-                    <option value="20">20</option>
-                    <option value="35">35</option>
-                </select></div>
-                <div><label>📑 Leaves/Bundle</label><select id="leaves">
-                    <option value="32">32</option><option value="33">33</option><option value="34">34</option>
-                    <option value="35">35</option><option value="40">40</option><option value="42">42</option>
-                    <option value="50">50</option><option value="51">51</option><option value="52">52</option>
-                    <option value="60">60</option>
-                </select></div>
+                <div><label>📄 GSM</label><select id="gsm"></select></div>
+                <div><label>📑 Leaves/Bundle</label><select id="leaves"></select></div>
             </div>
 
             <div class="row-2">
@@ -154,7 +159,7 @@
             <input type="number" id="berat" step="0.01" placeholder="Contoh: 2.50">
 
             <button id="hitungBtn">✅ HITUNG & SIMPAN KE CLOUD</button>
-            <button id="resetFormBtn" class="btn-reset">🔄 Reset Form (Kosongkan PO & Brand)</button>
+            <button id="resetFormBtn" class="btn-reset">🔄 Reset Form (Kosongkan PI & Brand)</button>
             <div id="statusMsg" class="status"></div>
         </div>
 
@@ -167,29 +172,30 @@
         </div>
     </div>
 
+    <!-- ===== PAGE 2: RIWAYAT (Admin) ===== -->
     <div id="page2" class="page">
         <div class="card">
             <h2>📜 RIWAYAT (CLOUD SUPABASE)</h2>
-           <div class="search-row">
-    <input type="text" id="searchInput" placeholder="Cari No. PI atau Brand...">
-    <button id="cariBtn">🔍 Cari</button>
-</div>
-<div class="search-row" style="margin-top:4px;">
-    <button id="exportExcelBtn" class="btn-export" style="background:#10b981; flex:1;">📎 Excel</button>
-    <button id="cetakBtn" class="btn-cetak" style="flex:1;">🖨️ Serah Terima</button>
-    <button id="cetakTimbanganBtn" class="btn-cetak" style="background:#06b6d4; flex:1;">📄 Timbangan</button>
-    <button id="cetakBarcodeBtn" class="btn-cetak" style="background:#f59e0b; flex:1;">📱 Barcode</button>
-</div>
+            <div class="search-row">
+                <input type="text" id="searchInput" placeholder="Cari No. PI atau Brand...">
+                <button id="cariBtn">🔍 Cari</button>
+            </div>
+            <div class="search-row" style="margin-top:4px;">
+                <button id="exportExcelBtn" class="btn-export" style="background:#10b981; flex:1;">📎 Excel</button>
+                <button id="cetakBtn" class="btn-cetak" style="flex:1;">🖨️ Serah Terima</button>
+                <button id="cetakTimbanganBtn" class="btn-cetak" style="background:#06b6d4; flex:1;">📄 Timbangan</button>
+                <button id="cetakBarcodeBtn" class="btn-cetak" style="background:#f59e0b; flex:1;">📱 Barcode</button>
+            </div>
             <div class="row-2" style="margin-top:8px;">
                 <button id="urutPOBtn" class="btn-urut" style="background:#06b6d4;">🔼 Urutkan PI (A-Z)</button>
-<button id="urutPOTerbalikBtn" class="btn-urut" style="background:#0891b2;">🔽 Urutkan PI (Z-A)</button>
+                <button id="urutPOTerbalikBtn" class="btn-urut" style="background:#0891b2;">🔽 Urutkan PI (Z-A)</button>
             </div>
-            <button id="resetCariBtn" style="background:#64748b; margin-top:0; border:none; border-radius:40px; padding:10px; color:white; font-weight:bold; cursor:pointer;">↺ Reset</button>
+            <button id="resetCariBtn" style="background:#64748b; margin-top:8px;">↺ Reset</button>
 
             <div style="overflow-x:auto; margin-top:12px">
                 <table id="riwayatTable">
                     <thead>
-                        <tr><th><input type="checkbox" id="selectAllCheckbox"></th><th>No</th><th>Tgl</th><th>PI</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Aksi</th></tr>
+                        <tr><th><input type="checkbox" id="selectAllCheckbox"></th><th>No</th><th>Tgl</th><th>PI</th><th>Brand</th><th>Jenis</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Aksi</th></tr>
                     </thead>
                     <tbody id="riwayatBody"></tbody>
                 </table>
@@ -198,6 +204,175 @@
             <button id="hapusSemuaBtn" class="btn-hapus">🗑️ Hapus Semua Data</button>
         </div>
     </div>
+
+    <!-- ===== PAGE 3: PERMINTAAN (Admin) ===== -->
+    <div id="page3" class="page">
+        <div class="card">
+            <h2>📝 BUAT PERMINTAAN KE LEADER MESIN</h2>
+            <div class="note">Pilih No. PI yang sudah terdaftar. Brand terisi otomatis. Leader akan menyiapkan dari stok atau memproduksi.</div>
+            <label>📄 No. PI</label>
+            <input type="text" id="pmPi" list="piList" placeholder="Pilih / ketik No. PI" autocomplete="off">
+            <div id="pmPiHint" class="hint"></div>
+            <label>🏷️ Brand</label>
+            <input type="text" id="pmBrand" readonly placeholder="Otomatis terisi">
+            <label>🧻 Jenis Kertas</label>
+            <select id="pmJenis"></select>
+            <label>📏 Size Kertas</label>
+            <select id="pmSize"></select>
+            <div class="row-2">
+                <div><label>📄 GSM</label><select id="pmGsm"></select></div>
+                <div><label>📑 Leaves/Bundle</label><select id="pmLeaves"></select></div>
+            </div>
+            <label>📦 Qty diminta (bundles)</label>
+            <input type="number" id="pmQty" step="1" min="1" placeholder="Contoh: 500">
+            <label>📝 Catatan (opsional)</label>
+            <input type="text" id="pmCatatan" placeholder="Contoh: Dibutuhkan sebelum jam 14.00">
+            <button id="pmKirimBtn">📤 KIRIM PERMINTAAN</button>
+        </div>
+        <div class="card">
+            <h2>📋 DAFTAR PERMINTAAN</h2>
+            <div class="search-row">
+                <input type="text" id="pmSearch" placeholder="Cari PI / Brand / Jenis...">
+                <select id="pmFilter"></select>
+            </div>
+            <div id="pmPills" class="pills"></div>
+            <div id="pmList"></div>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 4: ANTRIAN (Leader) ===== -->
+    <div id="page4" class="page">
+        <div class="card">
+            <h2>🏭 ANTRIAN PERMINTAAN KERTAS</h2>
+            <div class="note">Siapkan dari stok bila ada. Jika stok kosong, tandai produksi lalu input hasilnya. Kelebihan produksi otomatis masuk stok.</div>
+            <div class="search-row">
+                <input type="text" id="qSearch" placeholder="Cari PI / Brand / Jenis...">
+                <select id="qFilter"></select>
+            </div>
+            <div id="qPills" class="pills"></div>
+            <div id="qList"></div>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 5: STOK (Leader) ===== -->
+    <div id="page5" class="page">
+        <div class="card">
+            <h2>📊 STOK KERTAS SIAP PAKAI</h2>
+            <input type="text" id="stSearch" placeholder="Cari size / jenis..." style="margin-bottom:10px;">
+            <div style="overflow-x:auto;">
+                <table><thead><tr><th>Jenis</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Stok (bundle)</th></tr></thead>
+                <tbody id="stokBody"></tbody></table>
+            </div>
+        </div>
+        <div class="card">
+            <h2>➕ CATAT STOK</h2>
+            <label>Jenis Mutasi</label>
+            <select id="stTipe">
+                <option value="MASUK_PRODUKSI">Masuk - hasil produksi (stok)</option>
+                <option value="MASUK_AWAL">Masuk - stok awal / hitung fisik pertama</option>
+                <option value="KOREKSI_TAMBAH">Koreksi tambah (wajib alasan)</option>
+                <option value="KOREKSI_KURANG">Koreksi kurang (wajib alasan)</option>
+            </select>
+            <label>🧻 Jenis Kertas</label><select id="stJenis"></select>
+            <label>📏 Size Kertas</label><select id="stSize"></select>
+            <div class="row-2">
+                <div><label>📄 GSM</label><select id="stGsm"></select></div>
+                <div><label>📑 Leaves/Bundle</label><select id="stLeaves"></select></div>
+            </div>
+            <label>Qty (bundles)</label><input type="number" id="stQty" step="1" min="1">
+            <label>Catatan / alasan</label><input type="text" id="stCatatan" placeholder="Wajib untuk koreksi">
+            <button id="stSimpanBtn">💾 Simpan Mutasi Stok</button>
+        </div>
+        <div class="card">
+            <h2>🧾 RIWAYAT MUTASI STOK (100 terakhir)</h2>
+            <div style="overflow-x:auto;">
+                <table><thead><tr><th>Waktu</th><th>Tipe</th><th>Spesifikasi</th><th>Qty</th><th>PI</th><th>Oleh</th><th>Catatan</th></tr></thead>
+                <tbody id="mutasiBody"></tbody></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 6: MASTER (Admin & Leader) ===== -->
+    <div id="page6" class="page">
+        <div class="card">
+            <h2>📄 MASTER NO. PI</h2>
+            <div class="note">Admin maupun Leader bisa membuat No. PI. Sistem menolak PI kembar atau yang mirip (mis. "PI-001" dan "PI001").</div>
+            <div class="row-2">
+                <div><label>No. PI</label><input type="text" id="mpNo" placeholder="PI-001" autocomplete="off"></div>
+                <div><label>Brand</label><input type="text" id="mpBrand" list="brandList" placeholder="RONSON" autocomplete="off"></div>
+            </div>
+            <datalist id="brandList"></datalist>
+            <button id="mpSimpanBtn">➕ Simpan PI Baru</button>
+            <button id="mpImporBtn" class="btn-reset" style="display:none;">📥 Impor PI dari riwayat timbang lama</button>
+            <input type="text" id="mpSearch" placeholder="Cari PI / Brand..." style="margin-top:12px;">
+            <div style="overflow-x:auto;margin-top:8px;max-height:260px;overflow-y:auto;">
+                <table><thead><tr><th>No. PI</th><th>Brand</th><th>Dibuat oleh</th><th>Tanggal</th></tr></thead>
+                <tbody id="mpBody"></tbody></table>
+            </div>
+        </div>
+        <div class="card">
+            <h2>🧻 JENIS KERTAS</h2>
+            <div class="row-2">
+                <div><input type="text" id="mjNama" placeholder="Contoh: Hemp"></div>
+                <div style="flex:0 0 120px;"><button id="mjSimpanBtn" style="margin-top:0;">➕ Tambah</button></div>
+            </div>
+            <div id="mjList" style="margin-top:8px;"></div>
+        </div>
+        <div class="card">
+            <h2>⚖️ SPESIFIKASI / BERAT BUNDLE TAMBAHAN</h2>
+            <div class="note">Untuk size/GSM/leaves atau jenis kertas yang belum ada di daftar bawaan. Isi berat 1 bundle dalam gram.</div>
+            <label>Size</label>
+            <input type="text" id="cbSize" list="sizeList" placeholder="Contoh: KS 54X97" autocomplete="off">
+            <datalist id="sizeList"></datalist>
+            <div class="row-2">
+                <div><label>GSM</label><input type="number" id="cbGsm" step="1"></div>
+                <div><label>Leaves/Bundle</label><input type="number" id="cbLeaves" step="1"></div>
+            </div>
+            <label>Berlaku untuk jenis</label><select id="cbJenis"></select>
+            <label>Berat 1 bundle (gram)</label><input type="number" id="cbGram" step="0.01">
+            <button id="cbSimpanBtn">💾 Simpan Spesifikasi</button>
+            <div style="overflow-x:auto;margin-top:12px;">
+                <table><thead><tr><th>Size</th><th>GSM</th><th>Leaves</th><th>Jenis</th><th>Gram</th><th></th></tr></thead>
+                <tbody id="cbBody"></tbody></table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 7: LOG ===== -->
+    <div id="page7" class="page">
+        <div class="card">
+            <h2>📋 LOG AKTIVITAS (200 terakhir)</h2>
+            <input type="text" id="logSearch" placeholder="Cari pengguna / aksi / detail..." style="margin-bottom:10px;">
+            <div style="overflow-x:auto;">
+                <table><thead><tr><th>Waktu</th><th>Pengguna</th><th>Aksi</th><th>Detail</th></tr></thead>
+                <tbody id="logBody"></tbody></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dialog umum -->
+<div id="dlgModal" class="modal">
+    <div class="modal-content">
+        <h3 id="dlgTitle"></h3>
+        <div id="dlgInfo" style="font-size:.8rem;margin-bottom:8px;line-height:1.5;"></div>
+        <div id="dlgQtyWrap"><label id="dlgQtyLabel"></label><input type="number" id="dlgQty" step="1"></div>
+        <div id="dlgNoteWrap"><label id="dlgNoteLabel"></label><input type="text" id="dlgNote"></div>
+        <button id="dlgOk">OK</button>
+        <button id="dlgCancel" class="close-modal">Batal</button>
+    </div>
+</div>
+
+<!-- Ganti PIN -->
+<div id="pinModal" class="modal">
+    <div class="modal-content">
+        <h3>🔑 Ganti PIN</h3>
+        <label>PIN lama</label><input type="password" id="pinLama" inputmode="numeric">
+        <label>PIN baru (min. 4 karakter)</label><input type="password" id="pinBaru" inputmode="numeric">
+        <label>Ulangi PIN baru</label><input type="password" id="pinBaru2" inputmode="numeric">
+        <button id="pinSimpanBtn">💾 Simpan PIN</button>
+        <button id="pinBatalBtn" class="close-modal">Batal</button>
+    </div>
 </div>
 
 <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
@@ -205,49 +380,26 @@
 <div id="cetakModal" class="modal">
     <div class="modal-content">
         <h3>🖨️ CETAK SERAH TERIMA PRODUKSI</h3>
-        
         <div class="serah-terima-form">
             <h4>✍️ DATA SERAH TERIMA</h4>
             <div class="row-2">
-                <div>
-                    <label>👤 PENGIRIM (Gudang)</label>
-                    <input type="text" id="pengirimNama" placeholder="Nama lengkap" value="Admin Gudang">
-                </div>
-                <div>
-                    <label>👤 PENERIMA (Produksi)</label>
-                    <input type="text" id="penerimaNama" placeholder="Nama lengkap" value="Admin Produksi">
-                </div>
+                <div><label>👤 PENGIRIM (Gudang)</label><input type="text" id="pengirimNama" placeholder="Nama lengkap" value="Admin Gudang"></div>
+                <div><label>👤 PENERIMA (Produksi)</label><input type="text" id="penerimaNama" placeholder="Nama lengkap" value="Admin Produksi"></div>
             </div>
             <div class="row-2">
-                <div>
-                    <label>📅 Tgl Serah Terima</label>
-                    <input type="date" id="tglSerahTerima">
-                </div>
-                <div>
-                    <label>⏰ Jam Serah Terima</label>
-                    <input type="time" id="jamSerahTerima">
-                </div>
+                <div><label>📅 Tgl Serah Terima</label><input type="date" id="tglSerahTerima"></div>
+                <div><label>⏰ Jam Serah Terima</label><input type="time" id="jamSerahTerima"></div>
             </div>
             <div class="row-2">
-                <div>
-                    <label>📍 Lokasi / Line Produksi</label>
-                    <input type="text" id="lokasiProduksi" placeholder="Contoh: Line A, Gudang 1">
-                </div>
-                <div>
-                    <label>✅ KONDISI BARANG</label>
-                    <select id="kondisiBarang">
-                        <option value="Baik">✓ Baik</option>
-                        <option value="Rusak Ringan">⚠️ Rusak Ringan</option>
-                        <option value="Rusak Berat">❌ Rusak Berat</option>
-                    </select>
-                </div>
+                <div><label>📍 Lokasi / Line Produksi</label><input type="text" id="lokasiProduksi" placeholder="Contoh: Line A, Gudang 1"></div>
+                <div><label>✅ KONDISI BARANG</label><select id="kondisiBarang">
+                    <option value="Baik">✓ Baik</option>
+                    <option value="Rusak Ringan">⚠️ Rusak Ringan</option>
+                    <option value="Rusak Berat">❌ Rusak Berat</option>
+                </select></div>
             </div>
-            <div>
-                <label>📝 CATATAN TAMBAHAN</label>
-                <input type="text" id="catatanTambahan" placeholder="Contoh: Hati-hati saat handling, dll">
-            </div>
+            <div><label>📝 CATATAN TAMBAHAN</label><input type="text" id="catatanTambahan" placeholder="Contoh: Hati-hati saat handling, dll"></div>
         </div>
-        
         <div class="cetak-option">
             <label>Pilih Data yang Dicetak:</label>
             <select id="cetakMetode">
@@ -258,18 +410,9 @@
                 <option value="semua">📄 Cetak Semua Data</option>
             </select>
         </div>
-        <div id="cetakPoInput" class="cetak-option">
-            <label>Masukkan No. PI:</label>
-            <input type="text" id="cetakPoValue" placeholder="Contoh: PI-001">
-        </div>
-        <div id="cetakBrandInput" class="cetak-option" style="display:none;">
-            <label>Masukkan Brand:</label>
-            <input type="text" id="cetakBrandValue" placeholder="Contoh: RONSON">
-        </div>
-        <div id="cetakTanggalInput" class="cetak-option" style="display:none;">
-            <label>Rentang Tanggal:</label>
-            <input type="date" id="cetakTglAwal"> s/d <input type="date" id="cetakTglAkhir">
-        </div>
+        <div id="cetakPoInput" class="cetak-option"><label>Masukkan No. PI:</label><input type="text" id="cetakPoValue" placeholder="Contoh: PI-001"></div>
+        <div id="cetakBrandInput" class="cetak-option" style="display:none;"><label>Masukkan Brand:</label><input type="text" id="cetakBrandValue" placeholder="Contoh: RONSON"></div>
+        <div id="cetakTanggalInput" class="cetak-option" style="display:none;"><label>Rentang Tanggal:</label><input type="date" id="cetakTglAwal"> s/d <input type="date" id="cetakTglAkhir"></div>
         <button id="prosesCetakBtn">✅ Proses Cetak Serah Terima</button>
         <button id="closeCetakModalBtn" class="close-modal">❌ Batal</button>
     </div>
@@ -278,36 +421,28 @@
 <div id="editModal" class="modal">
     <div class="modal-content">
         <h3>✏️ Edit Data</h3>
-        <label>Tanggal</label>
-        <input type="date" id="editTanggal">
-        <label>No. PI</label>
-        <input type="text" id="editNoPo">
-        <label>Brand</label>
-        <input type="text" id="editBrand">
-        <label>Size Kertas</label>
-        <select id="editSize">
-            <option value="SINGLE 36X69">SINGLE 36X69</option>
-            <option value="1 1/4 44X78">1 1/4 44X78</option>
-            <option value="CLEAR PAPER 1 1/4 44X78">CLEAR PAPER 1 1/4 44X78</option>
-            <option value="KS 54X97">KS 54X97</option>
-            <option value="KSS 44X108">KSS 44X108</option>
-            <option value="KSS SLIM 36X108">KSS SLIM 36X108</option>
-            <option value="SKS 54X108">SKS 54X108</option>
-            <option value="CLEAR PAPER SKS 54X108">CLEAR PAPER SKS 54X108</option>
+        <label>Tanggal</label><input type="date" id="editTanggal">
+        <label>No. PI</label><input type="text" id="editNoPo" list="piList">
+        <label>Brand</label><input type="text" id="editBrand">
+        <label>Jenis Kertas</label><select id="editJenis"></select>
+        <label>Size Kertas</label><select id="editSize"></select>
+        <label>GSM</label><select id="editGsm"></select>
+        <label>Jenis Box</label>
+        <select id="editBox">
+            <option value="White">White (0.90 kg)</option>
+            <option value="White New">White New (0.80 kg)</option>
+            <option value="Grey">Grey (1.25 kg)</option>
+            <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
         </select>
-        <label>GSM</label>
-        <select id="editGsm"><option value="11">11</option><option value="13">13</option><option value="14">14</option><option value="20">20</option><option value="35">35</option></select>
-        <label>Jumlah Bundles</label>
-        <input type="number" id="editBundles" step="1">
+        <label>Jumlah Bundles</label><input type="number" id="editBundles" step="1">
         <button id="saveEditBtn">💾 Simpan Perubahan</button>
         <button id="closeModalBtn" class="close-modal">❌ Batal</button>
     </div>
 </div>
-<!-- MODAL CETAK BARCODE -->
+
 <div id="cetakBarcodeModal" class="modal">
     <div class="modal-content">
         <h3>📱 CETAK BARCODE</h3>
-        
         <div class="cetak-option">
             <label>Pilih Data yang Dicetak:</label>
             <select id="cetakBarcodeMetode">
@@ -318,20 +453,9 @@
                 <option value="semua">📄 Cetak Semua Data</option>
             </select>
         </div>
-        
-        <div id="cetakBarcodePoInput" class="cetak-option">
-            <label>Masukkan No. PI:</label>
-            <input type="text" id="cetakBarcodePoValue" placeholder="Contoh: PI-001">
-        </div>
-        <div id="cetakBarcodeBrandInput" class="cetak-option" style="display:none;">
-            <label>Masukkan Brand:</label>
-            <input type="text" id="cetakBarcodeBrandValue" placeholder="Contoh: RONSON">
-        </div>
-        <div id="cetakBarcodeTanggalInput" class="cetak-option" style="display:none;">
-            <label>Rentang Tanggal:</label>
-            <input type="date" id="cetakBarcodeTglAwal"> s/d <input type="date" id="cetakBarcodeTglAkhir">
-        </div>
-        
+        <div id="cetakBarcodePoInput" class="cetak-option"><label>Masukkan No. PI:</label><input type="text" id="cetakBarcodePoValue" placeholder="Contoh: PI-001"></div>
+        <div id="cetakBarcodeBrandInput" class="cetak-option" style="display:none;"><label>Masukkan Brand:</label><input type="text" id="cetakBarcodeBrandValue" placeholder="Contoh: RONSON"></div>
+        <div id="cetakBarcodeTanggalInput" class="cetak-option" style="display:none;"><label>Rentang Tanggal:</label><input type="date" id="cetakBarcodeTglAwal"> s/d <input type="date" id="cetakBarcodeTglAkhir"></div>
         <div class="cetak-option">
             <label>Ukuran QR Code:</label>
             <select id="barcodeUkuran">
@@ -340,7 +464,6 @@
                 <option value="large">Besar</option>
             </select>
         </div>
-        
         <div class="cetak-option">
             <label>Informasi yang Ditampilkan:</label>
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:5px;">
@@ -351,1098 +474,967 @@
                 <label style="font-weight:normal; margin:0;"><input type="checkbox" id="barcodeTampilTanggal"> Tanggal</label>
             </div>
         </div>
-        
         <button id="prosesCetakBarcodeBtn">✅ Cetak Barcode</button>
         <button id="closeCetakBarcodeModalBtn" class="close-modal">❌ Batal</button>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    (function() {
-        // ========== KONEKSI SUPABASE BARU ==========
-        const SUPABASE_URL = 'https://dggspzjibisapdaowkkj.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnZ3NwemppYmlzYXBkYW93a2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NjMxNzksImV4cCI6MjA4MzQzOTE3OX0.DtDb10SzKfwJg3bbVq53nG9RIXbZYtitXn67ZtdBMFY';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+(function() {
+    // ========== KONEKSI SUPABASE ==========
+    const SUPABASE_URL = 'https://dggspzjibisapdaowkkj.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRnZ3NwemppYmlzYXBkYW93a2tqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4NjMxNzksImV4cCI6MjA4MzQzOTE3OX0.DtDb10SzKfwJg3bbVq53nG9RIXbZYtitXn67ZtdBMFY';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Set tanggal otomatis ke hari ini setiap kali form dibuka
-        document.getElementById('tanggal').value = new Date().toISOString().split('T')[0];
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const fmtWaktu = t => t ? new Date(t).toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }) : '';
 
-        const beratBundleDB = {
-            "SINGLE 36X69|13|32":1.09, "SINGLE 36X69|13|33":1.10, "SINGLE 36X69|13|40":1.33,
-            "SINGLE 36X69|13|50":1.67, "SINGLE 36X69|13|51":1.69, "SINGLE 36X69|13|60":2.00,
-            "SINGLE 36X69|14|32":1.39, "SINGLE 36X69|14|33":1.43, "SINGLE 36X69|14|40":1.67,
-            "SINGLE 36X69|14|50":2.04, "SINGLE 36X69|14|51":2.08, "SINGLE 36X69|14|60":2.40,
-            "1 1/4 44X78|13|32":1.48, "1 1/4 44X78|13|33":1.54, "1 1/4 44X78|13|40":1.90, "1 1/4 44X78|13|50":2.34, "1 1/4 44X78|13|51":2.54,
-            "1 1/4 44X78|14|32":1.62, "1 1/4 44X78|14|33":1.65, "1 1/4 44X78|14|35":1.75,
-            "1 1/4 44X78|14|40":2.08, "1 1/4 44X78|14|42":2.21, "1 1/4 44X78|14|50":2.50,
-            "1 1/4 44X78|14|51":2.58, "1 1/4 44X78|14|52":2.64,
-            "1 1/4 44X78|20|51":3.60,
-            "CLEAR PAPER 1 1/4 44X78|35|50":5.75,
-            "KS 54X97|14|32":2.50, "KS 54X97|14|33":2.58, "KS 54X97|14|40":3.05, "KS 54X97|14|50":3.82,
-            "KS 54X97|20|32":4.34, "KS 54X97|20|33":4.42, "KS 54X97|20|40":5.22, "KS 54X97|20|50":6.32,
-            "KSS 44X108|13|32":2.19, "KSS 44X108|13|33":2.26, "KSS 44X108|13|40":2.76, "KSS 44X108|13|50":3.44,
-            "KSS 44X108|14|33":2.31, "KSS 44X108|14|35":2.49, "KSS 44X108|14|40":2.79, "KSS 44X108|14|34":2.48,
-            "KSS 44X108|13|32":2.19, "KSS 44X108|13|33":2.26, "KSS 44X108|13|35":2.35, "KSS 44X108|13|40":2.76, "KSS 44X108|13|50":3.44,
-            "KSS 44X108|14|42":2.89, "KSS 44X108|14|50":3.49, "KSS 44X108|14|51":3.56, "KSS 44X108|14|52":3.58,
-            "KSS 44X108|13|51":3.43,  "KSS 44X108|14|32":2.27,
-            // TAMBAHAN GSM 11
-            "KSS 44X108|11|42": 4.25,
-            "KSS SLIM 36X108|14|32":1.88, "KSS SLIM 36X108|14|33":1.95, "KSS SLIM 36X108|14|34":2.00,
-            "KSS SLIM 36X108|14|40":2.35, "KSS SLIM 36X108|14|50":2.95,
-            "SKS 54X108|13|33":2.63, "SKS 54X108|13|40":3.20, "SKS 54X108|13|50":4.02,
-            "SKS 54X108|14|33":2.92, "SKS 54X108|14|40":3.52, "SKS 54X108|14|50":4.40,
-            "CLEAR PAPER SKS 54X108|35|50":10.28
-        };
+    // ========== DATA BAWAAN ==========
+    const beratBundleDB = {
+        "SINGLE 36X69|13|32":1.09, "SINGLE 36X69|13|33":1.10, "SINGLE 36X69|13|40":1.33,
+        "SINGLE 36X69|13|50":1.67, "SINGLE 36X69|13|51":1.69, "SINGLE 36X69|13|60":2.00,
+        "SINGLE 36X69|14|32":1.39, "SINGLE 36X69|14|33":1.43, "SINGLE 36X69|14|40":1.67,
+        "SINGLE 36X69|14|50":2.04, "SINGLE 36X69|14|51":2.08, "SINGLE 36X69|14|60":2.40,
+        "1 1/4 44X78|13|32":1.48, "1 1/4 44X78|13|33":1.54, "1 1/4 44X78|13|40":1.90, "1 1/4 44X78|13|50":2.34, "1 1/4 44X78|13|51":2.54,
+        "1 1/4 44X78|14|32":1.62, "1 1/4 44X78|14|33":1.65, "1 1/4 44X78|14|35":1.75,
+        "1 1/4 44X78|14|40":2.08, "1 1/4 44X78|14|42":2.21, "1 1/4 44X78|14|50":2.50,
+        "1 1/4 44X78|14|51":2.58, "1 1/4 44X78|14|52":2.64,
+        "1 1/4 44X78|20|51":3.60,
+        "CLEAR PAPER 1 1/4 44X78|35|50":5.75,
+        "KS 54X97|14|32":2.50, "KS 54X97|14|33":2.58, "KS 54X97|14|40":3.05, "KS 54X97|14|50":3.82,
+        "KS 54X97|20|32":4.34, "KS 54X97|20|33":4.42, "KS 54X97|20|40":5.22, "KS 54X97|20|50":6.32,
+        "KSS 44X108|13|32":2.19, "KSS 44X108|13|33":2.26, "KSS 44X108|13|35":2.35, "KSS 44X108|13|40":2.76,
+        "KSS 44X108|13|50":3.44, "KSS 44X108|13|51":3.43,
+        "KSS 44X108|14|32":2.27, "KSS 44X108|14|33":2.31, "KSS 44X108|14|34":2.48, "KSS 44X108|14|35":2.49,
+        "KSS 44X108|14|40":2.79, "KSS 44X108|14|42":2.89, "KSS 44X108|14|50":3.49, "KSS 44X108|14|51":3.56, "KSS 44X108|14|52":3.58,
+        "KSS 44X108|11|42":4.25,
+        "KSS SLIM 36X108|14|32":1.88, "KSS SLIM 36X108|14|33":1.95, "KSS SLIM 36X108|14|34":2.00,
+        "KSS SLIM 36X108|14|40":2.35, "KSS SLIM 36X108|14|50":2.95,
+        "SKS 54X108|13|33":2.63, "SKS 54X108|13|40":3.20, "SKS 54X108|13|50":4.02,
+        "SKS 54X108|14|33":2.92, "SKS 54X108|14|40":3.52, "SKS 54X108|14|50":4.40,
+        "CLEAR PAPER SKS 54X108|35|50":10.28
+    };
+    const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
+    const BERAT_LAYER_KG = 0.00618;
+    const BASE_SIZES = ["SINGLE 36X69","1 1/4 44X78","CLEAR PAPER 1 1/4 44X78","KS 54X97","KSS 44X108","KSS SLIM 36X108","SKS 54X108","CLEAR PAPER SKS 54X108"];
+    const BASE_GSM = [11,13,14,20,35];
+    const BASE_LEAVES = [32,33,34,35,40,42,50,51,52,60];
+    const TABS = {
+        admin:  [['page1','📦 Timbang'],['page2','📜 Riwayat'],['page3','📝 Permintaan'],['page6','🗂️ Master'],['page7','📋 Log']],
+        leader: [['page4','🏭 Antrian'],['page5','📊 Stok'],['page6','🗂️ Master'],['page7','📋 Log']]
+    };
+    const STATUS_WARNA = { Diminta:'#3b82f6', Diproses:'#f59e0b', Produksi:'#8b5cf6', Siap:'#10b981', Diterima:'#166534', Dibatalkan:'#94a3b8' };
+    const AKTIF = ['Diminta','Diproses','Produksi','Siap'];
 
-        const beratBoxMap = { "White":0.90, "White New":0.80, "Grey":1.25, "Green Jumbo":3.80 };
-        const BERAT_LAYER_KG = 0.00618;
+    // ========== STATE ==========
+    let user = null;
+    let piList = [], jenisList = [], customBerat = [];
+    let pmData = [], pmTimbang = {}, stokMap = {};
+    let currentPage = 1, currentSearch = "", currentEditId = null, currentOrderBy = "id", currentOrderAsc = false;
+    let allDataCache = [];
+    const rowsPerPage = 10;
+    const CHECKED_IDS_KEY = 'rollingpaper_checked_ids';
 
-        let currentPage = 1;
-        let currentSearch = "";
-        let currentEditId = null;
-        let currentOrderBy = "id";
-        let currentOrderAsc = false;
-        let allDataCache = [];
-        const rowsPerPage = 10;
-        
-        const CHECKED_IDS_KEY = 'rollingpaper_checked_ids';
-
-        function getCheckedIds() {
-            const stored = localStorage.getItem(CHECKED_IDS_KEY);
-            if(stored) {
-                try {
-                    return new Set(JSON.parse(stored));
-                } catch(e) { return new Set(); }
-            }
-            return new Set();
+    // ========== UTIL ==========
+    function showStatus(msg, type) {
+        const el = $('statusMsg');
+        if (el) { el.innerText = msg; el.className = `status ${type}`; }
+        setTimeout(() => { if (el && el.innerText === msg) { el.innerText = ''; el.className = 'status'; } }, 3500);
+    }
+    function getCheckedIds() { try { return new Set(JSON.parse(localStorage.getItem(CHECKED_IDS_KEY) || '[]')); } catch (e) { return new Set(); } }
+    function saveCheckedIds(s) { localStorage.setItem(CHECKED_IDS_KEY, JSON.stringify([...s])); }
+    function addCheckedId(id) { const s = getCheckedIds(); s.add(id); saveCheckedIds(s); }
+    function removeCheckedId(id) { const s = getCheckedIds(); s.delete(id); saveCheckedIds(s); }
+    function isChecked(id) { return getCheckedIds().has(id); }
+    function clearAllChecked() { saveCheckedIds(new Set()); }
+    function formatDateToDB(d) { if (!d) return ""; const p = d.split('-'); return p.length === 3 ? `${p[1]}/${p[2]}/${p[0]}` : d; }
+    function formatDateForInput(d) { if (!d) return ""; const p = d.split('/'); return p.length === 3 ? `${p[2]}-${p[0]}-${p[1]}` : d; }
+    function formatTanggalIndonesia(d) { return d || ""; }
+    function normPI(v) { return (v || '').trim().toUpperCase(); }
+    function canon(v) { return (v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+    function findPI(v) { const n = normPI(v); return piList.find(p => p.no_pi.toUpperCase() === n); }
+    function specKey(s, g, l, j) { return `${s}|${g}|${l}|${j}`; }
+    async function catatLog(aksi, detail) {
+        try { await supabase.from('log_aktivitas_timbang').insert([{ pengguna: user?.nama || '-', role: user?.role || '-', aksi, detail }]); }
+        catch (e) { console.error(e); }
+    }
+    async function fetchAll(build) {
+        let all = [], from = 0; const step = 1000;
+        while (true) {
+            const { data, error } = await build().range(from, from + step - 1);
+            if (error) return { error };
+            all = all.concat(data || []);
+            if (!data || data.length < step) break;
+            from += step;
         }
-        
-        function saveCheckedIds(idsSet) {
-            localStorage.setItem(CHECKED_IDS_KEY, JSON.stringify([...idsSet]));
-        }
-        
-        function addCheckedId(id) {
-            const ids = getCheckedIds();
-            ids.add(id);
-            saveCheckedIds(ids);
-        }
-        
-        function removeCheckedId(id) {
-            const ids = getCheckedIds();
-            ids.delete(id);
-            saveCheckedIds(ids);
-        }
-        
-        function isChecked(id) {
-            return getCheckedIds().has(id);
-        }
-        
-        function clearAllChecked() {
-            saveCheckedIds(new Set());
-        }
+        return { data: all };
+    }
+    async function rpc(name, args) {
+        const { error } = await supabase.rpc(name, args);
+        if (error) { alert('❌ ' + error.message); return false; }
+        return true;
+    }
+    function requireRole(role) {
+        if (!user || user.role !== role) { alert('⛔ Menu ini hanya untuk ' + (role === 'admin' ? 'Admin Timbang' : 'Leader Mesin')); return false; }
+        return true;
+    }
 
-        function formatDateToDB(dateStr) {
-            if(!dateStr) return "";
-            let parts = dateStr.split('-');
-            if(parts.length === 3) return `${parts[1]}/${parts[2]}/${parts[0]}`;
-            return dateStr;
-        }
-
-        function formatDateForInput(dateStr) {
-            if(!dateStr) return "";
-            let parts = dateStr.split('/');
-            if(parts.length === 3) return `${parts[2]}-${parts[0]}-${parts[1]}`;
-            return dateStr;
-        }
-
-        function formatTanggalIndonesia(dateStr) {
-            if(!dateStr) return "";
-            let parts = dateStr.split('/');
-            if(parts.length === 3) return `${parts[0]}/${parts[1]}/${parts[2]}`;
-            return dateStr;
-        }
-
-        function showStatus(msg, type) {
-            let el = document.getElementById('statusMsg');
-            if(el) { el.innerText = msg; el.className = `status ${type}`; }
-            setTimeout(() => { if(el && el.innerText === msg) el.innerText = ''; }, 3000);
-        }
-
-        function getBeratBundleKG() {
-            const size = document.getElementById('size').value;
-            const gsm = document.getElementById('gsm').value;
-            const leaves = document.getElementById('leaves').value;
-            const key = `${size}|${gsm}|${leaves}`;
-            const gram = beratBundleDB[key];
-            if(!gram) return null;
-            return gram / 1000;
-        }
-
-        document.getElementById('hitungBtn').onclick = async () => {
-            const beratTimbang = parseFloat(document.getElementById('berat').value);
-            if(isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
-            
-            const boxType = document.getElementById('box').value;
-            const beratBox = beratBoxMap[boxType];
-            const jumlahLayer = parseInt(document.getElementById('layer').value) || 0;
-            const beratLayer = jumlahLayer * BERAT_LAYER_KG;
-            const beratBersih = beratTimbang - beratBox - beratLayer;
-            
-            if(beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
-            
-            const beratBundleKG = getBeratBundleKG();
-            if(!beratBundleKG) { 
-                alert(`Data tidak ditemukan! Size: ${document.getElementById('size').value} | GSM: ${document.getElementById('gsm').value} | Leaves: ${document.getElementById('leaves').value}`);
-                return; 
-            }
-            
-            const bundlesDesimal = beratBersih / beratBundleKG;
-            const bundlesBulat = Math.ceil(bundlesDesimal);
-            
-            document.getElementById('beratBersih').innerHTML = beratBersih.toFixed(4);
-            document.getElementById('jumlahBundles').innerHTML = bundlesBulat;
-            document.getElementById('hasilCard').style.display = "block";
-            
-            const tanggalRaw = document.getElementById('tanggal').value;
-            const tanggalFormatted = formatDateToDB(tanggalRaw);
-            
-            const dataToSave = {
-                tanggal: tanggalFormatted,
-                no_po: document.getElementById('noPo').value || "-",
-                brand: document.getElementById('brand').value || "-",
-                size_kertas: document.getElementById('size').value,
-                gsm: parseInt(document.getElementById('gsm').value),
-                leaves_per_bundle: parseInt(document.getElementById('leaves').value),
-                jenis_box: boxType,
-                jumlah_layer: jumlahLayer,
-                berat_timbang_kg: beratTimbang,
-                berat_bersih_kg: beratBersih,
-                jumlah_bundles: bundlesBulat,
-                bundles_desimal: bundlesDesimal
-            };
-            
-            showStatus('⏳ Menyimpan ke cloud...', 'loading');
-            const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
-            
-            if(error) { 
-                showStatus('❌ Gagal: ' + error.message, 'error'); 
-                alert('Gagal simpan! ' + error.message); 
-            } else { 
-                showStatus('✅ Tersimpan ke cloud!', 'success'); 
-                document.getElementById('berat').value = '';
-                currentPage = 1; 
-                currentSearch = ""; 
-                document.getElementById('searchInput').value = "";
-                loadAllData();
-            }
-        };
-
-        document.getElementById('resetFormBtn').onclick = () => {
-            if(confirm("Reset form? PI dan Brand akan dikosongkan.")) {
-                document.getElementById('noPo').value = '';
-                document.getElementById('brand').value = '';
-                document.getElementById('berat').value = '';
-                document.getElementById('hasilCard').style.display = 'none';
-                showStatus('Form direset', 'success');
-            }
-        };
-
-        async function loadAllData() {
-            let query = supabase.from('riwayat_timbang').select('*');
-            if(currentSearch) {
-                query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
-            }
-            const { data, error } = await query;
-            if(error) { console.error(error); return; }
-            allDataCache = data || [];
-            // Hapus ID yang tidak ada di database
-            const existingIds = new Set(allDataCache.map(d => d.id));
-            const currentChecked = getCheckedIds();
-            for(let id of currentChecked) {
-                if(!existingIds.has(id)) {
-                    currentChecked.delete(id);
+    // ========== DIALOG UMUM ==========
+    function dialog(o) {
+        return new Promise(resolve => {
+            $('dlgTitle').textContent = o.title;
+            $('dlgInfo').innerHTML = o.info || '';
+            $('dlgQtyWrap').style.display = o.qty ? 'block' : 'none';
+            if (o.qty) { $('dlgQtyLabel').textContent = o.qty.label; $('dlgQty').value = o.qty.value ?? ''; $('dlgQty').min = 1; }
+            $('dlgNoteWrap').style.display = o.note ? 'block' : 'none';
+            if (o.note) { $('dlgNoteLabel').textContent = o.note.label + (o.note.required ? ' *' : ''); $('dlgNote').value = ''; }
+            $('dlgOk').textContent = o.ok || 'OK';
+            $('dlgModal').style.display = 'flex';
+            const close = v => { $('dlgModal').style.display = 'none'; $('dlgOk').onclick = null; $('dlgCancel').onclick = null; resolve(v); };
+            $('dlgCancel').onclick = () => close(null);
+            $('dlgOk').onclick = () => {
+                let qv = null;
+                if (o.qty) {
+                    qv = parseInt($('dlgQty').value);
+                    if (!(qv > 0)) { alert('Qty harus angka lebih dari 0'); return; }
+                    if (o.qty.max && qv > o.qty.max) { alert('Qty melebihi batas (' + o.qty.max + ')'); return; }
                 }
-            }
-            saveCheckedIds(currentChecked);
-            displayDataWithPagination();
-        }
-
-        function displayDataWithPagination() {
-            let filtered = [...allDataCache];
-            if(currentOrderBy === "no_po") {
-                filtered.sort((a, b) => {
-                    let valA = a.no_po || "";
-                    let valB = b.no_po || "";
-                    if(currentOrderAsc) return valA.localeCompare(valB);
-                    else return valB.localeCompare(valA);
-                });
-            } else {
-                filtered.sort((a, b) => {
-                    let valA = a.id;
-                    let valB = b.id;
-                    if(currentOrderAsc) return valA - valB;
-                    else return valB - valA;
-                });
-            }
-            
-            const totalData = filtered.length;
-            const totalPages = Math.ceil(totalData / rowsPerPage);
-            const start = (currentPage - 1) * rowsPerPage;
-            const pageData = filtered.slice(start, start + rowsPerPage);
-            
-            const tbody = document.getElementById('riwayatBody');
-            if(pageData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="10" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.<\/td><\/tr>';
-                document.getElementById('pagination').innerHTML = '';
-                return;
-            }
-            
-            tbody.innerHTML = "";
-            for(let i=0; i<pageData.length; i++) {
-                const d = pageData[i];
-                const tanggalDisplay = d.tanggal || '';
-                const isItemChecked = isChecked(d.id) ? 'checked' : '';
-                tbody.innerHTML += `<tr>
-                    <td style="text-align:center"><input type="checkbox" class="rowCheckbox" data-id="${d.id}" ${isItemChecked}><\/td>
-                    <td style="text-align:center">${start+i+1}<\/td>
-                    <td>${tanggalDisplay}<\/td>
-                    <td>${d.no_po || '-'}<\/td>
-                    <td>${d.brand || '-'}<\/td>
-                    <td>${(d.size_kertas || '').substring(0,18)}<\/td>
-                    <td>${d.gsm}<\/td>
-                    <td>${d.leaves_per_bundle || '-'}<\/td>
-                    <td style="text-align:center; font-weight:bold">${d.jumlah_bundles}<\/td>
-                    <td class="aksi-cell">
-                        <button class="btn-edit-small" onclick="editData(${d.id}, '${d.tanggal}', '${d.no_po}', '${d.brand}', '${d.size_kertas}', ${d.gsm}, '${d.jenis_box}', ${d.jumlah_bundles})">✏️ Edit<\/button>
-                        <button class="btn-hapus-small" onclick="hapusSatuData(${d.id})">🗑️ Hapus<\/button>
-                    <\/td>
-                <\/tr>`;
-            }
-            
-            // Attach event listeners untuk checkbox
-            document.querySelectorAll('.rowCheckbox').forEach(cb => {
-                cb.addEventListener('change', function(e) {
-                    const id = parseInt(this.dataset.id);
-                    if(this.checked) {
-                        addCheckedId(id);
-                    } else {
-                        removeCheckedId(id);
-                    }
-                });
-            });
-            
-            // Update select all
-            const selectAll = document.getElementById('selectAllCheckbox');
-            if(selectAll) {
-                const allVisible = document.querySelectorAll('.rowCheckbox');
-                const allChecked = Array.from(allVisible).every(cb => cb.checked);
-                selectAll.checked = allChecked && allVisible.length > 0;
-            }
-            
-            let pagHtml = '';
-            for(let i=1; i<=totalPages; i++) {
-                pagHtml += `<button onclick="goToPage(${i})" class="${i===currentPage?'active-page-btn':''}">${i}</button>`;
-            }
-            document.getElementById('pagination').innerHTML = pagHtml;
-        }
-
-        document.getElementById('urutPOBtn').onclick = () => {
-            currentOrderBy = "no_po";
-            currentOrderAsc = true;
-            currentPage = 1;
-            loadAllData();
-        };
-
-        document.getElementById('urutPOTerbalikBtn').onclick = () => {
-            currentOrderBy = "no_po";
-            currentOrderAsc = false;
-            currentPage = 1;
-            loadAllData();
-        };
-
-        window.goToPage = (p) => { currentPage = p; loadAllData(); };
-
-        window.editData = (id, tanggal, noPo, brand, size, gsm, box, bundles) => {
-            currentEditId = id;
-            let tanggalForInput = formatDateForInput(tanggal);
-            document.getElementById('editTanggal').value = tanggalForInput;
-            document.getElementById('editNoPo').value = noPo;
-            document.getElementById('editBrand').value = brand;
-            document.getElementById('editSize').value = size;
-            document.getElementById('editGsm').value = gsm;
-            document.getElementById('editBox').value = box;
-            document.getElementById('editBundles').value = bundles;
-            document.getElementById('editModal').style.display = 'flex';
-        };
-
-        window.hapusSatuData = async (id) => {
-            if(confirm("Hapus data ini?")) {
-                const { error } = await supabase.from('riwayat_timbang').delete().eq('id', id);
-                if(error) alert("Gagal hapus: " + error.message);
-                else { 
-                    removeCheckedId(id);
-                    alert("Data terhapus!"); 
-                    loadAllData(); 
-                }
-            }
-        };
-
-        document.getElementById('saveEditBtn').onclick = async () => {
-            let tanggalRaw = document.getElementById('editTanggal').value;
-            let tanggalFormatted = formatDateToDB(tanggalRaw);
-            const updatedData = {
-                tanggal: tanggalFormatted,
-                no_po: document.getElementById('editNoPo').value,
-                brand: document.getElementById('editBrand').value,
-                size_kertas: document.getElementById('editSize').value,
-                gsm: parseInt(document.getElementById('editGsm').value),
-                jenis_box: document.getElementById('editBox').value,
-                jumlah_bundles: parseInt(document.getElementById('editBundles').value)
-            };
-            const { error } = await supabase.from('riwayat_timbang').update(updatedData).eq('id', currentEditId);
-            if(error) alert("Gagal update: " + error.message);
-            else { alert("Data berhasil diupdate!"); document.getElementById('editModal').style.display = 'none'; loadAllData(); }
-        };
-
-        document.getElementById('cariBtn').onclick = () => {
-            currentSearch = document.getElementById('searchInput').value.trim();
-            currentPage = 1;
-            loadAllData();
-        };
-
-        document.getElementById('resetCariBtn').onclick = () => {
-            currentSearch = '';
-            document.getElementById('searchInput').value = '';
-            currentPage = 1;
-            loadAllData();
-        };
-
-        document.getElementById('hapusSemuaBtn').onclick = async () => {
-            if(confirm("⚠️ Hapus SEMUA data dari cloud?")) {
-                const { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
-                if(error) alert("Gagal hapus: " + error.message);
-                else { 
-                    clearAllChecked();
-                    alert("✅ Semua data telah dihapus!"); 
-                    loadAllData(); 
-                }
-            }
-        };
-
-        document.getElementById('exportExcelBtn').onclick = async () => {
-            let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
-            if(currentSearch) query = query.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
-            const { data, error } = await query;
-            if(error) { alert("Gagal export!"); return; }
-            if(!data || data.length===0) { alert("Tidak ada data untuk di export!"); return; }
-            
-            const excelData = [["No", "Tanggal", "No. PI", "Brand", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang (kg)", "Berat Bersih (kg)"]];
-            
-            for(let i=0; i<data.length; i++) {
-                const d = data[i];
-                excelData.push([
-                    i+1,
-                    d.tanggal || '',
-                    d.no_po || '-',
-                    d.brand || '-',
-                    d.size_kertas || '',
-                    d.gsm || '',
-                    d.leaves_per_bundle || '',
-                    d.jenis_box || '',
-                    d.jumlah_bundles || 0,
-                    d.berat_timbang_kg || 0,
-                    d.berat_bersih_kg || 0
-                ]);
-            }
-            
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-            ws['!cols'] = [
-                {wch:5}, {wch:12}, {wch:15}, {wch:15}, {wch:20},
-                {wch:6}, {wch:8}, {wch:15}, {wch:12}, {wch:15}, {wch:15}
-            ];
-            
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Laporan Timbangan");
-            XLSX.writeFile(wb, `laporan_timbangan_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.xlsx`);
-            alert("Export Excel berhasil!");
-        };
-
-        // CETAK MODAL
-        const cetakModal = document.getElementById('cetakModal');
-        const cetakMetode = document.getElementById('cetakMetode');
-        const cetakPoInput = document.getElementById('cetakPoInput');
-        const cetakBrandInput = document.getElementById('cetakBrandInput');
-        const cetakTanggalInput = document.getElementById('cetakTanggalInput');
-
-        const today = new Date().toISOString().split('T')[0];
-        const now = new Date();
-        const currentTime = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
-        document.getElementById('tglSerahTerima').value = today;
-        document.getElementById('jamSerahTerima').value = currentTime;
-
-        document.getElementById('cetakBtn').onclick = () => {
-            cetakModal.style.display = 'flex';
-        };
-
-        cetakMetode.onchange = () => {
-            const metode = cetakMetode.value;
-            cetakPoInput.style.display = metode === 'pi' ? 'block' : 'none';
-            cetakBrandInput.style.display = metode === 'brand' ? 'block' : 'none';
-            cetakTanggalInput.style.display = metode === 'tanggal' ? 'block' : 'none';
-        };
-        cetakMetode.onchange();
-
-        function generateNomorDokumen() {
-            const date = new Date();
-            const tahun = date.getFullYear();
-            const bulan = (date.getMonth() + 1).toString().padStart(2,'0');
-            const random = Math.floor(Math.random() * 1000).toString().padStart(3,'0');
-            return `ST/${tahun}/${bulan}/${random}`;
-        }
-
-        document.getElementById('prosesCetakBtn').onclick = async () => {
-            const metode = cetakMetode.value;
-            let dataToPrint = [];
-            let title = "";
-            
-            const pengirim = document.getElementById('pengirimNama').value || "_______________";
-            const penerima = document.getElementById('penerimaNama').value || "_______________";
-            const tglSerah = document.getElementById('tglSerahTerima').value || today;
-            const jamSerah = document.getElementById('jamSerahTerima').value || currentTime;
-            const lokasi = document.getElementById('lokasiProduksi').value || "_______________";
-            const kondisi = document.getElementById('kondisiBarang').value;
-            const catatan = document.getElementById('catatanTambahan').value || "-";
-            const nomorDokumen = generateNomorDokumen();
-            
-            const tglSerahFormatted = tglSerah.split('-').reverse().join('/');
-            
-            if(metode === 'pi') {
-                const poValue = document.getElementById('cetakPoValue').value.trim();
-                if(!poValue) { alert("Masukkan No. PI!"); return; }
-                title = `NO. PI: ${poValue}`;
-                let query = supabase.from('riwayat_timbang').select('*').eq('no_po', poValue).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            } 
-            else if(metode === 'brand') {
-                const brandValue = document.getElementById('cetakBrandValue').value.trim();
-                if(!brandValue) { alert("Masukkan Brand!"); return; }
-                title = `BRAND: ${brandValue}`;
-                let query = supabase.from('riwayat_timbang').select('*').eq('brand', brandValue).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            else if(metode === 'tanggal') {
-                const tglAwal = document.getElementById('cetakTglAwal').value;
-                const tglAkhir = document.getElementById('cetakTglAkhir').value;
-                if(!tglAwal || !tglAkhir) { alert("Pilih rentang tanggal!"); return; }
-                const tglAwalFormatted = formatDateToDB(tglAwal);
-                const tglAkhirFormatted = formatDateToDB(tglAkhir);
-                title = `TANGGAL: ${tglAwal.split('-').reverse().join('/')} s/d ${tglAkhir.split('-').reverse().join('/')}`;
-                let query = supabase.from('riwayat_timbang').select('*').gte('tanggal', tglAwalFormatted).lte('tanggal', tglAkhirFormatted).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            else if(metode === 'checklist') {
-                const checkedIds = getCheckedIds();
-                const ids = [...checkedIds];
-                if(ids.length === 0) { alert("Pilih data yang ingin dicetak terlebih dahulu!"); return; }
-                title = `DATA TERPILIH (${ids.length} box)`;
-                let query = supabase.from('riwayat_timbang').select('*').in('id', ids).order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            else {
-                title = `SEMUA DATA TIMBANGAN`;
-                let query = supabase.from('riwayat_timbang').select('*').order('id', { ascending: true });
-                const { data, error } = await query;
-                if(error) { alert("Gagal ambil data!"); return; }
-                dataToPrint = data || [];
-            }
-            
-            if(dataToPrint.length === 0) {
-                alert("Tidak ada data untuk dicetak!");
-                return;
-            }
-            
-            const groupedByPO = {};
-            let grandTotalBundles = 0;
-            let grandTotalBerat = 0;
-            
-            for(const item of dataToPrint) {
-                const po = item.no_po || "-";
-                if(!groupedByPO[po]) groupedByPO[po] = [];
-                groupedByPO[po].push(item);
-                grandTotalBundles += (item.jumlah_bundles || 0);
-                grandTotalBerat += (item.berat_timbang_kg || 0);
-            }
-            
-            let printHtml = `<!DOCTYPE html>
-            <html>
-            <head><meta charset="UTF-8"><title>Serah Terima - The Rolling Paper</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: 'Times New Roman', Arial, sans-serif; margin: 0; padding: 20px; background: white; }
-                .print-area { max-width: 1100px; margin: 0 auto; }
-                .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
-                .header h1 { font-size: 24px; color: #1e3a8a; letter-spacing: 2px; margin: 0; }
-                .header h2 { font-size: 18px; color: #333; margin: 5px 0; }
-                .header p { font-size: 12px; color: #666; margin-top: 5px; }
-                .nomor-dokumen { text-align: center; background: #f1f5f9; padding: 8px; margin: 15px 0; font-weight: bold; border-radius: 5px; }
-                .serah-terima-box { 
-                    border: 2px solid #1e3a8a; 
-                    padding: 15px; 
-                    margin: 20px 0; 
-                    border-radius: 10px;
-                    background: #fafcff;
-                }
-                .row { display: flex; margin-bottom: 10px; }
-                .col-label { width: 140px; font-weight: bold; }
-                .col-value { flex: 1; border-bottom: 1px dotted #999; }
-                .kondisi-box { margin: 15px 0; }
-                .kondisi-box span { margin-right: 20px; }
-                table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 12px; }
-                th, td { border: 1px solid #999; padding: 8px; text-align: left; }
-                th { background: #1e3a8a; color: white; text-align: center; }
-                td { text-align: center; }
-                .total-row { background: #e2e8f0; font-weight: bold; }
-                .footer { margin-top: 30px; }
-                .ttd-row { display: flex; justify-content: space-between; margin-top: 40px; }
-                .ttd-box { text-align: center; width: 45%; }
-                .ttd-line { margin-top: 50px; border-top: 1px solid #000; width: 100%; }
-                .stempel { text-align: center; margin-top: 20px; font-style: italic; }
-                .print-date { font-size: 10px; text-align: right; color: #666; margin-top: 20px; }
-            </style>
-            </head>
-            <body>
-            <div class="print-area">
-                <div class="header">
-                    <h1>THE ROLLING PAPER COMPANY</h1>
-                    <h2>SURAT JALAN / SERAH TERIMA PRODUKSI</h2>
-                    <p>Jl. Kampung Legon RT.03 RW.04, Kel. Jatimulya, Kec. Tambun Selatan Kab. Bekasi, Jawa Barat 17510 | Telp. (021) 883 49672 | Email: admin@rollingpaper.com</p>
-                </div>
-                
-                <div class="nomor-dokumen">
-                    No. Dokumen: ${nomorDokumen}
-                </div>
-                
-                <div class="serah-terima-box">
-                    <div class="row">
-                        <div class="col-label">PENGIRIM (Gudang) :</div>
-                        <div class="col-value">${pengirim}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-label">PENERIMA (Produksi) :</div>
-                        <div class="col-value">${penerima}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-label">Tanggal Serah Terima :</div>
-                        <div class="col-value">${tglSerahFormatted}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-label">Jam Serah Terima :</div>
-                        <div class="col-value">${jamSerah} WIB</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-label">Lokasi / Line :</div>
-                        <div class="col-value">${lokasi}</div>
-                    </div>
-                    <div class="kondisi-box">
-                        <strong>✅ KONDISI BARANG :</strong><br>
-                        ${kondisi === 'Baik' ? '☑ Baik' : '☐ Baik'} &nbsp;&nbsp;
-                        ${kondisi === 'Rusak Ringan' ? '☑ Rusak Ringan' : '☐ Rusak Ringan'} &nbsp;&nbsp;
-                        ${kondisi === 'Rusak Berat' ? '☑ Rusak Berat' : '☐ Rusak Berat'}
-                    </div>
-                    <div class="row">
-                        <div class="col-label">📝 CATATAN :</div>
-                        <div class="col-value">${catatan}</div>
-                    </div>
-                </div>
-                
-                <h3 style="margin: 15px 0 5px 0;">📋 RINCIAN KERTAS YANG DISERAHKAN</h3>
-                <h4 style="margin-bottom: 10px; color: #555;">${title}</h4>`;
-            
-            for(const [po, items] of Object.entries(groupedByPO)) {
-                const brand = items[0].brand || "-";
-                const size = items[0].size_kertas || "-";
-                const gsm = items[0].gsm || "-";
-                const leaves = items[0].leaves_per_bundle || "-";
-                
-                let totalBundlesPO = 0;
-                let totalBeratPO = 0;
-                let tableRows = "";
-                for(let i=0; i<items.length; i++) {
-                    const item = items[i];
-                    totalBundlesPO += (item.jumlah_bundles || 0);
-                    totalBeratPO += (item.berat_timbang_kg || 0);
-                    const tanggalDisplay = formatTanggalIndonesia(item.tanggal || '');
-                    tableRows += `<tr>
-                        <td style="text-align:center">${i+1}</td>
-                        <td>${tanggalDisplay}</td>
-                        <td>${item.no_po || '-'}</td>
-                        <td>${item.brand || '-'}</td>
-                        <td>${item.size_kertas || '-'}</td>
-                        <td style="text-align:center">${item.gsm || '-'}</td>
-                        <td style="text-align:center">${item.leaves_per_bundle || '-'}</td>
-                        <td style="text-align:center; font-weight:bold">${(item.jumlah_bundles || 0).toLocaleString('id-ID')}</td>
-                        <td>${(item.berat_timbang_kg || 0).toFixed(2)} kg</td>
-                    </tr>`;
-                }
-                const rataRataPO = Math.round(totalBundlesPO / items.length);
-                
-                printHtml += `
-                <table>
-                    <thead>
-                        <tr><th colspan="9" style="background:#2563eb; text-align:left;">
-    📄 PI: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}
-</th></tr>
-                        <tr>
-                            <th>No</th><th>Tanggal</th><th>PI</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat</th>
-                        </tr>
-                    </thead>
-                    <tbody>${tableRows}
-                        <tr class="total-row">
-                            <td colspan="7"><strong>TOTAL ${po}</strong></td>
-                            <td style="text-align:center"><strong>${totalBundlesPO.toLocaleString('id-ID')}</strong></td>
-                            <td style="text-align:center"><strong>${totalBeratPO.toFixed(2)} kg</strong></td>
-                        </tr>
-                        <tr class="total-row">
-                            <td colspan="7"><strong>RATA-RATA ${po}</strong></td>
-                            <td style="text-align:center"><strong>${rataRataPO.toLocaleString('id-ID')}/box</strong></td>
-                            <td style="text-align:center"><strong>${(totalBeratPO/items.length).toFixed(2)} kg/box</strong></td>
-                        </tr>
-                    </tbody>
-                </table>`;
-            }
-            
-            printHtml += `
-                <table style="width: 50%; float: right; margin-top: 10px;">
-                    <tr class="total-row"><td><strong>📦 GRAND TOTAL BUNDLES</strong></td><td style="text-align:center"><strong>${grandTotalBundles.toLocaleString('id-ID')} bundles</strong></td></tr>
-                    <tr class="total-row"><td><strong>⚖️ GRAND TOTAL BERAT</strong></td><td style="text-align:center"><strong>${grandTotalBerat.toFixed(2)} kg</strong></td></tr>
-                </table>
-                <div style="clear:both"></div>
-                
-                <div class="footer">
-                    <div class="ttd-row">
-                        <div class="ttd-box">
-                            <div>Diterima oleh,</div>
-                            <div class="ttd-line"></div>
-                            <div><strong>${penerima}</strong></div>
-                            <div>(Penerima / Produksi)</div>
-                        </div>
-                        <div class="ttd-box">
-                            <div>Diserahkan oleh,</div>
-                            <div class="ttd-line"></div>
-                            <div><strong>${pengirim}</strong></div>
-                            <div>(Pengirim / Gudang)</div>
-                        </div>
-                    </div>
-                    <div class="ttd-row" style="margin-top: 20px;">
-                        <div class="ttd-box">
-                            <div>Mengetahui,</div>
-                            <div class="ttd-line"></div>
-                            <div><strong>Supervisor</strong></div>
-                        </div>
-                        <div class="ttd-box">
-                            <div>&nbsp;</div>
-                            <div class="ttd-line"></div>
-                            <div><strong>Catatan:</strong> Lembar ini sebagai bukti serah terima</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="stempel">
-                    ...............................................................
-                    <br>Dicetak pada: ${new Date().toLocaleString('id-ID')}
-                    <br><strong>Dokumen ini sah tanpa stempel basah</strong>
-                </div>
-            </div>
-            </body>
-            </html>`;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(printHtml);
-            printWindow.document.close();
-            printWindow.print();
-            
-            cetakModal.style.display = 'none';
-        };
-
-        document.getElementById('closeCetakModalBtn').onclick = () => { cetakModal.style.display = 'none'; };
-        document.getElementById('closeModalBtn').onclick = () => { document.getElementById('editModal').style.display = 'none'; };
-        window.onclick = (e) => { if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none'; if(e.target === cetakModal) cetakModal.style.display = 'none'; };
-        // ========== CETAK TIMBANGAN (LANGSUNG, TANPA FORM SERAH TERIMA) ==========
-        document.getElementById('cetakTimbanganBtn').onclick = async () => {
-            const checkedIds = getCheckedIds();
-            const ids = [...checkedIds];
-            
-            if(ids.length === 0) { 
-                alert("⚠️ Tidak ada data yang di-checklist! Silakan centang data terlebih dahulu."); 
-                return; 
-            }
-            
-            // Ambil data dari Supabase berdasarkan ID yang dipilih
-            const { data, error } = await supabase
-                .from('riwayat_timbang')
-                .select('*')
-                .in('id', ids)
-                .order('id', { ascending: true });
-            
-            if(error) { 
-                alert("Gagal ambil data: " + error.message); 
-                return; 
-            }
-            
-            if(!data || data.length === 0) {
-                alert("Data yang dipilih tidak ditemukan!");
-                return;
-            }
-            
-            // Kelompokkan berdasarkan PO
-            const groupedByPO = {};
-            let grandTotalBundles = 0;
-            let grandTotalBerat = 0;
-            
-            for(const item of data) {
-                const po = item.no_po || "-";
-                if(!groupedByPO[po]) groupedByPO[po] = [];
-                groupedByPO[po].push(item);
-                grandTotalBundles += (item.jumlah_bundles || 0);
-                grandTotalBerat += (item.berat_timbang_kg || 0);
-            }
-            
-            const tanggalCetak = new Date().toLocaleDateString('id-ID', { 
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
-            });
-            
-            let printHtml = `<!DOCTYPE html>
-            <html>
-            <head><meta charset="UTF-8"><title>Laporan Timbangan - The Rolling Paper</title>
-            <style>
-                * { margin: 0; padding: 0; box-sizing: border-box; }
-                body { font-family: 'Times New Roman', Arial, sans-serif; margin: 0; padding: 20px; background: white; }
-                .print-area { max-width: 1200px; margin: 0 auto; }
-                .header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid #1e3a8a; padding-bottom: 15px; }
-                .header h1 { font-size: 28px; color: #1e3a8a; letter-spacing: 2px; margin: 0; }
-                .header h2 { font-size: 20px; color: #333; margin: 5px 0; }
-                .header p { font-size: 12px; color: #666; margin-top: 5px; }
-                .address { font-size: 11px; color: #444; text-align: center; margin: 5px 0; }
-                .info-cetak { display: flex; justify-content: space-between; margin: 15px 0; font-size: 12px; }
-                table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 11px; }
-                th, td { border: 1px solid #999; padding: 8px; text-align: center; }
-                th { background: #1e3a8a; color: white; font-weight: bold; }
-                .total-row { background: #e2e8f0; font-weight: bold; }
-                .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #666; }
-                .page-break { page-break-before: always; }
-            </style>
-            </head>
-            <body>
-            <div class="print-area">
-                <div class="header">
-                    <h1>THE ROLLING PAPER COMPANY</h1>
-                    <h2>LAPORAN TIMBANGAN KERTAS</h2>
-                    <div class="address">Jl. Kampung Legon RT.03 RW.04, Kel. Jatimulya, Kec. Tambun Selatan Kab. Bekasi, Jawa Barat 17510 | Email: admin@rollingpaper.com</div>
-                </div>
-                
-                <div class="info-cetak">
-                    <span>📅 Dicetak: ${tanggalCetak}</span>
-                    <span>📦 Total Data: ${data.length} box</span>
-                    <span>✅ Data dipilih: ${ids.length} box</span>
-                </div>`;
-            
-            for(const [po, items] of Object.entries(groupedByPO)) {
-                const brand = items[0].brand || "-";
-                const size = items[0].size_kertas || "-";
-                const gsm = items[0].gsm || "-";
-                const leaves = items[0].leaves_per_bundle || "-";
-                
-                let totalBundlesPO = 0;
-                let totalBeratPO = 0;
-                let tableRows = "";
-                
-                for(let i=0; i<items.length; i++) {
-                    const item = items[i];
-                    totalBundlesPO += (item.jumlah_bundles || 0);
-                    totalBeratPO += (item.berat_timbang_kg || 0);
-                    const tanggalDisplay = item.tanggal || '';
-                    tableRows += `<tr>
-                        <td style="text-align:center">${i+1}</td>
-                        <td style="text-align:center">${tanggalDisplay}</td>
-                        <td style="text-align:center">${item.no_po || '-'}</td>
-                        <td style="text-align:center">${item.brand || '-'}</td>
-                        <td style="text-align:center">${item.size_kertas || '-'}</td>
-                        <td style="text-align:center">${item.gsm || '-'}</td>
-                        <td style="text-align:center">${item.leaves_per_bundle || '-'}</td>
-                        <td style="text-align:center; font-weight:bold">${(item.jumlah_bundles || 0).toLocaleString('id-ID')}</td>
-                        <td style="text-align:center">${(item.berat_timbang_kg || 0).toFixed(2)} kg</td>
-                    </tr>`;
-                }
-                
-                const rataRataPO = items.length > 0 ? Math.round(totalBundlesPO / items.length) : 0;
-                
-                printHtml += `
-                <h3 style="margin: 20px 0 5px 0; background:#e2e8f0; padding:5px;">📄 PI: ${po} | 🏷️ Brand: ${brand} | 📏 Size: ${size} | GSM: ${gsm} | Leaves: ${leaves}</h3>
-                <table>
-                    <thead>
-                        <tr><th>No</th><th>Tanggal</th><th>PI</th><th>Brand</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat Timbang</th></tr>
-                    </thead>
-                    <tbody>
-                        ${tableRows}
-                        <tr class="total-row">
-                            <td colspan="7"><strong>TOTAL ${po}</strong></td>
-                            <td style="text-align:center"><strong>${totalBundlesPO.toLocaleString('id-ID')}</strong></td>
-                            <td style="text-align:center"><strong>${totalBeratPO.toFixed(2)} kg</strong></td>
-                         </tr>
-                        <tr class="total-row">
-                            <td colspan="7"><strong>RATA-RATA ${po}</strong></td>
-                            <td style="text-align:center"><strong>${rataRataPO.toLocaleString('id-ID')}/box</strong></td>
-                            <td style="text-align:center"><strong>${(totalBeratPO/items.length).toFixed(2)} kg/box</strong></td>
-                         </tr>
-                    </tbody>
-                </table>`;
-            }
-            
-            printHtml += `
-                <table style="width: 50%; float: right; margin-top: 15px;">
-                    <tr class="total-row"><td><strong>📦 GRAND TOTAL BUNDLES</strong></td><td style="text-align:center"><strong>${grandTotalBundles.toLocaleString('id-ID')} bundles</strong></td></tr>
-                    <tr class="total-row"><td><strong>⚖️ GRAND TOTAL BERAT</strong></td><td style="text-align:center"><strong>${grandTotalBerat.toFixed(2)} kg</strong></td></tr>
-                </table>
-                <div style="clear:both"></div>
-                
-                <div class="footer">
-                    <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
-                    <p>Dokumen ini sah tanpa stempel basah</p>
-                </div>
-            </div>
-            </body>
-            </html>`;
-            
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(printHtml);
-            printWindow.document.close();
-            printWindow.print();
-        };
-        document.getElementById('selectAllCheckbox').onclick = (e) => {
-            const checkboxes = document.querySelectorAll('.rowCheckbox');
-            const isChecked = e.target.checked;
-            checkboxes.forEach(cb => {
-                cb.checked = isChecked;
-                const id = parseInt(cb.dataset.id);
-                if(isChecked) {
-                    addCheckedId(id);
-                } else {
-                    removeCheckedId(id);
-                }
-            });
-        };
-
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.onclick = () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-                document.getElementById(tab.dataset.page).classList.add('active-page');
-                if(tab.dataset.page === 'page2') loadAllData();
+                const nv = o.note ? $('dlgNote').value.trim() : '';
+                if (o.note && o.note.required && !nv) { alert('Wajib diisi: ' + o.note.label); return; }
+                close({ qty: qv, note: nv });
             };
         });
+    }
 
-        async function cekKoneksi() {
-            const { error } = await supabase.from('riwayat_timbang').select('id', { count: 'exact', head: true });
-            if(error) showStatus('⚠️ ' + error.message, 'error');
-            else showStatus('✅ Terhubung ke Supabase Cloud!', 'success');
+    // ========== LOGIN ==========
+    async function initLogin() {
+        const { data, error } = await supabase.rpc('daftar_user');
+        if (error) { $('loginMsg').className = 'status error'; $('loginMsg').innerText = '⚠️ Database belum disiapkan. Jalankan supabase_setup.sql dulu. (' + error.message + ')'; return; }
+        $('loginUser').innerHTML = (data || []).map(u => `<option value="${esc(u.nama)}">${esc(u.nama)} (${u.role === 'admin' ? 'Admin Timbang' : 'Leader Mesin'})</option>`).join('');
+    }
+    $('loginBtn').onclick = async () => {
+        const nama = $('loginUser').value, pin = $('loginPin').value;
+        if (!nama || !pin) { $('loginMsg').className = 'status error'; $('loginMsg').innerText = 'Pilih pengguna dan isi PIN'; return; }
+        const { data, error } = await supabase.rpc('login_user', { p_nama: nama, p_pin: pin });
+        if (error || !data || !data.length) { $('loginMsg').className = 'status error'; $('loginMsg').innerText = '❌ PIN salah'; return; }
+        user = { nama: data[0].nama, role: data[0].role };
+        sessionStorage.setItem('rp_user', JSON.stringify(user));
+        $('loginPin').value = '';
+        await startApp();
+        catatLog('LOGIN', 'Masuk ke aplikasi');
+    };
+    $('loginPin').addEventListener('keydown', e => { if (e.key === 'Enter') $('loginBtn').click(); });
+    $('logoutBtn').onclick = () => { catatLog('LOGOUT', 'Keluar dari aplikasi'); sessionStorage.removeItem('rp_user'); location.reload(); };
+
+    $('pinBtn').onclick = () => { $('pinLama').value = $('pinBaru').value = $('pinBaru2').value = ''; $('pinModal').style.display = 'flex'; };
+    $('pinBatalBtn').onclick = () => { $('pinModal').style.display = 'none'; };
+    $('pinSimpanBtn').onclick = async () => {
+        if ($('pinBaru').value !== $('pinBaru2').value) { alert('PIN baru tidak sama'); return; }
+        const { data, error } = await supabase.rpc('ganti_pin', { p_nama: user.nama, p_pin_lama: $('pinLama').value, p_pin_baru: $('pinBaru').value });
+        if (error) { alert('❌ ' + error.message); return; }
+        if (!data) { alert('❌ PIN lama salah'); return; }
+        $('pinModal').style.display = 'none';
+        alert('✅ PIN berhasil diganti');
+        catatLog('GANTI_PIN', 'PIN diganti');
+    };
+
+    async function startApp() {
+        $('loginOverlay').style.display = 'none';
+        $('userBar').style.display = 'flex';
+        $('userInfo').textContent = user.nama;
+        $('roleBadge').textContent = user.role === 'admin' ? 'ADMIN TIMBANG' : 'LEADER MESIN';
+        $('roleBadge').style.background = user.role === 'admin' ? '#1e3a8a' : '#b45309';
+        $('mpImporBtn').style.display = user.role === 'admin' ? 'block' : 'none';
+        await loadMasterData();
+        buildTabs();
+    }
+    function buildTabs() {
+        const bar = $('tabBar');
+        bar.innerHTML = TABS[user.role].map(([p, l]) => `<div class="tab" data-page="${p}">${l}</div>`).join('');
+        bar.querySelectorAll('.tab').forEach(t => t.onclick = () => showPage(t.dataset.page));
+        showPage(TABS[user.role][0][0]);
+    }
+    function showPage(pid) {
+        if (!TABS[user.role].some(t => t[0] === pid)) return;
+        document.querySelectorAll('#tabBar .tab').forEach(t => t.classList.toggle('active', t.dataset.page === pid));
+        document.querySelectorAll('.page').forEach(p => p.classList.toggle('active-page', p.id === pid));
+        const loaders = { page1: loadPermintaanOptions, page2: loadAllData, page3: loadPermintaan, page4: loadPermintaan, page5: loadStok, page6: renderMaster, page7: loadLog };
+        if (loaders[pid]) loaders[pid]();
+    }
+
+    // ========== MASTER DATA & SELECT ==========
+    function fillSelect(id, values, labelFn) {
+        const el = $(id); if (!el) return;
+        const prev = el.value;
+        el.innerHTML = values.map(v => `<option value="${esc(v)}">${esc(labelFn ? labelFn(v) : v)}</option>`).join('');
+        if (values.map(String).includes(prev)) el.value = prev;
+    }
+    function allSizes() { return [...new Set([...BASE_SIZES, ...customBerat.map(c => c.size_kertas)])]; }
+    function allGsm() { return [...new Set([...BASE_GSM, ...customBerat.map(c => c.gsm)])].sort((a, b) => a - b); }
+    function allLeaves() { return [...new Set([...BASE_LEAVES, ...customBerat.map(c => c.leaves)])].sort((a, b) => a - b); }
+    function refreshSelects() {
+        const jn = jenisList.map(j => j.nama);
+        ['jenis', 'pmJenis', 'stJenis', 'editJenis'].forEach(id => fillSelect(id, jn));
+        fillSelect('cbJenis', ['', ...jn], v => v === '' ? '(Semua jenis)' : v);
+        ['size', 'pmSize', 'stSize', 'editSize'].forEach(id => fillSelect(id, allSizes()));
+        ['gsm', 'pmGsm', 'stGsm', 'editGsm'].forEach(id => fillSelect(id, allGsm()));
+        ['leaves', 'pmLeaves', 'stLeaves'].forEach(id => fillSelect(id, allLeaves()));
+        $('piList').innerHTML = piList.map(p => `<option value="${esc(p.no_pi)}">${esc(p.brand)}</option>`).join('');
+        $('brandList').innerHTML = [...new Set(piList.map(p => p.brand))].map(b => `<option value="${esc(b)}">`).join('');
+        $('sizeList').innerHTML = allSizes().map(s => `<option value="${esc(s)}">`).join('');
+        const f = (id, list) => fillSelect(id, list, v => v === 'AKTIF' ? 'Aktif (belum selesai)' : v === 'SEMUA' ? 'Semua status' : v);
+        f('pmFilter', ['AKTIF', 'SEMUA', 'Diminta', 'Diproses', 'Produksi', 'Siap', 'Diterima', 'Dibatalkan']);
+        f('qFilter', ['AKTIF', 'SEMUA', 'Diminta', 'Diproses', 'Produksi', 'Siap', 'Diterima', 'Dibatalkan']);
+    }
+    async function loadMasterData() {
+        const [a, b, c] = await Promise.all([
+            fetchAll(() => supabase.from('master_pi').select('*').order('id', { ascending: false })),
+            supabase.from('jenis_kertas').select('*').order('id'),
+            supabase.from('berat_bundle_custom').select('*').order('id')
+        ]);
+        piList = a.data || [];
+        jenisList = b.data || [];
+        customBerat = (c.data || []).map(x => ({ ...x, gsm: Number(x.gsm), leaves: Number(x.leaves), gram_per_bundle: Number(x.gram_per_bundle) }));
+        refreshSelects();
+        if (user && $('page6').classList.contains('active-page')) renderMaster();
+    }
+    function beratBundleKG(size, gsm, leaves, jenis) {
+        const c = customBerat.filter(x => x.size_kertas === size && x.gsm == gsm && x.leaves == leaves);
+        const hit = c.find(x => x.jenis_kertas === jenis) || c.find(x => !x.jenis_kertas);
+        if (hit) return hit.gram_per_bundle / 1000;
+        const g = beratBundleDB[`${size}|${gsm}|${leaves}`];
+        return g ? g / 1000 : null;
+    }
+
+    // ========== TIMBANG ==========
+    $('tanggal').value = new Date().toISOString().split('T')[0];
+    let permintaanTimbang = [];
+
+    function lockSpec(flag) { ['jenis', 'size', 'gsm', 'leaves'].forEach(id => $(id).disabled = flag); }
+    $('noPo').addEventListener('input', onPiInput);
+    $('noPo').addEventListener('change', onPiInput);
+    function onPiInput() {
+        const p = findPI($('noPo').value);
+        const hint = $('piHint');
+        if (p) { $('brand').value = p.brand; hint.className = 'hint ok'; hint.textContent = '✅ PI terdaftar'; }
+        else {
+            $('brand').value = '';
+            if ($('noPo').value.trim()) { hint.className = 'hint bad'; hint.textContent = '❌ PI belum terdaftar. Buat dulu di menu Master (atau minta Leader).'; }
+            else { hint.className = 'hint'; hint.textContent = ''; }
         }
-        cekKoneksi();
-        loadAllData();
-        
-            // Tambahkan editBox jika belum ada
-        if(!document.getElementById('editBox')) {
-            const editBundles = document.getElementById('editBundles');
-            const boxLabel = document.createElement('label');
-            boxLabel.innerHTML = 'Jenis Box';
-            boxLabel.setAttribute('for', 'editBox');
-            const boxSelect = document.createElement('select');
-            boxSelect.id = 'editBox';
-            boxSelect.innerHTML = '<option value="White">White (0.90 kg)</option><option value="White New">White New (0.80 kg)</option><option value="Grey">Grey (1.25 kg)</option><option value="Green Jumbo">Green Jumbo (3.80 kg)</option>';
-            editBundles.parentNode.insertBefore(boxLabel, editBundles);
-            editBundles.parentNode.insertBefore(boxSelect, editBundles);
-        } // <-- TUTUP BLOK IF DI SINI!
+        loadPermintaanOptions();
+    }
+    async function loadPermintaanOptions() {
+        if (!user || user.role !== 'admin') return;
+        const sel = $('permintaanTerkait');
+        const keep = sel.value;
+        const p = findPI($('noPo').value);
+        permintaanTimbang = [];
+        if (!p) { sel.innerHTML = '<option value="">— tanpa permintaan —</option>'; $('pmInfo').textContent = ''; lockSpec(false); return; }
+        const { data } = await supabase.from('permintaan').select('*').eq('no_pi', p.no_pi).in('status', ['Diproses', 'Siap', 'Diterima']).order('id');
+        permintaanTimbang = data || [];
+        const ids = permintaanTimbang.map(d => d.id);
+        let sums = {};
+        if (ids.length) {
+            const r = await supabase.from('ditimbang_per_permintaan').select('*').in('permintaan_id', ids);
+            (r.data || []).forEach(x => sums[x.permintaan_id] = x.bundles);
+        }
+        permintaanTimbang.forEach(d => d._timbang = sums[d.id] || 0);
+        sel.innerHTML = '<option value="">— tanpa permintaan —</option>' + permintaanTimbang.map(d =>
+            `<option value="${d.id}">#${d.id} · ${esc(d.jenis_kertas)} · ${esc(d.size_kertas)} · ${d.gsm}gsm · ${d.leaves}lv · diminta ${d.qty_minta} · ditimbang ${d._timbang}</option>`).join('');
+        if (keep && ids.includes(Number(keep))) sel.value = keep;
+        onPermintaanChange();
+    }
+    $('permintaanTerkait').addEventListener('change', onPermintaanChange);
+    function onPermintaanChange() {
+        const id = Number($('permintaanTerkait').value);
+        const r = permintaanTimbang.find(d => d.id === id);
+        if (!r) { lockSpec(false); $('pmInfo').className = 'hint'; $('pmInfo').textContent = permintaanTimbang.length ? '' : ''; return; }
+        $('jenis').value = r.jenis_kertas; $('size').value = r.size_kertas; $('gsm').value = r.gsm; $('leaves').value = r.leaves;
+        lockSpec(true);
+        const sisa = r.qty_minta - r._timbang;
+        $('pmInfo').className = 'hint ' + (sisa < 0 ? 'bad' : 'ok');
+        $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.qty_siap} | sudah ditimbang ${r._timbang} | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle. Spesifikasi terkunci sesuai permintaan.`;
+    }
 
-        // ========== FITUR CETAK BARCODE ==========
-        const cetakBarcodeModal = document.getElementById('cetakBarcodeModal');
-        const cetakBarcodeMetode = document.getElementById('cetakBarcodeMetode');
-        const cetakBarcodePoInput = document.getElementById('cetakBarcodePoInput');
-        const cetakBarcodeBrandInput = document.getElementById('cetakBarcodeBrandInput');
-        const cetakBarcodeTanggalInput = document.getElementById('cetakBarcodeTanggalInput');
+    $('hitungBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        const piRow = findPI($('noPo').value);
+        if (!piRow) { alert("No. PI belum terdaftar! Pilih dari daftar atau buat dulu di menu Master."); return; }
+        const beratTimbang = parseFloat($('berat').value);
+        if (isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
 
-        // Toggle input berdasarkan metode
-        cetakBarcodeMetode.onchange = function() {
-            const metode = this.value;
-            cetakBarcodePoInput.style.display = metode === 'pi' ? 'block' : 'none';
-            cetakBarcodeBrandInput.style.display = metode === 'brand' ? 'block' : 'none';
-            cetakBarcodeTanggalInput.style.display = metode === 'tanggal' ? 'block' : 'none';
-        };
-        cetakBarcodeMetode.onchange();
+        const boxType = $('box').value;
+        const beratBox = beratBoxMap[boxType];
+        const jumlahLayer = parseInt($('layer').value) || 0;
+        const beratLayer = jumlahLayer * BERAT_LAYER_KG;
+        const beratBersih = beratTimbang - beratBox - beratLayer;
+        if (beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
 
-        // Tombol buka modal
-        document.getElementById('cetakBarcodeBtn').onclick = function() {
-            cetakBarcodeModal.style.display = 'flex';
-        };
+        const size = $('size').value, gsm = $('gsm').value, leaves = $('leaves').value, jenis = $('jenis').value;
+        const beratBundleKG = beratBundleKG_(size, gsm, leaves, jenis);
+        if (!beratBundleKG) {
+            alert(`Berat bundle belum terdaftar!\nSize: ${size} | GSM: ${gsm} | Leaves: ${leaves} | Jenis: ${jenis}\n\nTambahkan di menu Master > Spesifikasi / Berat Bundle Tambahan.`);
+            return;
+        }
+        const bundlesDesimal = beratBersih / beratBundleKG;
+        const bundlesBulat = Math.ceil(bundlesDesimal);
 
-        // Tombol tutup modal
-        document.getElementById('closeCetakBarcodeModalBtn').onclick = function() {
-            cetakBarcodeModal.style.display = 'none';
-        };
-
-        // Proses cetak barcode
-        document.getElementById('prosesCetakBarcodeBtn').onclick = async function() {
-            const metode = cetakBarcodeMetode.value;
-            let dataToPrint = [];
-            let title = "";
-
-            try {
-                if(metode === 'pi') {
-                    const poValue = document.getElementById('cetakBarcodePoValue').value.trim();
-                    if(!poValue) { alert("Masukkan No. PI!"); return; }
-                    title = `NO. PI: ${poValue}`;
-                    const { data, error } = await supabase.from('riwayat_timbang').select('*').eq('no_po', poValue).order('id', { ascending: true });
-                    if(error) { alert("Gagal ambil data!"); return; }
-                    dataToPrint = data || [];
-                } 
-                else if(metode === 'brand') {
-                    const brandValue = document.getElementById('cetakBarcodeBrandValue').value.trim();
-                    if(!brandValue) { alert("Masukkan Brand!"); return; }
-                    title = `BRAND: ${brandValue}`;
-                    const { data, error } = await supabase.from('riwayat_timbang').select('*').eq('brand', brandValue).order('id', { ascending: true });
-                    if(error) { alert("Gagal ambil data!"); return; }
-                    dataToPrint = data || [];
-                }
-                else if(metode === 'tanggal') {
-                    const tglAwal = document.getElementById('cetakBarcodeTglAwal').value;
-                    const tglAkhir = document.getElementById('cetakBarcodeTglAkhir').value;
-                    if(!tglAwal || !tglAkhir) { alert("Pilih rentang tanggal!"); return; }
-                    const tglAwalFormatted = formatDateToDB(tglAwal);
-                    const tglAkhirFormatted = formatDateToDB(tglAkhir);
-                    title = `TANGGAL: ${tglAwal.split('-').reverse().join('/')} s/d ${tglAkhir.split('-').reverse().join('/')}`;
-                    const { data, error } = await supabase.from('riwayat_timbang').select('*').gte('tanggal', tglAwalFormatted).lte('tanggal', tglAkhirFormatted).order('id', { ascending: true });
-                    if(error) { alert("Gagal ambil data!"); return; }
-                    dataToPrint = data || [];
-                }
-                else if(metode === 'checklist') {
-                    const checkedIds = getCheckedIds();
-                    const ids = [...checkedIds];
-                    if(ids.length === 0) { alert("Pilih data yang ingin dicetak terlebih dahulu!"); return; }
-                    title = `DATA TERPILIH (${ids.length} box)`;
-                    const { data, error } = await supabase.from('riwayat_timbang').select('*').in('id', ids).order('id', { ascending: true });
-                    if(error) { alert("Gagal ambil data!"); return; }
-                    dataToPrint = data || [];
-                }
-                else {
-                    title = `SEMUA DATA TIMBANGAN`;
-                    const { data, error } = await supabase.from('riwayat_timbang').select('*').order('id', { ascending: true });
-                    if(error) { alert("Gagal ambil data!"); return; }
-                    dataToPrint = data || [];
-                }
-
-                if(dataToPrint.length === 0) {
-                    alert("Tidak ada data untuk dicetak!");
-                    return;
-                }
-
-                // Ambil setting
-                const ukuran = document.getElementById('barcodeUkuran').value;
-                const tampilPI = document.getElementById('barcodeTampilPI').checked;
-                const tampilBrand = document.getElementById('barcodeTampilBrand').checked;
-                const tampilSize = document.getElementById('barcodeTampilSize').checked;
-                const tampilBundles = document.getElementById('barcodeTampilBundles').checked;
-                const tampilTanggal = document.getElementById('barcodeTampilTanggal').checked;
-
-                // Ukuran QR Code
-                const ukuranMap = {
-                    small: { size: 120, fontSize: 10 },
-                    medium: { size: 180, fontSize: 12 },
-                    large: { size: 260, fontSize: 14 }
-                };
-                const size = ukuranMap[ukuran];
-
-                // Generate QR Code (seperti QRIS)
-                let barcodeHTML = '';
-                for(let i = 0; i < dataToPrint.length; i++) {
-                    const item = dataToPrint[i];
-                    const barcodeText = `${item.no_po || 'N/A'}-${item.id || i+1}`;
-                    
-                    let infoText = '';
-                    if(tampilPI) infoText += `${item.no_po || '-'} `;
-                    if(tampilBrand) infoText += `${item.brand || '-'} `;
-                    if(tampilSize) infoText += `${item.size_kertas || ''} `;
-                    if(tampilBundles) infoText += `${item.jumlah_bundles || 0} bundles`;
-                    if(tampilTanggal) infoText += ` ${item.tanggal || ''}`;
-
-                    const qrImgUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size.size}x${size.size}&data=${encodeURIComponent(barcodeText)}`;
-
-                    barcodeHTML += `
-                    <div style="display:inline-block;border:1px solid #ccc;border-radius:8px;padding:12px;margin:8px;text-align:center;width:${size.size + 40}px;page-break-inside:avoid;">
-                        <div style="font-size:${size.fontSize - 2}px;font-weight:bold;color:#1e3a8a;margin-bottom:6px;">THE ROLLING PAPER</div>
-                        <img src="${qrImgUrl}" width="${size.size}" height="${size.size}" style="display:block;margin:0 auto;" alt="QR Code">
-                        <div style="font-size:${size.fontSize - 2}px;letter-spacing:1px;font-family:monospace;margin-top:6px;">${barcodeText}</div>
-                        <div style="font-size:${size.fontSize - 4}px;color:#333;margin-top:4px;border-top:1px solid #eee;padding-top:4px;">${infoText}</div>
-                    </div>`;
-                }
-
-                // Cetak HTML
-                const printHtml = `<!DOCTYPE html>
-                <html>
-                <head><meta charset="UTF-8"><title>Cetak Barcode - The Rolling Paper</title>
-                <style>
-                    * { margin: 0; padding: 0; box-sizing: border-box; }
-                    body { font-family: Arial, sans-serif; padding: 20px; background: white; }
-                    .header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 10px; }
-                    .header h1 { color: #1e3a8a; font-size: 20px; }
-                    .header p { color: #666; font-size: 12px; }
-                    .barcode-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
-                    .footer { text-align: center; margin-top: 20px; font-size: 10px; color: #666; }
-                    @media print {
-                        body { padding: 10px; }
-                    }
-                </style>
-                </head>
-                <body>
-                    <div class="header">
-                        <h1>THE ROLLING PAPER COMPANY</h1>
-                        <p>📱 Cetak QR Code - ${title}</p>
-                        <p style="font-size:11px;">Total: ${dataToPrint.length} QR Code | Dicetak: ${new Date().toLocaleString('id-ID')}</p>
-                    </div>
-                    <div class="barcode-grid">
-                        ${barcodeHTML}
-                    </div>
-                    <div class="footer">
-                        <p>Dokumen ini sah tanpa stempel basah</p>
-                    </div>
-                </body>
-                </html>`;
-
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(printHtml);
-                printWindow.document.close();
-                printWindow.print();
-                cetakBarcodeModal.style.display = 'none';
-
-            } catch(err) {
-                alert("Terjadi error: " + err.message);
+        const pmId = $('permintaanTerkait').value ? parseInt($('permintaanTerkait').value) : null;
+        if (pmId) {
+            const r = permintaanTimbang.find(d => d.id === pmId);
+            const { data: cur } = await supabase.from('ditimbang_per_permintaan').select('bundles').eq('permintaan_id', pmId);
+            const sudah = (cur && cur[0] && cur[0].bundles) || 0;
+            if (r && sudah + bundlesBulat > r.qty_minta) {
+                if (!confirm(`⚠️ Total ditimbang akan menjadi ${sudah + bundlesBulat} bundle, melebihi permintaan ${r.qty_minta} bundle.\nTetap simpan?`)) return;
             }
-        };
+        } else if (!confirm("Anda menimbang TANPA memilih permintaan Leader. Lanjut simpan?")) return;
 
-        // Tutup modal saat klik di luar
-        window.onclick = function(e) {
-            if(e.target === document.getElementById('editModal')) document.getElementById('editModal').style.display = 'none';
-            if(e.target === cetakModal) cetakModal.style.display = 'none';
-            if(e.target === cetakBarcodeModal) cetakBarcodeModal.style.display = 'none';
-        };
+        $('beratBersih').innerHTML = beratBersih.toFixed(4);
+        $('jumlahBundles').innerHTML = bundlesBulat;
+        $('hasilCard').style.display = "block";
 
-    })(); // <-- INI PENUTUP IIFE YANG BENAR
+        const dataToSave = {
+            tanggal: formatDateToDB($('tanggal').value),
+            no_po: piRow.no_pi,
+            brand: piRow.brand,
+            size_kertas: size,
+            gsm: parseInt(gsm),
+            leaves_per_bundle: parseInt(leaves),
+            jenis_kertas: jenis,
+            jenis_box: boxType,
+            jumlah_layer: jumlahLayer,
+            berat_timbang_kg: beratTimbang,
+            berat_bersih_kg: beratBersih,
+            jumlah_bundles: bundlesBulat,
+            bundles_desimal: bundlesDesimal,
+            permintaan_id: pmId,
+            dibuat_oleh: user.nama
+        };
+        showStatus('⏳ Menyimpan ke cloud...', 'loading');
+        const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
+        if (error) { showStatus('❌ Gagal: ' + error.message, 'error'); alert('Gagal simpan! ' + error.message); }
+        else {
+            showStatus('✅ Tersimpan ke cloud!', 'success');
+            catatLog('TIMBANG', `PI ${piRow.no_pi} ${size} ${gsm}gsm ${leaves}lv ${jenis} = ${bundlesBulat} bundle${pmId ? ' (permintaan #' + pmId + ')' : ''}`);
+            $('berat').value = '';
+            currentPage = 1; currentSearch = ""; $('searchInput').value = "";
+            loadPermintaanOptions();
+        }
+    };
+    function beratBundleKG_(s, g, l, j) { return beratBundleKG(s, g, l, j); }
+
+    $('resetFormBtn').onclick = () => {
+        if (confirm("Reset form? PI dan Brand akan dikosongkan.")) {
+            $('noPo').value = ''; $('brand').value = ''; $('berat').value = '';
+            $('hasilCard').style.display = 'none';
+            onPiInput();
+            showStatus('Form direset', 'success');
+        }
+    };
+
+    // ========== RIWAYAT ==========
+    async function loadAllData() {
+        if (!user || user.role !== 'admin') return;
+        const { data, error } = await fetchAll(() => {
+            let q = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
+            if (currentSearch) q = q.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
+            return q;
+        });
+        if (error) { console.error(error); return; }
+        allDataCache = data || [];
+        const existingIds = new Set(allDataCache.map(d => d.id));
+        const cc = getCheckedIds();
+        for (const id of cc) if (!existingIds.has(id)) cc.delete(id);
+        saveCheckedIds(cc);
+        displayDataWithPagination();
+    }
+    function displayDataWithPagination() {
+        let filtered = [...allDataCache];
+        if (currentOrderBy === "no_po") {
+            filtered.sort((a, b) => currentOrderAsc ? (a.no_po || "").localeCompare(b.no_po || "") : (b.no_po || "").localeCompare(a.no_po || ""));
+        } else {
+            filtered.sort((a, b) => currentOrderAsc ? a.id - b.id : b.id - a.id);
+        }
+        const totalPages = Math.ceil(filtered.length / rowsPerPage);
+        if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
+        const start = (currentPage - 1) * rowsPerPage;
+        const pageData = filtered.slice(start, start + rowsPerPage);
+        const tbody = $('riwayatBody');
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="11" style="text-align:center">📭 Tidak ada data. Silakan timbang dan simpan.</td></tr>';
+            $('pagination').innerHTML = '';
+            return;
+        }
+        tbody.innerHTML = pageData.map((d, i) => `<tr>
+            <td style="text-align:center"><input type="checkbox" class="rowCheckbox" data-id="${d.id}" ${isChecked(d.id) ? 'checked' : ''}></td>
+            <td style="text-align:center">${start + i + 1}</td>
+            <td>${esc(d.tanggal)}</td>
+            <td>${esc(d.no_po || '-')}</td>
+            <td>${esc(d.brand || '-')}</td>
+            <td>${esc(d.jenis_kertas || '-')}</td>
+            <td>${esc((d.size_kertas || '').substring(0, 18))}</td>
+            <td>${esc(d.gsm)}</td>
+            <td>${esc(d.leaves_per_bundle || '-')}</td>
+            <td style="text-align:center; font-weight:bold">${esc(d.jumlah_bundles)}</td>
+            <td class="aksi-cell">
+                <button class="btn-edit-small" data-act="edit" data-id="${d.id}">✏️ Edit</button>
+                <button class="btn-hapus-small" data-act="hapus" data-id="${d.id}">🗑️ Hapus</button>
+            </td></tr>`).join('');
+        document.querySelectorAll('.rowCheckbox').forEach(cb => cb.addEventListener('change', function () {
+            const id = parseInt(this.dataset.id);
+            this.checked ? addCheckedId(id) : removeCheckedId(id);
+        }));
+        const all = document.querySelectorAll('.rowCheckbox');
+        $('selectAllCheckbox').checked = all.length > 0 && Array.from(all).every(cb => cb.checked);
+        let pagHtml = '';
+        for (let i = 1; i <= totalPages; i++) pagHtml += `<button onclick="goToPage(${i})" class="${i === currentPage ? 'active-page-btn' : ''}">${i}</button>`;
+        $('pagination').innerHTML = pagHtml;
+    }
+    $('riwayatBody').addEventListener('click', e => {
+        const b = e.target.closest('button[data-act]'); if (!b) return;
+        const id = parseInt(b.dataset.id);
+        if (b.dataset.act === 'edit') editData(id); else hapusSatuData(id);
+    });
+    window.goToPage = p => { currentPage = p; displayDataWithPagination(); };
+    $('urutPOBtn').onclick = () => { currentOrderBy = "no_po"; currentOrderAsc = true; currentPage = 1; displayDataWithPagination(); };
+    $('urutPOTerbalikBtn').onclick = () => { currentOrderBy = "no_po"; currentOrderAsc = false; currentPage = 1; displayDataWithPagination(); };
+
+    function editData(id) {
+        if (!requireRole('admin')) return;
+        const d = allDataCache.find(x => x.id === id); if (!d) return;
+        currentEditId = id;
+        $('editTanggal').value = formatDateForInput(d.tanggal);
+        $('editNoPo').value = d.no_po || '';
+        $('editBrand').value = d.brand || '';
+        $('editJenis').value = d.jenis_kertas || '';
+        $('editSize').value = d.size_kertas;
+        $('editGsm').value = d.gsm;
+        $('editBox').value = d.jenis_box;
+        $('editBundles').value = d.jumlah_bundles;
+        $('editModal').style.display = 'flex';
+    }
+    async function hapusSatuData(id) {
+        if (!requireRole('admin')) return;
+        const d = allDataCache.find(x => x.id === id);
+        if (!confirm("Hapus data ini?")) return;
+        const { error } = await supabase.from('riwayat_timbang').delete().eq('id', id);
+        if (error) alert("Gagal hapus: " + error.message);
+        else {
+            removeCheckedId(id);
+            catatLog('HAPUS_TIMBANG', d ? `#${id} PI ${d.no_po} ${d.size_kertas} ${d.gsm}gsm = ${d.jumlah_bundles} bundle` : `#${id}`);
+            loadAllData();
+        }
+    }
+    $('saveEditBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        const lama = allDataCache.find(x => x.id === currentEditId) || {};
+        const noPi = $('editNoPo').value.trim();
+        const pRow = findPI(noPi);
+        if (!pRow) { alert('No. PI tidak terdaftar di master PI'); return; }
+        const upd = {
+            tanggal: formatDateToDB($('editTanggal').value),
+            no_po: pRow.no_pi,
+            brand: $('editBrand').value.trim() || pRow.brand,
+            jenis_kertas: $('editJenis').value,
+            size_kertas: $('editSize').value,
+            gsm: parseInt($('editGsm').value),
+            jenis_box: $('editBox').value,
+            jumlah_bundles: parseInt($('editBundles').value)
+        };
+        const { error } = await supabase.from('riwayat_timbang').update(upd).eq('id', currentEditId);
+        if (error) alert("Gagal update: " + error.message);
+        else {
+            catatLog('EDIT_TIMBANG', `#${currentEditId}: PI ${lama.no_po}→${upd.no_po}, bundles ${lama.jumlah_bundles}→${upd.jumlah_bundles}, size ${lama.size_kertas}→${upd.size_kertas}, gsm ${lama.gsm}→${upd.gsm}`);
+            alert("Data berhasil diupdate!"); $('editModal').style.display = 'none'; loadAllData();
+        }
+    };
+    $('cariBtn').onclick = () => { currentSearch = $('searchInput').value.trim(); currentPage = 1; loadAllData(); };
+    $('resetCariBtn').onclick = () => { currentSearch = ''; $('searchInput').value = ''; currentPage = 1; loadAllData(); };
+    $('hapusSemuaBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        if (!confirm("⚠️ Hapus SEMUA data timbang dari cloud?")) return;
+        const t = prompt('Ketik HAPUS (huruf besar) untuk memastikan:');
+        if (t !== 'HAPUS') { alert('Dibatalkan'); return; }
+        const { error } = await supabase.from('riwayat_timbang').delete().neq('id', 0);
+        if (error) alert("Gagal hapus: " + error.message);
+        else { clearAllChecked(); catatLog('HAPUS_SEMUA_TIMBANG', 'Semua data timbang dihapus'); alert("✅ Semua data telah dihapus!"); loadAllData(); }
+    };
+    $('selectAllCheckbox').onclick = e => {
+        document.querySelectorAll('.rowCheckbox').forEach(cb => {
+            cb.checked = e.target.checked;
+            const id = parseInt(cb.dataset.id);
+            e.target.checked ? addCheckedId(id) : removeCheckedId(id);
+        });
+    };
+
+    $('exportExcelBtn').onclick = async () => {
+        const { data, error } = await fetchAll(() => {
+            let q = supabase.from('riwayat_timbang').select('*').order('id', { ascending: false });
+            if (currentSearch) q = q.or(`no_po.ilike.%${currentSearch}%,brand.ilike.%${currentSearch}%`);
+            return q;
+        });
+        if (error) { alert("Gagal export!"); return; }
+        if (!data || data.length === 0) { alert("Tidak ada data untuk di export!"); return; }
+        const rows = [["No", "Tanggal", "No. PI", "Brand", "Jenis Kertas", "Size", "GSM", "Leaves", "Jenis Box", "Jumlah Bundles", "Berat Timbang (kg)", "Berat Bersih (kg)", "ID Permintaan", "Dibuat Oleh"]];
+        data.forEach((d, i) => rows.push([i + 1, d.tanggal || '', d.no_po || '-', d.brand || '-', d.jenis_kertas || '', d.size_kertas || '', d.gsm || '', d.leaves_per_bundle || '', d.jenis_box || '', d.jumlah_bundles || 0, d.berat_timbang_kg || 0, d.berat_bersih_kg || 0, d.permintaan_id || '', d.dibuat_oleh || '']));
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        ws['!cols'] = [{wch:5},{wch:12},{wch:15},{wch:15},{wch:14},{wch:22},{wch:6},{wch:8},{wch:14},{wch:12},{wch:16},{wch:16},{wch:12},{wch:16}];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Laporan Timbangan");
+        XLSX.writeFile(wb, `laporan_timbangan_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.xlsx`);
+        alert("Export Excel berhasil!");
+    };
+
+    // ========== CETAK (Serah Terima, Timbangan, Barcode) ==========
+    const cetakModal = $('cetakModal');
+    const today = new Date().toISOString().split('T')[0];
+    const now0 = new Date();
+    const currentTime = `${String(now0.getHours()).padStart(2, '0')}:${String(now0.getMinutes()).padStart(2, '0')}`;
+    $('tglSerahTerima').value = today;
+    $('jamSerahTerima').value = currentTime;
+    $('cetakBtn').onclick = () => { cetakModal.style.display = 'flex'; };
+    $('cetakMetode').onchange = () => {
+        const m = $('cetakMetode').value;
+        $('cetakPoInput').style.display = m === 'pi' ? 'block' : 'none';
+        $('cetakBrandInput').style.display = m === 'brand' ? 'block' : 'none';
+        $('cetakTanggalInput').style.display = m === 'tanggal' ? 'block' : 'none';
+    };
+    $('cetakMetode').onchange();
+
+    function generateNomorDokumen() {
+        const d = new Date();
+        return `ST/${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
+    }
+    async function ambilData(metode, f) {
+        let title = "", q = supabase.from('riwayat_timbang').select('*').order('id', { ascending: true });
+        if (metode === 'pi') { if (!f.po) { alert("Masukkan No. PI!"); return null; } title = `NO. PI: ${f.po}`; q = q.eq('no_po', f.po); }
+        else if (metode === 'brand') { if (!f.brand) { alert("Masukkan Brand!"); return null; } title = `BRAND: ${f.brand}`; q = q.eq('brand', f.brand); }
+        else if (metode === 'tanggal') {
+            if (!f.awal || !f.akhir) { alert("Pilih rentang tanggal!"); return null; }
+            title = `TANGGAL: ${f.awal.split('-').reverse().join('/')} s/d ${f.akhir.split('-').reverse().join('/')}`;
+            q = q.gte('tanggal', formatDateToDB(f.awal)).lte('tanggal', formatDateToDB(f.akhir));
+        } else if (metode === 'checklist') {
+            const ids = [...getCheckedIds()];
+            if (ids.length === 0) { alert("Pilih data yang ingin dicetak terlebih dahulu!"); return null; }
+            title = `DATA TERPILIH (${ids.length} box)`; q = q.in('id', ids);
+        } else title = `SEMUA DATA TIMBANGAN`;
+        const { data, error } = await fetchAll(() => q);
+        if (error) { alert("Gagal ambil data!"); return null; }
+        if (!data || data.length === 0) { alert("Tidak ada data untuk dicetak!"); return null; }
+        return { data, title };
+    }
+    function groupTablesHtml(data) {
+        const grouped = {}; let gb = 0, gk = 0;
+        for (const it of data) {
+            const po = it.no_po || "-";
+            (grouped[po] = grouped[po] || []).push(it);
+            gb += (it.jumlah_bundles || 0); gk += (it.berat_timbang_kg || 0);
+        }
+        let html = '';
+        for (const [po, items] of Object.entries(grouped)) {
+            const f = items[0]; let tb = 0, tk = 0, rows = '';
+            items.forEach((it, i) => {
+                tb += (it.jumlah_bundles || 0); tk += (it.berat_timbang_kg || 0);
+                rows += `<tr><td>${i + 1}</td><td>${esc(formatTanggalIndonesia(it.tanggal))}</td><td>${esc(it.no_po || '-')}</td><td>${esc(it.brand || '-')}</td><td>${esc(it.jenis_kertas || '-')}</td><td>${esc(it.size_kertas || '-')}</td><td>${esc(it.gsm || '-')}</td><td>${esc(it.leaves_per_bundle || '-')}</td><td style="font-weight:bold">${(it.jumlah_bundles || 0).toLocaleString('id-ID')}</td><td>${(it.berat_timbang_kg || 0).toFixed(2)} kg</td></tr>`;
+            });
+            html += `<h3 style="margin:18px 0 5px;background:#e2e8f0;padding:5px;">📄 PI: ${esc(po)} | 🏷️ Brand: ${esc(f.brand || '-')} | 🧻 ${esc(f.jenis_kertas || '-')} | 📏 ${esc(f.size_kertas || '-')} | GSM: ${esc(f.gsm || '-')} | Leaves: ${esc(f.leaves_per_bundle || '-')}</h3>
+            <table><thead><tr><th>No</th><th>Tanggal</th><th>PI</th><th>Brand</th><th>Jenis</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Bundles</th><th>Berat</th></tr></thead><tbody>${rows}
+            <tr class="total-row"><td colspan="8"><strong>TOTAL ${esc(po)}</strong></td><td><strong>${tb.toLocaleString('id-ID')}</strong></td><td><strong>${tk.toFixed(2)} kg</strong></td></tr>
+            <tr class="total-row"><td colspan="8"><strong>RATA-RATA ${esc(po)}</strong></td><td><strong>${Math.round(tb / items.length).toLocaleString('id-ID')}/box</strong></td><td><strong>${(tk / items.length).toFixed(2)} kg/box</strong></td></tr></tbody></table>`;
+        }
+        html += `<table style="width:50%;float:right;margin-top:10px;"><tr class="total-row"><td><strong>📦 GRAND TOTAL BUNDLES</strong></td><td><strong>${gb.toLocaleString('id-ID')} bundles</strong></td></tr><tr class="total-row"><td><strong>⚖️ GRAND TOTAL BERAT</strong></td><td><strong>${gk.toFixed(2)} kg</strong></td></tr></table><div style="clear:both"></div>`;
+        return html;
+    }
+    const PRINT_CSS = `* { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Times New Roman',Arial,sans-serif; padding:20px; background:white; }
+        .print-area { max-width:1100px; margin:0 auto; }
+        .header { text-align:center; margin-bottom:25px; border-bottom:3px solid #1e3a8a; padding-bottom:15px; }
+        .header h1 { font-size:24px; color:#1e3a8a; letter-spacing:2px; }
+        .header h2 { font-size:18px; color:#333; margin:5px 0; }
+        .header p, .address { font-size:11px; color:#555; margin-top:5px; }
+        .nomor-dokumen { text-align:center; background:#f1f5f9; padding:8px; margin:15px 0; font-weight:bold; border-radius:5px; }
+        .serah-terima-box { border:2px solid #1e3a8a; padding:15px; margin:20px 0; border-radius:10px; background:#fafcff; }
+        .row { display:flex; margin-bottom:10px; } .col-label { width:170px; font-weight:bold; } .col-value { flex:1; border-bottom:1px dotted #999; }
+        .kondisi-box { margin:15px 0; }
+        table { width:100%; border-collapse:collapse; margin:12px 0; font-size:11px; }
+        th, td { border:1px solid #999; padding:7px; text-align:center; }
+        th { background:#1e3a8a; color:white; }
+        .total-row { background:#e2e8f0; font-weight:bold; }
+        .info-cetak { display:flex; justify-content:space-between; margin:15px 0; font-size:12px; }
+        .footer { margin-top:30px; text-align:center; font-size:10px; color:#666; }
+        .ttd-row { display:flex; justify-content:space-between; margin-top:40px; } .ttd-box { text-align:center; width:45%; } .ttd-line { margin-top:50px; border-top:1px solid #000; }`;
+    const ALAMAT = 'Jl. Kampung Legon RT.03 RW.04, Kel. Jatimulya, Kec. Tambun Selatan Kab. Bekasi, Jawa Barat 17510 | Telp. (021) 883 49672 | Email: admin@rollingpaper.com';
+    function bukaCetak(html) { const w = window.open('', '_blank'); w.document.write(html); w.document.close(); w.print(); }
+
+    $('prosesCetakBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        const hasil = await ambilData($('cetakMetode').value, { po: $('cetakPoValue').value.trim(), brand: $('cetakBrandValue').value.trim(), awal: $('cetakTglAwal').value, akhir: $('cetakTglAkhir').value });
+        if (!hasil) return;
+        const pengirim = esc($('pengirimNama').value || "_______________"), penerima = esc($('penerimaNama').value || "_______________");
+        const tglSerah = ($('tglSerahTerima').value || today).split('-').reverse().join('/');
+        const kondisi = $('kondisiBarang').value;
+        const cb = k => kondisi === k ? `☑ ${k}` : `☐ ${k}`;
+        bukaCetak(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Serah Terima - The Rolling Paper</title><style>${PRINT_CSS}</style></head><body><div class="print-area">
+            <div class="header"><h1>THE ROLLING PAPER COMPANY</h1><h2>SURAT JALAN / SERAH TERIMA PRODUKSI</h2><p>${ALAMAT}</p></div>
+            <div class="nomor-dokumen">No. Dokumen: ${generateNomorDokumen()}</div>
+            <div class="serah-terima-box">
+                <div class="row"><div class="col-label">PENGIRIM (Gudang) :</div><div class="col-value">${pengirim}</div></div>
+                <div class="row"><div class="col-label">PENERIMA (Produksi) :</div><div class="col-value">${penerima}</div></div>
+                <div class="row"><div class="col-label">Tanggal Serah Terima :</div><div class="col-value">${tglSerah}</div></div>
+                <div class="row"><div class="col-label">Jam Serah Terima :</div><div class="col-value">${esc($('jamSerahTerima').value || currentTime)} WIB</div></div>
+                <div class="row"><div class="col-label">Lokasi / Line :</div><div class="col-value">${esc($('lokasiProduksi').value || "_______________")}</div></div>
+                <div class="kondisi-box"><strong>✅ KONDISI BARANG :</strong><br>${cb('Baik')} &nbsp;&nbsp; ${cb('Rusak Ringan')} &nbsp;&nbsp; ${cb('Rusak Berat')}</div>
+                <div class="row"><div class="col-label">📝 CATATAN :</div><div class="col-value">${esc($('catatanTambahan').value || "-")}</div></div>
+            </div>
+            <h3 style="margin:15px 0 5px;">📋 RINCIAN KERTAS YANG DISERAHKAN</h3><h4 style="margin-bottom:10px;color:#555;">${esc(hasil.title)}</h4>
+            ${groupTablesHtml(hasil.data)}
+            <div class="footer"><div class="ttd-row"><div class="ttd-box"><div>Diterima oleh,</div><div class="ttd-line"></div><div><strong>${penerima}</strong></div><div>(Penerima / Produksi)</div></div>
+            <div class="ttd-box"><div>Diserahkan oleh,</div><div class="ttd-line"></div><div><strong>${pengirim}</strong></div><div>(Pengirim / Gudang)</div></div></div>
+            <div class="ttd-row" style="margin-top:20px;"><div class="ttd-box"><div>Mengetahui,</div><div class="ttd-line"></div><div><strong>Supervisor</strong></div></div>
+            <div class="ttd-box"><div>&nbsp;</div><div class="ttd-line"></div><div><strong>Catatan:</strong> Lembar ini sebagai bukti serah terima</div></div></div>
+            <p style="margin-top:20px;">Dicetak pada: ${new Date().toLocaleString('id-ID')}<br><strong>Dokumen ini sah tanpa stempel basah</strong></p></div>
+            </div></body></html>`);
+        catatLog('CETAK_SERAH_TERIMA', hasil.title);
+        cetakModal.style.display = 'none';
+    };
+    $('closeCetakModalBtn').onclick = () => { cetakModal.style.display = 'none'; };
+    $('closeModalBtn').onclick = () => { $('editModal').style.display = 'none'; };
+
+    $('cetakTimbanganBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        const ids = [...getCheckedIds()];
+        if (ids.length === 0) { alert("⚠️ Tidak ada data yang di-checklist! Silakan centang data terlebih dahulu."); return; }
+        const hasil = await ambilData('checklist', {});
+        if (!hasil) return;
+        const tgl = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        bukaCetak(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Laporan Timbangan - The Rolling Paper</title><style>${PRINT_CSS}</style></head><body><div class="print-area">
+            <div class="header"><h1>THE ROLLING PAPER COMPANY</h1><h2>LAPORAN TIMBANGAN KERTAS</h2><div class="address">${ALAMAT}</div></div>
+            <div class="info-cetak"><span>📅 Dicetak: ${tgl}</span><span>📦 Total Data: ${hasil.data.length} box</span></div>
+            ${groupTablesHtml(hasil.data)}
+            <div class="footer"><p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p><p>Dokumen ini sah tanpa stempel basah</p></div></div></body></html>`);
+        catatLog('CETAK_TIMBANGAN', `${hasil.data.length} box`);
+    };
+
+    // Barcode
+    const cetakBarcodeModal = $('cetakBarcodeModal');
+    $('cetakBarcodeMetode').onchange = function () {
+        const m = this.value;
+        $('cetakBarcodePoInput').style.display = m === 'pi' ? 'block' : 'none';
+        $('cetakBarcodeBrandInput').style.display = m === 'brand' ? 'block' : 'none';
+        $('cetakBarcodeTanggalInput').style.display = m === 'tanggal' ? 'block' : 'none';
+    };
+    $('cetakBarcodeMetode').onchange();
+    $('cetakBarcodeBtn').onclick = () => { cetakBarcodeModal.style.display = 'flex'; };
+    $('closeCetakBarcodeModalBtn').onclick = () => { cetakBarcodeModal.style.display = 'none'; };
+    $('prosesCetakBarcodeBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        try {
+            const hasil = await ambilData($('cetakBarcodeMetode').value, { po: $('cetakBarcodePoValue').value.trim(), brand: $('cetakBarcodeBrandValue').value.trim(), awal: $('cetakBarcodeTglAwal').value, akhir: $('cetakBarcodeTglAkhir').value });
+            if (!hasil) return;
+            const ukuranMap = { small: { size: 120, fontSize: 10 }, medium: { size: 180, fontSize: 12 }, large: { size: 260, fontSize: 14 } };
+            const sz = ukuranMap[$('barcodeUkuran').value];
+            const tPI = $('barcodeTampilPI').checked, tBr = $('barcodeTampilBrand').checked, tSz = $('barcodeTampilSize').checked, tBu = $('barcodeTampilBundles').checked, tTg = $('barcodeTampilTanggal').checked;
+            let bc = '';
+            hasil.data.forEach((item, i) => {
+                const text = `${item.no_po || 'N/A'}-${item.id || i + 1}`;
+                let info = '';
+                if (tPI) info += `${item.no_po || '-'} `;
+                if (tBr) info += `${item.brand || '-'} `;
+                if (tSz) info += `${item.size_kertas || ''} `;
+                if (tBu) info += `${item.jumlah_bundles || 0} bundles`;
+                if (tTg) info += ` ${item.tanggal || ''}`;
+                const url = `https://api.qrserver.com/v1/create-qr-code/?size=${sz.size}x${sz.size}&data=${encodeURIComponent(text)}`;
+                bc += `<div style="display:inline-block;border:1px solid #ccc;border-radius:8px;padding:12px;margin:8px;text-align:center;width:${sz.size + 40}px;page-break-inside:avoid;">
+                    <div style="font-size:${sz.fontSize - 2}px;font-weight:bold;color:#1e3a8a;margin-bottom:6px;">THE ROLLING PAPER</div>
+                    <img src="${url}" width="${sz.size}" height="${sz.size}" style="display:block;margin:0 auto;" alt="QR Code">
+                    <div style="font-size:${sz.fontSize - 2}px;letter-spacing:1px;font-family:monospace;margin-top:6px;">${esc(text)}</div>
+                    <div style="font-size:${sz.fontSize - 4}px;color:#333;margin-top:4px;border-top:1px solid #eee;padding-top:4px;">${esc(info)}</div></div>`;
+            });
+            bukaCetak(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cetak Barcode - The Rolling Paper</title><style>
+                * { margin:0; padding:0; box-sizing:border-box; } body { font-family:Arial,sans-serif; padding:20px; background:white; }
+                .header { text-align:center; margin-bottom:20px; border-bottom:2px solid #1e3a8a; padding-bottom:10px; } .header h1 { color:#1e3a8a; font-size:20px; } .header p { color:#666; font-size:12px; }
+                .barcode-grid { display:flex; flex-wrap:wrap; justify-content:center; gap:4px; } .footer { text-align:center; margin-top:20px; font-size:10px; color:#666; }</style></head><body>
+                <div class="header"><h1>THE ROLLING PAPER COMPANY</h1><p>📱 Cetak QR Code - ${esc(hasil.title)}</p><p style="font-size:11px;">Total: ${hasil.data.length} QR Code | Dicetak: ${new Date().toLocaleString('id-ID')}</p></div>
+                <div class="barcode-grid">${bc}</div><div class="footer"><p>Dokumen ini sah tanpa stempel basah</p></div></body></html>`);
+            cetakBarcodeModal.style.display = 'none';
+            catatLog('CETAK_BARCODE', `${hasil.data.length} QR - ${hasil.title}`);
+        } catch (err) { alert("Terjadi error: " + err.message); }
+    };
+
+    // ========== PERMINTAAN (Admin buat, Leader proses) ==========
+    $('pmPi').addEventListener('input', () => {
+        const p = findPI($('pmPi').value), h = $('pmPiHint');
+        $('pmBrand').value = p ? p.brand : '';
+        if (p) { h.className = 'hint ok'; h.textContent = '✅ PI terdaftar'; }
+        else if ($('pmPi').value.trim()) { h.className = 'hint bad'; h.textContent = '❌ PI belum terdaftar. Buat dulu di menu Master.'; }
+        else { h.className = 'hint'; h.textContent = ''; }
+    });
+    $('pmKirimBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        const p = findPI($('pmPi').value);
+        if (!p) { alert('No. PI belum terdaftar. Buat dulu di menu Master.'); return; }
+        const qty = parseInt($('pmQty').value);
+        if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
+        const rec = { no_pi: p.no_pi, brand: p.brand, size_kertas: $('pmSize').value, gsm: parseInt($('pmGsm').value), leaves: parseInt($('pmLeaves').value), jenis_kertas: $('pmJenis').value, qty_minta: qty, catatan: $('pmCatatan').value.trim() || null, diminta_oleh: user.nama };
+        if (!beratBundleKG(rec.size_kertas, rec.gsm, rec.leaves, rec.jenis_kertas)) {
+            if (!confirm('⚠️ Berat bundle untuk spesifikasi ini belum terdaftar, jadi nanti belum bisa ditimbang.\nTambahkan di Master > Spesifikasi.\nTetap kirim permintaan?')) return;
+        }
+        const dup = pmData.find(r => AKTIF.includes(r.status) && r.no_pi === rec.no_pi && r.size_kertas === rec.size_kertas && r.gsm === rec.gsm && r.leaves === rec.leaves && r.jenis_kertas === rec.jenis_kertas);
+        if (dup && !confirm(`⚠️ Sudah ada permintaan aktif #${dup.id} untuk PI ${dup.no_pi} dengan spesifikasi yang sama (${dup.qty_minta} bundle, status ${dup.status}).\nTetap buat permintaan baru?`)) return;
+        if (!confirm(`Kirim permintaan?\nPI ${rec.no_pi} (${rec.brand})\n${rec.jenis_kertas} · ${rec.size_kertas} · ${rec.gsm}gsm · ${rec.leaves}lv\nQty: ${qty} bundle`)) return;
+        const { data, error } = await supabase.from('permintaan').insert([rec]).select();
+        if (error) { alert('❌ ' + error.message); return; }
+        catatLog('BUAT_PERMINTAAN', `#${data[0].id} PI ${rec.no_pi} ${rec.jenis_kertas} ${rec.size_kertas} ${rec.gsm}gsm ${rec.leaves}lv qty ${qty}`);
+        $('pmQty').value = ''; $('pmCatatan').value = '';
+        loadPermintaan();
+    };
+
+    async function loadPermintaan() {
+        if (!user) return;
+        const [a, b, c] = await Promise.all([
+            supabase.from('permintaan').select('*').order('id', { ascending: false }).limit(500),
+            supabase.from('ditimbang_per_permintaan').select('*'),
+            supabase.from('stok_saat_ini').select('*')
+        ]);
+        if (a.error) { console.error(a.error); return; }
+        pmData = a.data || [];
+        pmTimbang = {}; (b.data || []).forEach(x => pmTimbang[x.permintaan_id] = x.bundles);
+        stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas)] = x.qty);
+        renderPermintaan();
+    }
+    function cardHtml(r, role) {
+        const warna = STATUS_WARNA[r.status] || '#64748b';
+        const dt = pmTimbang[r.id] || 0;
+        const stok = stokMap[specKey(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas)] || 0;
+        const sisa = r.qty_minta - r.qty_siap;
+        let sel = '';
+        if (r.status !== 'Dibatalkan' && (r.qty_siap > 0 || dt > 0)) {
+            const diff = dt - r.qty_minta;
+            sel = `<span class="${diff > 0 ? 'bad' : diff === 0 ? 'good' : 'warn'}">Ditimbang ${dt}/${r.qty_minta} (${diff === 0 ? 'sesuai' : diff > 0 ? 'LEBIH ' + diff : 'kurang ' + (-diff)})</span>`;
+        }
+        let acts = '';
+        if (role === 'leader') {
+            if (['Diminta', 'Diproses', 'Produksi'].includes(r.status)) {
+                acts += `<button class="mini" style="background:#10b981" data-act="stok" data-id="${r.id}">📦 Siapkan dari stok</button>`;
+                if (r.status !== 'Produksi') acts += `<button class="mini" style="background:#8b5cf6" data-act="produksi" data-id="${r.id}">🏭 Mulai produksi</button>`;
+                acts += `<button class="mini" style="background:#f59e0b" data-act="selesaiprod" data-id="${r.id}">✅ Hasil produksi</button>`;
+            }
+        } else {
+            if (r.status === 'Siap') acts += `<button class="mini" style="background:#166534" data-act="terima" data-id="${r.id}">✅ Terima barang</button>`;
+            if (r.status === 'Diminta') acts += `<button class="mini" style="background:#f59e0b" data-act="editqty" data-id="${r.id}">✏️ Ubah qty</button>`;
+            if (AKTIF.includes(r.status)) acts += `<button class="mini" style="background:#ef4444" data-act="batal" data-id="${r.id}">✖ Batalkan</button>`;
+        }
+        const stokInfo = (role === 'leader' && ['Diminta', 'Diproses', 'Produksi'].includes(r.status))
+            ? `<span class="${stok > 0 ? 'good' : 'stok-nol'}">Stok tersedia: ${stok}</span>` : '';
+        return `<div class="pcard" style="border-left-color:${warna}">
+            <div class="top"><span class="pi">#${r.id} · ${esc(r.no_pi)} · ${esc(r.brand)}</span><span class="badge" style="background:${warna}">${esc(r.status)}</span></div>
+            <div class="spec">🧻 <b>${esc(r.jenis_kertas)}</b> · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves</div>
+            <div class="nums"><span>Diminta: <b>${r.qty_minta}</b></span><span>Siap: <b>${r.qty_siap}</b></span>${AKTIF.includes(r.status) && sisa > 0 ? `<span>Kurang: <b>${sisa}</b></span>` : ''}${stokInfo ? `<span>${stokInfo}</span>` : ''}${sel ? `<span>${sel}</span>` : ''}</div>
+            ${r.catatan ? `<div class="meta">📝 Admin: ${esc(r.catatan)}</div>` : ''}
+            ${r.catatan_leader ? `<div class="meta">🏭 Leader: ${esc(r.catatan_leader)}</div>` : ''}
+            <div class="meta">Diminta ${esc(r.diminta_oleh || '-')} · ${fmtWaktu(r.created_at)}${r.disiapkan_oleh ? ' · Disiapkan ' + esc(r.disiapkan_oleh) : ''}${r.diterima_oleh ? ' · Diterima ' + esc(r.diterima_oleh) : ''}</div>
+            ${acts ? `<div class="acts">${acts}</div>` : ''}</div>`;
+    }
+    function renderPermintaan() {
+        [['pm', 'admin'], ['q', 'leader']].forEach(([pre, role]) => {
+            if (user.role !== role) return;
+            const f = $(pre + 'Filter').value || 'AKTIF';
+            const s = $(pre + 'Search').value.trim().toLowerCase();
+            let list = pmData.filter(r => f === 'SEMUA' ? true : f === 'AKTIF' ? AKTIF.includes(r.status) : r.status === f);
+            if (s) list = list.filter(r => [r.no_pi, r.brand, r.jenis_kertas, r.size_kertas, r.status, '#' + r.id].join(' ').toLowerCase().includes(s));
+            const count = st => pmData.filter(r => r.status === st).length;
+            $(pre + 'Pills').innerHTML = AKTIF.map(st => `<span class="pill" style="background:${STATUS_WARNA[st]}">${st}: ${count(st)}</span>`).join('');
+            $(pre + 'List').innerHTML = list.length ? list.map(r => cardHtml(r, role)).join('') : '<div style="text-align:center;padding:16px;color:#64748b;">📭 Tidak ada permintaan</div>';
+        });
+    }
+    ['pmFilter', 'qFilter'].forEach(id => $(id).addEventListener('change', renderPermintaan));
+    ['pmSearch', 'qSearch'].forEach(id => $(id).addEventListener('input', renderPermintaan));
+    ['pmList', 'qList'].forEach(cid => $(cid).addEventListener('click', e => {
+        const b = e.target.closest('button[data-act]'); if (!b) return;
+        aksiPermintaan(b.dataset.act, parseInt(b.dataset.id));
+    }));
+
+    async function aksiPermintaan(act, id) {
+        const r = pmData.find(x => x.id === id); if (!r) return;
+        const ringkas = `<b>#${r.id} · PI ${esc(r.no_pi)} · ${esc(r.brand)}</b><br>${esc(r.jenis_kertas)} · ${esc(r.size_kertas)} · ${r.gsm}gsm · ${r.leaves}lv<br>Diminta ${r.qty_minta}, siap ${r.qty_siap}, kurang ${r.qty_minta - r.qty_siap}`;
+        const sisa = r.qty_minta - r.qty_siap;
+        const stok = stokMap[specKey(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas)] || 0;
+        let ok = false;
+        if (act === 'stok') {
+            if (!requireRole('leader')) return;
+            const max = Math.min(sisa, stok);
+            if (max <= 0) { alert('Stok untuk spesifikasi ini kosong. Gunakan "Mulai produksi".'); return; }
+            const d = await dialog({ title: '📦 Siapkan dari stok', info: ringkas + `<br>Stok tersedia: <b>${stok}</b> (maks. ${max})`, qty: { label: 'Qty disiapkan (bundles)', value: max, max }, note: { label: 'Catatan (opsional)' }, ok: 'Siapkan' });
+            if (!d) return;
+            ok = await rpc('siapkan_dari_stok', { p_id: id, p_qty: d.qty, p_oleh: user.nama, p_catatan: d.note });
+        } else if (act === 'produksi') {
+            if (!requireRole('leader')) return;
+            const d = await dialog({ title: '🏭 Mulai produksi', info: ringkas + '<br>Status menjadi <b>Produksi</b>.', note: { label: 'Catatan (opsional, mis. estimasi selesai)' }, ok: 'Mulai' });
+            if (!d) return;
+            ok = await rpc('tandai_produksi', { p_id: id, p_oleh: user.nama, p_catatan: d.note });
+        } else if (act === 'selesaiprod') {
+            if (!requireRole('leader')) return;
+            const d = await dialog({ title: '✅ Input hasil produksi', info: ringkas + '<br>Jika qty lebih besar dari kekurangan, kelebihannya otomatis masuk stok.', qty: { label: 'Qty hasil produksi (bundles)', value: sisa }, note: { label: 'Catatan (opsional)' }, ok: 'Simpan' });
+            if (!d) return;
+            ok = await rpc('selesai_produksi', { p_id: id, p_qty: d.qty, p_oleh: user.nama, p_catatan: d.note });
+        } else if (act === 'terima') {
+            if (!requireRole('admin')) return;
+            if (!confirm(`Terima ${r.qty_siap} bundle untuk PI ${r.no_pi}?\nPastikan jumlah fisik sesuai.`)) return;
+            ok = await rpc('terima_permintaan', { p_id: id, p_oleh: user.nama });
+        } else if (act === 'batal') {
+            if (!requireRole('admin')) return;
+            const d = await dialog({ title: '✖ Batalkan permintaan', info: ringkas + (r.qty_siap > 0 ? `<br><b>${r.qty_siap} bundle yang sudah disiapkan akan dikembalikan ke stok.</b>` : ''), note: { label: 'Alasan pembatalan', required: true }, ok: 'Batalkan' });
+            if (!d) return;
+            ok = await rpc('batalkan_permintaan', { p_id: id, p_oleh: user.nama, p_alasan: d.note });
+        } else if (act === 'editqty') {
+            if (!requireRole('admin')) return;
+            const d = await dialog({ title: '✏️ Ubah qty permintaan', info: ringkas, qty: { label: 'Qty baru (bundles)', value: r.qty_minta }, ok: 'Simpan' });
+            if (!d) return;
+            const { data, error } = await supabase.from('permintaan').update({ qty_minta: d.qty, updated_at: new Date().toISOString() }).eq('id', id).eq('status', 'Diminta').select();
+            if (error) { alert('❌ ' + error.message); return; }
+            if (!data || !data.length) { alert('Permintaan sudah diproses Leader, qty tidak bisa diubah.'); loadPermintaan(); return; }
+            catatLog('UBAH_QTY_PERMINTAAN', `#${id} ${r.qty_minta}→${d.qty}`);
+            ok = true;
+        }
+        if (ok) loadPermintaan();
+    }
+
+    // ========== STOK (Leader) ==========
+    async function loadStok() {
+        const [a, b] = await Promise.all([
+            supabase.from('stok_saat_ini').select('*').order('jenis_kertas').order('size_kertas'),
+            supabase.from('stok_mutasi').select('*').order('id', { ascending: false }).limit(100)
+        ]);
+        window._stokRows = a.data || [];
+        renderStok();
+        $('mutasiBody').innerHTML = (b.data || []).map(m => `<tr><td>${fmtWaktu(m.waktu)}</td><td>${esc(m.tipe)}</td><td>${esc(m.jenis_kertas)} ${esc(m.size_kertas)} ${m.gsm}gsm ${m.leaves}lv</td><td class="${m.qty > 0 ? 'good' : 'bad'}">${m.qty > 0 ? '+' : ''}${m.qty}</td><td>${esc(m.no_pi || '-')}</td><td>${esc(m.oleh || '-')}</td><td>${esc(m.catatan || '')}</td></tr>`).join('') || '<tr><td colspan="7" style="text-align:center">Belum ada mutasi</td></tr>';
+    }
+    function renderStok() {
+        const s = $('stSearch').value.trim().toLowerCase();
+        const rows = (window._stokRows || []).filter(r => !s || `${r.jenis_kertas} ${r.size_kertas}`.toLowerCase().includes(s));
+        $('stokBody').innerHTML = rows.map(r => `<tr><td>${esc(r.jenis_kertas)}</td><td>${esc(r.size_kertas)}</td><td>${r.gsm}</td><td>${r.leaves}</td><td style="font-weight:bold;text-align:center">${r.qty}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center">📭 Belum ada stok tercatat</td></tr>';
+    }
+    $('stSearch').addEventListener('input', renderStok);
+    $('stSimpanBtn').onclick = async () => {
+        if (!requireRole('leader')) return;
+        const qty = parseInt($('stQty').value);
+        if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
+        const tipe = $('stTipe').value, cat = $('stCatatan').value.trim();
+        if (tipe.startsWith('KOREKSI') && !cat) { alert('Koreksi wajib disertai alasan'); return; }
+        if (!confirm(`Simpan mutasi stok?\n${tipe}\n${$('stJenis').value} · ${$('stSize').value} · ${$('stGsm').value}gsm · ${$('stLeaves').value}lv\nQty: ${qty}`)) return;
+        const ok = await rpc('mutasi_stok_manual', { p_tipe: tipe, p_size: $('stSize').value, p_gsm: parseInt($('stGsm').value), p_leaves: parseInt($('stLeaves').value), p_jenis: $('stJenis').value, p_qty: qty, p_catatan: cat, p_oleh: user.nama });
+        if (ok) { $('stQty').value = ''; $('stCatatan').value = ''; loadStok(); }
+    };
+
+    // ========== MASTER ==========
+    function renderMaster() {
+        const s = $('mpSearch').value.trim().toLowerCase();
+        $('mpBody').innerHTML = piList.filter(p => !s || `${p.no_pi} ${p.brand}`.toLowerCase().includes(s)).map(p => `<tr><td><b>${esc(p.no_pi)}</b></td><td>${esc(p.brand)}</td><td>${esc(p.dibuat_oleh || '-')}</td><td>${fmtWaktu(p.created_at)}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada PI</td></tr>';
+        $('mjList').innerHTML = jenisList.map(j => `<span class="chip">${esc(j.nama)}</span>`).join('');
+        $('cbBody').innerHTML = customBerat.map(c => `<tr><td>${esc(c.size_kertas)}</td><td>${c.gsm}</td><td>${c.leaves}</td><td>${esc(c.jenis_kertas || 'Semua')}</td><td>${c.gram_per_bundle}</td><td><button class="btn-hapus-small" data-id="${c.id}">🗑️</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center">Belum ada spesifikasi tambahan</td></tr>';
+    }
+    $('mpSearch').addEventListener('input', renderMaster);
+    $('mpSimpanBtn').onclick = async () => {
+        const no = normPI($('mpNo').value), br = $('mpBrand').value.trim().toUpperCase();
+        if (!no || !br) { alert('No. PI dan Brand wajib diisi'); return; }
+        const sim = piList.find(p => canon(p.no_pi) === canon(no));
+        if (sim) { alert(`❌ No. PI sudah ada / mirip: ${sim.no_pi} (${sim.brand}), dibuat oleh ${sim.dibuat_oleh || '-'} pada ${fmtWaktu(sim.created_at)}`); return; }
+        if (!confirm(`Simpan PI baru?\nNo. PI: ${no}\nBrand: ${br}\n\nPI tidak bisa diubah setelah dibuat.`)) return;
+        const { error } = await supabase.from('master_pi').insert([{ no_pi: no, brand: br, dibuat_oleh: user.nama }]);
+        if (error) { alert(error.code === '23505' ? '❌ No. PI sudah ada (kemungkinan baru dibuat orang lain). Muat ulang.' : '❌ ' + error.message); await loadMasterData(); return; }
+        catatLog('BUAT_PI', `${no} - ${br}`);
+        $('mpNo').value = ''; $('mpBrand').value = '';
+        await loadMasterData();
+    };
+    $('mpImporBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        const { data, error } = await fetchAll(() => supabase.from('riwayat_timbang').select('no_po,brand').order('id'));
+        if (error) { alert('❌ ' + error.message); return; }
+        const seen = new Set(piList.map(p => canon(p.no_pi))), baru = [];
+        (data || []).forEach(d => {
+            const no = normPI(d.no_po || ''); if (!no || no === '-') return;
+            const c = canon(no); if (seen.has(c)) return;
+            seen.add(c); baru.push({ no_pi: no, brand: (d.brand || '-').trim().toUpperCase(), dibuat_oleh: 'IMPOR RIWAYAT' });
+        });
+        if (!baru.length) { alert('Tidak ada PI baru untuk diimpor.'); return; }
+        if (!confirm(`Impor ${baru.length} No. PI dari riwayat timbang lama?`)) return;
+        const { error: e2 } = await supabase.from('master_pi').insert(baru);
+        if (e2) { alert('❌ ' + e2.message); return; }
+        catatLog('IMPOR_PI', `${baru.length} PI diimpor dari riwayat`);
+        await loadMasterData();
+        alert(`✅ ${baru.length} PI diimpor`);
+    };
+    $('mjSimpanBtn').onclick = async () => {
+        const nm = $('mjNama').value.trim();
+        if (!nm) { alert('Isi nama jenis kertas'); return; }
+        if (jenisList.some(j => j.nama.trim().toUpperCase() === nm.toUpperCase())) { alert('Jenis kertas sudah ada'); return; }
+        const { error } = await supabase.from('jenis_kertas').insert([{ nama: nm, dibuat_oleh: user.nama }]);
+        if (error) { alert('❌ ' + error.message); return; }
+        catatLog('TAMBAH_JENIS', nm);
+        $('mjNama').value = '';
+        await loadMasterData();
+    };
+    $('cbSimpanBtn').onclick = async () => {
+        const rec = { size_kertas: $('cbSize').value.trim().toUpperCase(), gsm: parseInt($('cbGsm').value), leaves: parseInt($('cbLeaves').value), jenis_kertas: $('cbJenis').value || null, gram_per_bundle: parseFloat($('cbGram').value), dibuat_oleh: user.nama };
+        if (!rec.size_kertas || !(rec.gsm > 0) || !(rec.leaves > 0) || !(rec.gram_per_bundle > 0)) { alert('Lengkapi size, GSM, leaves, dan berat (gram)'); return; }
+        const bawaan = beratBundleDB[`${rec.size_kertas}|${rec.gsm}|${rec.leaves}`];
+        if (bawaan && !confirm(`Spesifikasi ini sudah ada di data bawaan (${bawaan} gram). Data tambahan akan dipakai lebih dulu. Lanjut?`)) return;
+        const { error } = await supabase.from('berat_bundle_custom').insert([rec]);
+        if (error) { alert(error.code === '23505' ? '❌ Spesifikasi yang sama sudah ada. Hapus dulu yang lama.' : '❌ ' + error.message); return; }
+        catatLog('TAMBAH_SPESIFIKASI', `${rec.size_kertas} ${rec.gsm}gsm ${rec.leaves}lv ${rec.jenis_kertas || 'semua'} = ${rec.gram_per_bundle} g`);
+        ['cbSize', 'cbGsm', 'cbLeaves', 'cbGram'].forEach(i => $(i).value = '');
+        await loadMasterData();
+    };
+    $('cbBody').addEventListener('click', async e => {
+        const b = e.target.closest('button[data-id]'); if (!b) return;
+        const id = parseInt(b.dataset.id), c = customBerat.find(x => x.id === id);
+        if (!c || !confirm(`Hapus spesifikasi ${c.size_kertas} ${c.gsm}gsm ${c.leaves}lv (${c.gram_per_bundle} g)?\nPerhitungan timbang berikutnya tidak lagi memakai ini.`)) return;
+        const { error } = await supabase.from('berat_bundle_custom').delete().eq('id', id);
+        if (error) { alert('❌ ' + error.message); return; }
+        catatLog('HAPUS_SPESIFIKASI', `${c.size_kertas} ${c.gsm}gsm ${c.leaves}lv ${c.gram_per_bundle} g`);
+        await loadMasterData();
+    });
+
+    // ========== LOG ==========
+    async function loadLog() {
+        const { data } = await supabase.from('log_aktivitas_timbang').select('*').order('id', { ascending: false }).limit(200);
+        window._logRows = data || [];
+        renderLog();
+    }
+    function renderLog() {
+        const s = $('logSearch').value.trim().toLowerCase();
+        $('logBody').innerHTML = (window._logRows || []).filter(l => !s || `${l.pengguna} ${l.aksi} ${l.detail}`.toLowerCase().includes(s)).map(l => `<tr><td>${fmtWaktu(l.waktu)}</td><td>${esc(l.pengguna)}${l.role ? ' (' + esc(l.role) + ')' : ''}</td><td>${esc(l.aksi)}</td><td>${esc(l.detail || '')}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center">Belum ada log</td></tr>';
+    }
+    $('logSearch').addEventListener('input', renderLog);
+
+    // ========== MODAL: klik di luar ==========
+    window.onclick = e => {
+        if (e.target === $('editModal')) $('editModal').style.display = 'none';
+        if (e.target === cetakModal) cetakModal.style.display = 'none';
+        if (e.target === cetakBarcodeModal) cetakBarcodeModal.style.display = 'none';
+    };
+
+    // ========== REFRESH OTOMATIS (agar Leader & Admin saling melihat data terbaru) ==========
+    setInterval(() => {
+        if (!user || document.hidden) return;
+        if ($('dlgModal').style.display === 'flex') return;
+        const act = document.querySelector('.page.active-page');
+        if (!act) return;
+        if (act.id === 'page3' || act.id === 'page4') loadPermintaan();
+        else if (act.id === 'page5') loadStok();
+    }, 15000);
+
+    // ========== MULAI ==========
+    (async function init() {
+        refreshSelects();
+        try { user = JSON.parse(sessionStorage.getItem('rp_user') || 'null'); } catch (e) { user = null; }
+        if (user && user.nama && TABS[user.role]) { await startApp(); }
+        else { user = null; await initLogin(); }
+    })();
+})();
 </script>
 </body>
 </html>
