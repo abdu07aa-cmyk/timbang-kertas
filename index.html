@@ -137,6 +137,9 @@
             <label>🧻 Jenis Kertas</label>
             <select id="jenis"></select>
 
+            <label>💧 Watermark</label>
+            <select id="wm"></select>
+
             <label>📏 Size Kertas</label>
             <select id="size"></select>
 
@@ -239,7 +242,7 @@
     <div id="page4" class="page">
         <div class="card">
             <h2>🏭 ANTRIAN PERMINTAAN KERTAS</h2>
-            <div class="note">Siapkan dari stok bila ada. Jika stok kosong, tandai produksi lalu input hasilnya. Kelebihan produksi otomatis masuk stok.</div>
+            <div class="note">Siapkan box dari stok atau produksi, isi jumlah box dan estimasi bundle per box (dari mesin guillotine), lalu tekan "Box siap ditimbang". Setelah ditimbang bersama Admin, setujui nota di tab Serah Terima.</div>
             <div class="search-row">
                 <input type="text" id="qSearch" placeholder="Cari PI / Brand / Jenis...">
                 <select id="qFilter"></select>
@@ -255,7 +258,7 @@
             <h2>📊 STOK KERTAS SIAP PAKAI</h2>
             <input type="text" id="stSearch" placeholder="Cari size / jenis..." style="margin-bottom:10px;">
             <div style="overflow-x:auto;">
-                <table><thead><tr><th>Jenis</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Stok (bundle)</th></tr></thead>
+                <table><thead><tr><th>Jenis</th><th>WM</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Stok (bundle)</th></tr></thead>
                 <tbody id="stokBody"></tbody></table>
             </div>
         </div>
@@ -270,6 +273,7 @@
             </select>
             <label>🔗 Isi otomatis dari PI (opsional)</label><select id="stPiItem"></select>
             <label>🧻 Jenis Kertas</label><select id="stJenis"></select>
+            <label>💧 Watermark</label><select id="stWm"></select>
             <label>📏 Size Kertas</label><select id="stSize"></select>
             <div class="row-2">
                 <div><label>📄 GSM</label><select id="stGsm"></select></div>
@@ -302,6 +306,7 @@
             </div>
             <datalist id="brandList"></datalist>
             <label>🧻 Jenis Kertas</label><select id="mpJenis"></select>
+            <label>💧 Watermark</label><select id="mpWm"></select>
             <label>📏 Size Kertas</label><select id="mpSize"></select>
             <div class="row-2">
                 <div><label>📄 GSM</label><select id="mpGsm"></select></div>
@@ -312,7 +317,7 @@
             <button id="mpImporBtn" class="btn-reset" style="display:none;">📥 Impor PI dari riwayat timbang lama</button>
             <input type="text" id="mpSearch" placeholder="Cari PI / Brand..." style="margin-top:12px;">
             <div style="overflow-x:auto;margin-top:8px;max-height:260px;overflow-y:auto;">
-                <table><thead><tr><th>No. PI</th><th>Tgl PI</th><th>Brand</th><th>Jenis</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Qty PI</th><th>Diminta</th><th>Sisa</th></tr></thead>
+                <table><thead><tr><th>No. PI</th><th>Tgl PI</th><th>Brand</th><th>Jenis</th><th>WM</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Qty PI</th><th>Diminta</th><th>Sisa</th></tr></thead>
                 <tbody id="mpBody"></tbody></table>
             </div>
         </div>
@@ -323,6 +328,15 @@
                 <div style="flex:0 0 120px;"><button id="mjSimpanBtn" style="margin-top:0;">➕ Tambah</button></div>
             </div>
             <div id="mjList" style="margin-top:8px;"></div>
+        </div>
+        <div class="card">
+            <h2>💧 WATERMARK</h2>
+            <div class="note">Contoh: No WM, WM TRPC, SQUADAFUM. Watermark ikut menentukan spesifikasi kertas di PI, permintaan, stok, dan timbang.</div>
+            <div class="row-2">
+                <div><input type="text" id="mwNama" placeholder="Contoh: WM ABC"></div>
+                <div style="flex:0 0 120px;"><button id="mwSimpanBtn" style="margin-top:0;">➕ Tambah</button></div>
+            </div>
+            <div id="mwList" style="margin-top:8px;"></div>
         </div>
         <div class="card">
             <h2>⚖️ SPESIFIKASI / BERAT BUNDLE TAMBAHAN</h2>
@@ -341,6 +355,19 @@
                 <table><thead><tr><th>Size</th><th>GSM</th><th>Leaves</th><th>Jenis</th><th>Gram</th><th></th></tr></thead>
                 <tbody id="cbBody"></tbody></table>
             </div>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 8: SERAH TERIMA ===== -->
+    <div id="page8" class="page">
+        <div class="card">
+            <h2>🧾 SERAH TERIMA (NOTA)</h2>
+            <div class="note">Alur: Leader menyiapkan box → timbang bersama (Admin input) → Admin membuat nota → kedua pihak setuju dengan PIN → cetak 2 rangkap (asli untuk Admin, copy untuk Leader).</div>
+            <div class="search-row">
+                <input type="text" id="ntSearch" placeholder="Cari No. dokumen / PI / Brand...">
+                <select id="ntFilter"><option value="Menunggu">Menunggu persetujuan</option><option value="Disepakati">Disepakati</option><option value="Dibatalkan">Dibatalkan</option><option value="SEMUA">Semua</option></select>
+            </div>
+            <div id="ntList"></div>
         </div>
     </div>
 
@@ -363,9 +390,22 @@
         <h3 id="dlgTitle"></h3>
         <div id="dlgInfo" style="font-size:.8rem;margin-bottom:8px;line-height:1.5;"></div>
         <div id="dlgQtyWrap"><label id="dlgQtyLabel"></label><input type="number" id="dlgQty" step="1"></div>
+        <div id="dlgQty2Wrap"><label id="dlgQty2Label"></label><input type="number" id="dlgQty2" step="1"></div>
         <div id="dlgNoteWrap"><label id="dlgNoteLabel"></label><input type="text" id="dlgNote"></div>
         <button id="dlgOk">OK</button>
         <button id="dlgCancel" class="close-modal">Batal</button>
+    </div>
+</div>
+
+<!-- Persetujuan serah terima -->
+<div id="apvModal" class="modal">
+    <div class="modal-content">
+        <h3>✍️ Persetujuan Serah Terima</h3>
+        <div id="apvInfo" style="font-size:.8rem;line-height:1.5;margin-bottom:8px;"></div>
+        <label>Yang menyetujui</label><select id="apvUser"></select>
+        <label>PIN</label><input type="password" id="apvPin" inputmode="numeric" autocomplete="off">
+        <button id="apvOkBtn">✅ Setujui</button>
+        <button id="apvBatalBtn" class="close-modal">Batal</button>
     </div>
 </div>
 
@@ -528,15 +568,15 @@
     const BASE_GSM = [11,13,14,20,35];
     const BASE_LEAVES = [32,33,34,35,40,42,50,51,52,60];
     const TABS = {
-        admin:  [['page1','📦 Timbang'],['page2','📜 Riwayat'],['page3','📝 Permintaan'],['page6','🗂️ Master'],['page7','📋 Log']],
-        leader: [['page4','🏭 Antrian'],['page5','📊 Stok'],['page6','🗂️ Master'],['page7','📋 Log']]
+        admin:  [['page1','📦 Timbang'],['page2','📜 Riwayat'],['page3','📝 Permintaan'],['page8','🧾 Serah Terima'],['page6','🗂️ Master'],['page7','📋 Log']],
+        leader: [['page4','🏭 Antrian'],['page5','📊 Stok'],['page8','🧾 Serah Terima'],['page6','🗂️ Master'],['page7','📋 Log']]
     };
     const STATUS_WARNA = { Diminta:'#3b82f6', Diproses:'#f59e0b', Produksi:'#8b5cf6', Siap:'#10b981', Diterima:'#166534', Dibatalkan:'#94a3b8' };
     const AKTIF = ['Diminta','Diproses','Produksi','Siap'];
 
     // ========== STATE ==========
     let user = null;
-    let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {};
+    let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {}, wmList = [], userList = [], stMap = {};
     let pmData = [], pmTimbang = {}, stokMap = {};
     let currentPage = 1, currentSearch = "", currentEditId = null, currentOrderBy = "id", currentOrderAsc = false;
     let allDataCache = [];
@@ -561,7 +601,7 @@
     function normPI(v) { return (v || '').trim().toUpperCase(); }
     function canon(v) { return (v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
     function findPI(v) { const n = normPI(v); return piList.find(p => p.no_pi.toUpperCase() === n); }
-    function specKey(s, g, l, j) { return `${s}|${g}|${l}|${j}`; }
+    function specKey(s, g, l, j, w) { return `${s}|${g}|${l}|${j}|${w}`; }
     async function catatLog(aksi, detail) {
         try { await supabase.from('log_aktivitas_timbang').insert([{ pengguna: user?.nama || '-', role: user?.role || '-', aksi, detail }]); }
         catch (e) { console.error(e); }
@@ -594,6 +634,8 @@
             $('dlgInfo').innerHTML = o.info || '';
             $('dlgQtyWrap').style.display = o.qty ? 'block' : 'none';
             if (o.qty) { $('dlgQtyLabel').textContent = o.qty.label; $('dlgQty').value = o.qty.value ?? ''; $('dlgQty').min = 1; }
+            $('dlgQty2Wrap').style.display = o.qty2 ? 'block' : 'none';
+            if (o.qty2) { $('dlgQty2Label').textContent = o.qty2.label; $('dlgQty2').value = o.qty2.value ?? ''; $('dlgQty2').min = 1; }
             $('dlgNoteWrap').style.display = o.note ? 'block' : 'none';
             if (o.note) { $('dlgNoteLabel').textContent = o.note.label + (o.note.required ? ' *' : ''); $('dlgNote').value = ''; }
             $('dlgOk').textContent = o.ok || 'OK';
@@ -601,15 +643,19 @@
             const close = v => { $('dlgModal').style.display = 'none'; $('dlgOk').onclick = null; $('dlgCancel').onclick = null; resolve(v); };
             $('dlgCancel').onclick = () => close(null);
             $('dlgOk').onclick = () => {
-                let qv = null;
+                let qv = null, qv2 = null;
                 if (o.qty) {
                     qv = parseInt($('dlgQty').value);
-                    if (!(qv > 0)) { alert('Qty harus angka lebih dari 0'); return; }
+                    if (!(qv > 0)) { alert('Isian angka harus lebih dari 0'); return; }
                     if (o.qty.max && qv > o.qty.max) { alert('Qty melebihi batas (' + o.qty.max + ')'); return; }
+                }
+                if (o.qty2) {
+                    qv2 = parseInt($('dlgQty2').value);
+                    if (!(qv2 > 0)) { alert('Isian angka harus lebih dari 0'); return; }
                 }
                 const nv = o.note ? $('dlgNote').value.trim() : '';
                 if (o.note && o.note.required && !nv) { alert('Wajib diisi: ' + o.note.label); return; }
-                close({ qty: qv, note: nv });
+                close({ qty: qv, qty2: qv2, note: nv });
             };
         });
     }
@@ -666,7 +712,7 @@
         if (!TABS[user.role].some(t => t[0] === pid)) return;
         document.querySelectorAll('#tabBar .tab').forEach(t => t.classList.toggle('active', t.dataset.page === pid));
         document.querySelectorAll('.page').forEach(p => p.classList.toggle('active-page', p.id === pid));
-        const loaders = { page1: loadPermintaanOptions, page2: loadAllData, page3: loadPermintaan, page4: loadPermintaan, page5: loadStok, page6: renderMaster, page7: loadLog };
+        const loaders = { page1: loadPermintaanOptions, page2: loadAllData, page3: loadPermintaan, page4: loadPermintaan, page5: loadStok, page6: renderMaster, page7: loadLog, page8: loadSerahTerima };
         if (loaders[pid]) loaders[pid]();
     }
 
@@ -680,7 +726,7 @@
     function allSizes() { return [...new Set([...BASE_SIZES, ...customBerat.map(c => c.size_kertas)])]; }
     function allGsm() { return [...new Set([...BASE_GSM, ...customBerat.map(c => c.gsm)])].sort((a, b) => a - b); }
     function allLeaves() { return [...new Set([...BASE_LEAVES, ...customBerat.map(c => c.leaves)])].sort((a, b) => a - b); }
-    function itemLabel(i) { const p = piList.find(x => x.id === i.pi_id) || {}; return `${p.no_pi || '?'} · ${p.brand || ''} · ${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv`; }
+    function itemLabel(i) { const p = piList.find(x => x.id === i.pi_id) || {}; return `${p.no_pi || '?'} · ${p.brand || ''} · ${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv`; }
     function qtyPiSpan(r) { const pit = piItems.find(x => x.id === r.pi_item_id); return pit ? `<span>Qty PI: <b>${pit.qty_pi}</b></span>` : ''; }
     function fillStPi() {
         const el = $('stPiItem'); if (!el) return;
@@ -691,6 +737,8 @@
     function refreshSelects() {
         const jn = jenisList.map(j => j.nama);
         ['jenis', 'mpJenis', 'stJenis', 'editJenis'].forEach(id => fillSelect(id, jn));
+        const wn = wmList.map(w => w.nama);
+        ['wm', 'mpWm', 'stWm'].forEach(id => fillSelect(id, wn));
         fillSelect('cbJenis', ['', ...jn], v => v === '' ? '(Semua jenis)' : v);
         ['size', 'mpSize', 'stSize', 'editSize'].forEach(id => fillSelect(id, allSizes()));
         ['gsm', 'mpGsm', 'stGsm', 'editGsm'].forEach(id => fillSelect(id, allGsm()));
@@ -703,17 +751,20 @@
         f('qFilter', ['AKTIF', 'SEMUA', 'Diminta', 'Diproses', 'Produksi', 'Siap', 'Diterima', 'Dibatalkan']);
     }
     async function loadMasterData() {
-        const [d, e, a, b, c] = await Promise.all([
+        const [d, e, a, b, c, w, us] = await Promise.all([
             fetchAll(() => supabase.from('pi_item').select('*').order('id')),
             fetchAll(() => supabase.from('pi_item_status').select('*').order('pi_item_id')),
             fetchAll(() => supabase.from('master_pi').select('*').order('id', { ascending: false })),
             supabase.from('jenis_kertas').select('*').order('id'),
-            supabase.from('berat_bundle_custom').select('*').order('id')
+            supabase.from('berat_bundle_custom').select('*').order('id'),
+            supabase.from('watermark').select('*').order('id'),
+            supabase.rpc('daftar_user')
         ]);
         piList = a.data || [];
         piItems = (d.data || []).map(x => ({ ...x, gsm: Number(x.gsm), leaves: Number(x.leaves), qty_pi: Number(x.qty_pi) }));
         piStatus = {}; (e.data || []).forEach(x => piStatus[x.pi_item_id] = Number(x.qty_diminta));
         jenisList = b.data || [];
+        wmList = w.data || []; userList = us.data || [];
         customBerat = (c.data || []).map(x => ({ ...x, gsm: Number(x.gsm), leaves: Number(x.leaves), gram_per_bundle: Number(x.gram_per_bundle) }));
         refreshSelects();
         if (user && $('page6').classList.contains('active-page')) renderMaster();
@@ -730,7 +781,7 @@
     $('tanggal').value = new Date().toISOString().split('T')[0];
     let permintaanTimbang = [];
 
-    function lockSpec(flag) { ['jenis', 'size', 'gsm', 'leaves'].forEach(id => $(id).disabled = flag); }
+    function lockSpec(flag) { ['jenis', 'wm', 'size', 'gsm', 'leaves'].forEach(id => $(id).disabled = flag); }
     $('noPo').addEventListener('input', onPiInput);
     $('noPo').addEventListener('change', onPiInput);
     function onPiInput() {
@@ -751,7 +802,7 @@
         const p = findPI($('noPo').value);
         permintaanTimbang = [];
         if (!p) { sel.innerHTML = '<option value="">— tanpa permintaan —</option>'; $('pmInfo').textContent = ''; lockSpec(false); return; }
-        const { data } = await supabase.from('permintaan').select('*').eq('no_pi', p.no_pi).in('status', ['Diproses', 'Siap', 'Diterima']).order('id');
+        const { data } = await supabase.from('permintaan').select('*').eq('no_pi', p.no_pi).in('status', ['Diproses', 'Siap']).order('id');
         permintaanTimbang = data || [];
         const ids = permintaanTimbang.map(d => d.id);
         let sums = {};
@@ -761,7 +812,7 @@
         }
         permintaanTimbang.forEach(d => d._timbang = sums[d.id] || 0);
         sel.innerHTML = '<option value="">— tanpa permintaan —</option>' + permintaanTimbang.map(d =>
-            `<option value="${d.id}">#${d.id} · ${esc(d.jenis_kertas)} · ${esc(d.size_kertas)} · ${d.gsm}gsm · ${d.leaves}lv · diminta ${d.qty_minta} · ditimbang ${d._timbang}</option>`).join('');
+            `<option value="${d.id}">#${d.id} · ${esc(d.jenis_kertas)} · ${esc(d.watermark)} · ${esc(d.size_kertas)} · ${d.gsm}gsm · ${d.leaves}lv · diminta ${d.qty_minta} · box ${d.box_siap} · ditimbang ${d._timbang}</option>`).join('');
         if (keep && ids.includes(Number(keep))) sel.value = keep;
         onPermintaanChange();
     }
@@ -770,11 +821,11 @@
         const id = Number($('permintaanTerkait').value);
         const r = permintaanTimbang.find(d => d.id === id);
         if (!r) { lockSpec(false); $('pmInfo').className = 'hint'; $('pmInfo').textContent = permintaanTimbang.length ? '' : ''; return; }
-        $('jenis').value = r.jenis_kertas; $('size').value = r.size_kertas; $('gsm').value = r.gsm; $('leaves').value = r.leaves;
+        $('jenis').value = r.jenis_kertas; $('wm').value = r.watermark; $('size').value = r.size_kertas; $('gsm').value = r.gsm; $('leaves').value = r.leaves;
         lockSpec(true);
         const sisa = r.qty_minta - r._timbang;
         $('pmInfo').className = 'hint ' + (sisa < 0 ? 'bad' : 'ok');
-        $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.qty_siap} | sudah ditimbang ${r._timbang} | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle. Spesifikasi terkunci sesuai permintaan.`;
+        $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.box_siap} box (est. ${r.qty_siap} bundle) | sudah ditimbang ${r._timbang} | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle. Spesifikasi terkunci sesuai permintaan.`;
     }
 
     $('hitungBtn').onclick = async () => {
@@ -822,6 +873,7 @@
             gsm: parseInt(gsm),
             leaves_per_bundle: parseInt(leaves),
             jenis_kertas: jenis,
+            watermark: $('wm').value,
             jenis_box: boxType,
             jumlah_layer: jumlahLayer,
             berat_timbang_kg: beratTimbang,
@@ -892,7 +944,7 @@
             <td>${esc(d.tanggal)}</td>
             <td>${esc(d.no_po || '-')}</td>
             <td>${esc(d.brand || '-')}</td>
-            <td>${esc(d.jenis_kertas || '-')}</td>
+            <td>${esc(d.jenis_kertas || '-')}${d.watermark ? '<br><small>' + esc(d.watermark) + '</small>' : ''}</td>
             <td>${esc((d.size_kertas || '').substring(0, 18))}</td>
             <td>${esc(d.gsm)}</td>
             <td>${esc(d.leaves_per_bundle || '-')}</td>
@@ -1183,7 +1235,7 @@
     };
 
     // ========== PERMINTAAN (Admin buat, Leader proses) ==========
-    function itemOpsiLabel(i) { const dm = piStatus[i.id] || 0; return `${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · PI ${i.qty_pi} · sisa ${i.qty_pi - dm}`; }
+    function itemOpsiLabel(i) { const dm = piStatus[i.id] || 0; return `${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · PI ${i.qty_pi} · sisa ${i.qty_pi - dm}`; }
     function onPmPiInput() {
         const raw = $('pmPi').value.trim(), p = findPI($('pmPi').value), h = $('pmPiHint'), sel = $('pmItem');
         const prev = sel.value;
@@ -1240,49 +1292,56 @@
 
     async function loadPermintaan() {
         if (!user) return;
-        const [a, b, c, d] = await Promise.all([
+        const [a, b, c, n, d] = await Promise.all([
             supabase.from('permintaan').select('*').order('id', { ascending: false }).limit(500),
             supabase.from('ditimbang_per_permintaan').select('*'),
             supabase.from('stok_saat_ini').select('*'),
+            supabase.from('serah_terima').select('id,permintaan_id,status,no_dokumen').in('status', ['Menunggu', 'Disepakati']),
             supabase.from('pi_item_status').select('*')
         ]);
         if (a.error) { console.error(a.error); return; }
         pmData = a.data || [];
         piStatus = {}; (d.data || []).forEach(x => piStatus[x.pi_item_id] = Number(x.qty_diminta));
         pmTimbang = {}; (b.data || []).forEach(x => pmTimbang[x.permintaan_id] = x.bundles);
-        stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas)] = x.qty);
+        stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas, x.watermark)] = x.qty);
+        stMap = {}; (n.data || []).forEach(x => stMap[x.permintaan_id] = x);
         renderPermintaan();
     }
     function cardHtml(r, role) {
         const warna = STATUS_WARNA[r.status] || '#64748b';
         const dt = pmTimbang[r.id] || 0;
-        const stok = stokMap[specKey(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas)] || 0;
-        const sisa = r.qty_minta - r.qty_siap;
+        const stok = stokMap[specKey(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas, r.watermark)] || 0;
+        const kurang = r.qty_minta - r.qty_siap;
+        const nota = stMap[r.id];
+        const aktifL = ['Diminta', 'Diproses', 'Produksi'].includes(r.status);
         let sel = '';
-        if (r.status !== 'Dibatalkan' && (r.qty_siap > 0 || dt > 0)) {
+        if (r.status !== 'Dibatalkan' && (r.box_siap > 0 || dt > 0)) {
             const diff = dt - r.qty_minta;
             sel = `<span class="${diff > 0 ? 'bad' : diff === 0 ? 'good' : 'warn'}">Ditimbang ${dt}/${r.qty_minta} (${diff === 0 ? 'sesuai' : diff > 0 ? 'LEBIH ' + diff : 'kurang ' + (-diff)})</span>`;
         }
         let acts = '';
         if (role === 'leader') {
-            if (['Diminta', 'Diproses', 'Produksi'].includes(r.status)) {
+            if (aktifL) {
                 acts += `<button class="mini" style="background:#10b981" data-act="stok" data-id="${r.id}">📦 Siapkan dari stok</button>`;
                 if (r.status !== 'Produksi') acts += `<button class="mini" style="background:#8b5cf6" data-act="produksi" data-id="${r.id}">🏭 Mulai produksi</button>`;
                 acts += `<button class="mini" style="background:#f59e0b" data-act="selesaiprod" data-id="${r.id}">✅ Hasil produksi</button>`;
+                if (r.box_siap > 0) acts += `<button class="mini" style="background:#166534" data-act="siap" data-id="${r.id}">⚖️ Box siap ditimbang</button>`;
             }
+            if (r.status === 'Siap' && !nota) acts += `<button class="mini" style="background:#64748b" data-act="buka" data-id="${r.id}">↩ Tambah box lagi</button>`;
         } else {
-            if (r.status === 'Siap') acts += `<button class="mini" style="background:#166534" data-act="terima" data-id="${r.id}">✅ Terima barang</button>`;
+            if (r.status === 'Siap' && !nota) acts += `<button class="mini" style="background:#166534" data-act="nota" data-id="${r.id}">🧾 Buat nota serah terima</button>`;
             if (r.status === 'Diminta') acts += `<button class="mini" style="background:#f59e0b" data-act="editqty" data-id="${r.id}">✏️ Ubah qty</button>`;
-            if (AKTIF.includes(r.status)) acts += `<button class="mini" style="background:#ef4444" data-act="batal" data-id="${r.id}">✖ Batalkan</button>`;
+            if (AKTIF.includes(r.status) && !nota) acts += `<button class="mini" style="background:#ef4444" data-act="batal" data-id="${r.id}">✖ Batalkan</button>`;
         }
-        const stokInfo = (role === 'leader' && ['Diminta', 'Diproses', 'Produksi'].includes(r.status))
-            ? `<span class="${stok > 0 ? 'good' : 'stok-nol'}">Stok tersedia: ${stok}</span>` : '';
+        if (r.box_siap > 0 || dt > 0) acts += `<button class="mini" style="background:#0891b2" data-act="lihat" data-id="${r.id}">📋 Lihat timbangan</button>`;
+        const stokInfo = (role === 'leader' && aktifL) ? `<span class="${stok > 0 ? 'good' : 'stok-nol'}">Stok tersedia: ${stok}</span>` : '';
         return `<div class="pcard" style="border-left-color:${warna}">
             <div class="top"><span class="pi">#${r.id} · ${esc(r.no_pi)} · ${esc(r.brand)}</span><span class="badge" style="background:${warna}">${esc(r.status)}</span></div>
-            <div class="spec">🧻 <b>${esc(r.jenis_kertas)}</b> · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves</div>
-            <div class="nums">${qtyPiSpan(r)}<span>Diminta: <b>${r.qty_minta}</b></span><span>Siap: <b>${r.qty_siap}</b></span>${AKTIF.includes(r.status) && sisa > 0 ? `<span>Kurang: <b>${sisa}</b></span>` : ''}${stokInfo ? `<span>${stokInfo}</span>` : ''}${sel ? `<span>${sel}</span>` : ''}</div>
+            <div class="spec">🧻 <b>${esc(r.jenis_kertas)}</b> · 💧 ${esc(r.watermark)} · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves</div>
+            <div class="nums">${qtyPiSpan(r)}<span>Diminta: <b>${r.qty_minta}</b></span><span>Box siap: <b>${r.box_siap}</b></span><span>Estimasi: <b>${r.qty_siap}</b></span>${aktifL && kurang > 0 ? `<span>Kurang (est.): <b>${kurang}</b></span>` : ''}${stokInfo ? `<span>${stokInfo}</span>` : ''}${sel ? `<span>${sel}</span>` : ''}</div>
             ${r.catatan ? `<div class="meta">📝 Admin: ${esc(r.catatan)}</div>` : ''}
             ${r.catatan_leader ? `<div class="meta">🏭 Leader: ${esc(r.catatan_leader)}</div>` : ''}
+            ${nota ? `<div class="meta">🧾 Nota ${esc(nota.no_dokumen)} (${esc(nota.status)}) - lihat tab Serah Terima</div>` : ''}
             <div class="meta">Diminta ${esc(r.diminta_oleh || '-')} · ${fmtWaktu(r.created_at)}${r.disiapkan_oleh ? ' · Disiapkan ' + esc(r.disiapkan_oleh) : ''}${r.diterima_oleh ? ' · Diterima ' + esc(r.diterima_oleh) : ''}</div>
             ${acts ? `<div class="acts">${acts}</div>` : ''}</div>`;
     }
@@ -1292,7 +1351,7 @@
             const f = $(pre + 'Filter').value || 'AKTIF';
             const s = $(pre + 'Search').value.trim().toLowerCase();
             let list = pmData.filter(r => f === 'SEMUA' ? true : f === 'AKTIF' ? AKTIF.includes(r.status) : r.status === f);
-            if (s) list = list.filter(r => [r.no_pi, r.brand, r.jenis_kertas, r.size_kertas, r.status, '#' + r.id].join(' ').toLowerCase().includes(s));
+            if (s) list = list.filter(r => [r.no_pi, r.brand, r.jenis_kertas, r.watermark, r.size_kertas, r.status, '#' + r.id].join(' ').toLowerCase().includes(s));
             const count = st => pmData.filter(r => r.status === st).length;
             $(pre + 'Pills').innerHTML = AKTIF.map(st => `<span class="pill" style="background:${STATUS_WARNA[st]}">${st}: ${count(st)}</span>`).join('');
             $(pre + 'List').innerHTML = list.length ? list.map(r => cardHtml(r, role)).join('') : '<div style="text-align:center;padding:16px;color:#64748b;">📭 Tidak ada permintaan</div>';
@@ -1305,19 +1364,35 @@
         aksiPermintaan(b.dataset.act, parseInt(b.dataset.id));
     }));
 
+    async function lihatTimbangan(r) {
+        const { data, error } = await supabase.from('riwayat_timbang').select('*').eq('permintaan_id', r.id).order('id');
+        if (error) { alert('❌ ' + error.message); return; }
+        let tb = 0, tk = 0;
+        const rows = (data || []).map((d, i) => { tb += d.jumlah_bundles || 0; tk += d.berat_timbang_kg || 0;
+            return `<tr><td>${i + 1}</td><td>${esc(d.jenis_box || '')}</td><td>${d.jumlah_layer || 0}</td><td>${Number(d.berat_timbang_kg || 0).toFixed(2)}</td><td>${Number(d.berat_bersih_kg || 0).toFixed(2)}</td><td><b>${d.jumlah_bundles}</b></td></tr>`; }).join('');
+        const nBox = (data || []).length;
+        const info = `<b>#${r.id} · PI ${esc(r.no_pi)} · ${esc(r.brand)}</b><br>${esc(r.jenis_kertas)} · ${esc(r.watermark)} · ${esc(r.size_kertas)} · ${r.gsm}gsm · ${r.leaves}lv
+            <br>Diminta <b>${r.qty_minta}</b> bundle | Leader siapkan <b>${r.box_siap}</b> box (estimasi ${r.qty_siap} bundle)
+            <br>Sudah ditimbang: <b class="${nBox === r.box_siap ? 'good' : 'warn'}">${nBox} dari ${r.box_siap} box</b>
+            <div style="overflow-x:auto;margin-top:8px;"><table><thead><tr><th>Box</th><th>Jenis box</th><th>Layer</th><th>Timbang (kg)</th><th>Bersih (kg)</th><th>Bundles</th></tr></thead><tbody>${rows || '<tr><td colspan="6" style="text-align:center">Belum ada timbangan</td></tr>'}
+            <tr class="total-row"><td colspan="3"><b>TOTAL</b></td><td><b>${tk.toFixed(2)}</b></td><td></td><td><b>${tb}</b></td></tr></tbody></table></div>`;
+        await dialog({ title: '⚖️ Hasil timbang bersama', info, ok: 'Tutup' });
+    }
+
     async function aksiPermintaan(act, id) {
         const r = pmData.find(x => x.id === id); if (!r) return;
-        const ringkas = `<b>#${r.id} · PI ${esc(r.no_pi)} · ${esc(r.brand)}</b><br>${esc(r.jenis_kertas)} · ${esc(r.size_kertas)} · ${r.gsm}gsm · ${r.leaves}lv<br>Diminta ${r.qty_minta}, siap ${r.qty_siap}, kurang ${r.qty_minta - r.qty_siap}`;
-        const sisa = r.qty_minta - r.qty_siap;
-        const stok = stokMap[specKey(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas)] || 0;
+        const ringkas = `<b>#${r.id} · PI ${esc(r.no_pi)} · ${esc(r.brand)}</b><br>${esc(r.jenis_kertas)} · ${esc(r.watermark)} · ${esc(r.size_kertas)} · ${r.gsm}gsm · ${r.leaves}lv<br>Diminta ${r.qty_minta} bundle | disiapkan ${r.box_siap} box (estimasi ${r.qty_siap} bundle)`;
+        const estLama = r.box_siap > 0 ? Math.round(r.qty_siap / r.box_siap) : '';
+        const stok = stokMap[specKey(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas, r.watermark)] || 0;
         let ok = false;
+        if (act === 'lihat') { await lihatTimbangan(r); return; }
         if (act === 'stok') {
             if (!requireRole('leader')) return;
-            const max = Math.min(sisa, stok);
-            if (max <= 0) { alert('Stok untuk spesifikasi ini kosong. Gunakan "Mulai produksi".'); return; }
-            const d = await dialog({ title: '📦 Siapkan dari stok', info: ringkas + `<br>Stok tersedia: <b>${stok}</b> (maks. ${max})`, qty: { label: 'Qty disiapkan (bundles)', value: max, max }, note: { label: 'Catatan (opsional)' }, ok: 'Siapkan' });
+            if (stok <= 0) { alert('Stok untuk spesifikasi ini kosong. Gunakan "Mulai produksi".'); return; }
+            const d = await dialog({ title: '📦 Siapkan dari stok', info: ringkas + `<br>Stok tersedia: <b>${stok}</b> bundle`, qty: { label: 'Jumlah box', value: '' }, qty2: { label: 'Estimasi bundle per box (dari mesin guillotine)', value: estLama }, note: { label: 'Catatan (opsional)' }, ok: 'Siapkan' });
             if (!d) return;
-            ok = await rpc('siapkan_dari_stok', { p_id: id, p_qty: d.qty, p_oleh: user.nama, p_catatan: d.note });
+            if (d.qty * d.qty2 > stok) { alert(`Stok tidak cukup: ${d.qty} x ${d.qty2} = ${d.qty * d.qty2}, tersedia ${stok}`); return; }
+            ok = await rpc('siapkan_dari_stok', { p_id: id, p_box: d.qty, p_est: d.qty2, p_oleh: user.nama, p_catatan: d.note });
         } else if (act === 'produksi') {
             if (!requireRole('leader')) return;
             const d = await dialog({ title: '🏭 Mulai produksi', info: ringkas + '<br>Status menjadi <b>Produksi</b>.', note: { label: 'Catatan (opsional, mis. estimasi selesai)' }, ok: 'Mulai' });
@@ -1325,13 +1400,24 @@
             ok = await rpc('tandai_produksi', { p_id: id, p_oleh: user.nama, p_catatan: d.note });
         } else if (act === 'selesaiprod') {
             if (!requireRole('leader')) return;
-            const d = await dialog({ title: '✅ Input hasil produksi', info: ringkas + '<br>Jika qty lebih besar dari kekurangan, kelebihannya otomatis masuk stok.', qty: { label: 'Qty hasil produksi (bundles)', value: sisa }, note: { label: 'Catatan (opsional)' }, ok: 'Simpan' });
+            const d = await dialog({ title: '✅ Input hasil produksi', info: ringkas + '<br>Box hasil produksi ini langsung dipakai untuk permintaan.', qty: { label: 'Jumlah box', value: '' }, qty2: { label: 'Estimasi bundle per box (dari mesin guillotine)', value: estLama }, note: { label: 'Catatan (opsional)' }, ok: 'Simpan' });
             if (!d) return;
-            ok = await rpc('selesai_produksi', { p_id: id, p_qty: d.qty, p_oleh: user.nama, p_catatan: d.note });
-        } else if (act === 'terima') {
+            ok = await rpc('selesai_produksi', { p_id: id, p_box: d.qty, p_est: d.qty2, p_oleh: user.nama, p_catatan: d.note });
+        } else if (act === 'siap') {
+            if (!requireRole('leader')) return;
+            if (!confirm(`Tandai SIAP ditimbang?\n${r.box_siap} box, estimasi ${r.qty_siap} bundle.\nSetelah ini Admin menimbang box satu per satu.`)) return;
+            ok = await rpc('tandai_siap', { p_id: id, p_oleh: user.nama, p_catatan: null });
+        } else if (act === 'buka') {
+            if (!requireRole('leader')) return;
+            if (!confirm('Buka kembali permintaan ini untuk menambah box?')) return;
+            ok = await rpc('buka_kembali', { p_id: id, p_oleh: user.nama });
+        } else if (act === 'nota') {
             if (!requireRole('admin')) return;
-            if (!confirm(`Terima ${r.qty_siap} bundle untuk PI ${r.no_pi}?\nPastikan jumlah fisik sesuai.`)) return;
-            ok = await rpc('terima_permintaan', { p_id: id, p_oleh: user.nama });
+            const dt = pmTimbang[id] || 0;
+            const d = await dialog({ title: '🧾 Buat nota serah terima', info: ringkas + `<br>Hasil timbang tercatat: <b>${dt}</b> bundle.<br><b>Setelah nota dibuat, data timbang permintaan ini terkunci.</b> Pastikan semua box sudah ditimbang.`, note: { label: 'Catatan nota (opsional)' }, ok: 'Buat nota' });
+            if (!d) return;
+            ok = await rpc('buat_serah_terima', { p_permintaan_id: id, p_oleh: user.nama, p_catatan: d.note });
+            if (ok) { await loadPermintaan(); showPage('page8'); return; }
         } else if (act === 'batal') {
             if (!requireRole('admin')) return;
             const d = await dialog({ title: '✖ Batalkan permintaan', info: ringkas + (r.qty_siap > 0 ? `<br><b>${r.qty_siap} bundle yang sudah disiapkan akan dikembalikan ke stok.</b>` : ''), note: { label: 'Alasan pembatalan', required: true }, ok: 'Batalkan' });
@@ -1341,13 +1427,117 @@
             if (!requireRole('admin')) return;
             const d = await dialog({ title: '✏️ Ubah qty permintaan', info: ringkas, qty: { label: 'Qty baru (bundles)', value: r.qty_minta }, ok: 'Simpan' });
             if (!d) return;
-            const { data, error } = await supabase.from('permintaan').update({ qty_minta: d.qty, updated_at: new Date().toISOString() }).eq('id', id).eq('status', 'Diminta').select();
-            if (error) { alert('❌ ' + error.message); return; }
-            if (!data || !data.length) { alert('Permintaan sudah diproses Leader, qty tidak bisa diubah.'); loadPermintaan(); return; }
-            catatLog('UBAH_QTY_PERMINTAAN', `#${id} ${r.qty_minta}→${d.qty}`);
-            ok = true;
+            ok = await rpc('ubah_qty_permintaan', { p_id: id, p_qty: d.qty, p_oleh: user.nama });
         }
         if (ok) loadPermintaan();
+    }
+
+    // ========== SERAH TERIMA (NOTA) ==========
+    let stRows = [], apvId = null;
+    async function loadSerahTerima() {
+        if (!user) return;
+        const { data, error } = await supabase.from('serah_terima').select('*').order('id', { ascending: false }).limit(200);
+        if (error) { console.error(error); return; }
+        stRows = data || [];
+        renderSerahTerima();
+    }
+    function notaCard(s) {
+        const warna = { Menunggu: '#f59e0b', Disepakati: '#166534', Dibatalkan: '#94a3b8' }[s.status] || '#64748b';
+        const sel = s.total_bundles - s.qty_minta;
+        const selEst = s.total_bundles - s.estimasi_bundles;
+        const apv = (nama, at) => nama ? `<span class="good">✅ ${esc(nama)} (${fmtWaktu(at)})</span>` : '<span class="warn">⏳ menunggu</span>';
+        let acts = '';
+        if (s.status === 'Menunggu') {
+            acts += `<button class="mini" style="background:#166534" data-act="apv" data-id="${s.id}">✍️ Setujui (PIN)</button>`;
+            if (user.role === 'admin') acts += `<button class="mini" style="background:#ef4444" data-act="batalnota" data-id="${s.id}">✖ Batalkan nota</button>`;
+        }
+        acts += `<button class="mini" style="background:#8b5cf6" data-act="cetak" data-id="${s.id}">🖨️ Cetak 2 rangkap</button>`;
+        return `<div class="pcard" style="border-left-color:${warna}">
+            <div class="top"><span class="pi">${esc(s.no_dokumen)}</span><span class="badge" style="background:${warna}">${esc(s.status)}</span></div>
+            <div class="spec">PI <b>${esc(s.no_pi)}</b> · ${esc(s.brand)}<br>🧻 ${esc(s.jenis_kertas)} · 💧 ${esc(s.watermark)} · 📏 ${esc(s.size_kertas)} · ${s.gsm}gsm · ${s.leaves}lv</div>
+            <div class="nums"><span>Diminta: <b>${s.qty_minta}</b></span><span>Estimasi Leader: <b>${s.estimasi_box} box / ${s.estimasi_bundles}</b></span><span>Ditimbang: <b>${s.jumlah_box} box / ${s.total_bundles}</b></span><span>${Number(s.total_berat).toFixed(2)} kg</span></div>
+            <div class="nums"><span class="${sel === 0 ? 'good' : sel > 0 ? 'bad' : 'warn'}">Vs permintaan: ${sel === 0 ? 'sesuai' : sel > 0 ? 'LEBIH ' + sel : 'kurang ' + (-sel)}</span><span>Vs estimasi: ${selEst > 0 ? '+' : ''}${selEst}</span></div>
+            <div class="meta">Admin: ${apv(s.admin_setuju_oleh, s.admin_setuju_at)}<br>Leader: ${apv(s.leader_setuju_oleh, s.leader_setuju_at)}</div>
+            ${s.catatan ? `<div class="meta">📝 ${esc(s.catatan)}</div>` : ''}
+            <div class="meta">Dibuat ${esc(s.dibuat_oleh || '-')} · ${fmtWaktu(s.created_at)}</div>
+            <div class="acts">${acts}</div></div>`;
+    }
+    function renderSerahTerima() {
+        if (!user) return;
+        const f = $('ntFilter').value || 'Menunggu', s = $('ntSearch').value.trim().toLowerCase();
+        let list = stRows.filter(r => f === 'SEMUA' ? true : r.status === f);
+        if (s) list = list.filter(r => [r.no_dokumen, r.no_pi, r.brand, r.jenis_kertas, r.watermark].join(' ').toLowerCase().includes(s));
+        $('ntList').innerHTML = list.length ? list.map(notaCard).join('') : '<div style="text-align:center;padding:16px;color:#64748b;">📭 Tidak ada nota</div>';
+    }
+    $('ntFilter').addEventListener('change', renderSerahTerima);
+    $('ntSearch').addEventListener('input', renderSerahTerima);
+    $('ntList').addEventListener('click', async e => {
+        const b = e.target.closest('button[data-act]'); if (!b) return;
+        const s = stRows.find(x => x.id === parseInt(b.dataset.id)); if (!s) return;
+        if (b.dataset.act === 'apv') bukaApv(s);
+        else if (b.dataset.act === 'cetak') cetakNota(s);
+        else if (b.dataset.act === 'batalnota') {
+            if (!requireRole('admin')) return;
+            const d = await dialog({ title: '✖ Batalkan nota', info: `<b>${esc(s.no_dokumen)}</b> · PI ${esc(s.no_pi)}<br>Data timbang akan terbuka kembali untuk diperbaiki.`, note: { label: 'Alasan pembatalan', required: true }, ok: 'Batalkan nota' });
+            if (!d) return;
+            if (await rpc('batal_serah_terima', { p_id: s.id, p_oleh: user.nama, p_alasan: d.note })) loadSerahTerima();
+        }
+    });
+    function bukaApv(s) {
+        apvId = s.id;
+        const butuh = [];
+        if (!s.admin_setuju_at) butuh.push('admin');
+        if (!s.leader_setuju_at) butuh.push('leader');
+        const us = userList.filter(u => butuh.includes(u.role));
+        $('apvUser').innerHTML = us.map(u => `<option value="${esc(u.nama)}">${esc(u.nama)} (${u.role === 'admin' ? 'Admin Timbang' : 'Leader Mesin'})</option>`).join('');
+        const me = us.find(u => u.nama === user.nama); if (me) $('apvUser').value = me.nama;
+        $('apvInfo').innerHTML = `<b>${esc(s.no_dokumen)}</b> · PI ${esc(s.no_pi)} · ${esc(s.brand)}<br>${esc(s.jenis_kertas)} · ${esc(s.watermark)} · ${esc(s.size_kertas)}<br>Hasil timbang: <b>${s.jumlah_box} box / ${s.total_bundles} bundle</b> (diminta ${s.qty_minta}).<br>Pastikan angka ini sudah disepakati kedua pihak, lalu masukkan PIN penyetuju.`;
+        $('apvPin').value = '';
+        $('apvModal').style.display = 'flex';
+    }
+    $('apvBatalBtn').onclick = () => { $('apvModal').style.display = 'none'; };
+    $('apvPin').addEventListener('keydown', e => { if (e.key === 'Enter') $('apvOkBtn').click(); });
+    $('apvOkBtn').onclick = async () => {
+        if (!$('apvUser').value || !$('apvPin').value) { alert('Pilih penyetuju dan isi PIN'); return; }
+        const { data, error } = await supabase.rpc('setujui_serah_terima', { p_id: apvId, p_nama: $('apvUser').value, p_pin: $('apvPin').value });
+        if (error) { alert('❌ ' + error.message); return; }
+        $('apvModal').style.display = 'none';
+        await loadSerahTerima();
+        if (data === 'DISEPAKATI') {
+            alert('✅ Kedua pihak setuju. Serah terima SELESAI dan stok sudah disesuaikan dengan hasil timbang.');
+            const s = stRows.find(x => x.id === apvId);
+            if (s && confirm('Cetak nota 2 rangkap sekarang?')) cetakNota(s);
+        } else alert('✅ Persetujuan tercatat. Menunggu pihak lainnya.');
+    };
+    function cetakNota(s) {
+        const rinci = Array.isArray(s.rincian) ? s.rincian : [];
+        const f0 = n => Number(n || 0).toLocaleString('id-ID');
+        const f2 = n => Number(n || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const rows = rinci.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.tanggal || '')}</td><td>${esc(x.jenis_box || '')}</td><td>${x.jumlah_layer || 0}</td><td>${f2(x.berat_timbang_kg)}</td><td>${f2(x.berat_bersih_kg)}</td><td><b>${f0(x.jumlah_bundles)}</b></td></tr>`).join('');
+        const sel = s.total_bundles - s.qty_minta;
+        const selTxt = sel === 0 ? 'Sesuai permintaan' : sel > 0 ? `Lebih ${f0(sel)} bundle dari permintaan` : `Kurang ${f0(-sel)} bundle dari permintaan`;
+        const stat = s.status === 'Disepakati' ? 'DISEPAKATI' : s.status === 'Dibatalkan' ? 'DIBATALKAN' : 'BELUM DISEPAKATI';
+        const ttd = (nama, at) => nama ? `<div style="height:50px;"></div><div class="ttd-line"></div><div><b>${esc(nama)}</b></div><div style="font-size:9px;">Disetujui di aplikasi ${esc(fmtWaktu(at))}</div>` : `<div style="height:50px;"></div><div class="ttd-line"></div><div><b>( ........................ )</b></div><div style="font-size:9px;">belum disetujui di aplikasi</div>`;
+        const hal = (label, warna) => `<div class="hal">
+            <div class="header"><h1>THE ROLLING PAPER COMPANY</h1><h2>NOTA SERAH TERIMA KERTAS</h2><p>${ALAMAT}</p></div>
+            <div style="float:right;font-weight:bold;color:${warna};border:2px solid ${warna};padding:4px 12px;border-radius:6px;">${label}</div>
+            <div class="nomor-dokumen" style="clear:both;">No. Dokumen: ${esc(s.no_dokumen)} &nbsp;|&nbsp; Status: ${stat} &nbsp;|&nbsp; Tanggal: ${esc(fmtWaktu(s.created_at))}</div>
+            <div class="serah-terima-box">
+                <div class="row"><div class="col-label">No. PI / Brand :</div><div class="col-value">${esc(s.no_pi)} / ${esc(s.brand)}</div></div>
+                <div class="row"><div class="col-label">Jenis Kertas :</div><div class="col-value">${esc(s.jenis_kertas)} · ${esc(s.watermark)}</div></div>
+                <div class="row"><div class="col-label">Size / GSM / Leaves :</div><div class="col-value">${esc(s.size_kertas)} / ${s.gsm} gsm / ${s.leaves} leaves</div></div>
+                <div class="row"><div class="col-label">Qty diminta :</div><div class="col-value">${f0(s.qty_minta)} bundle</div></div>
+                <div class="row"><div class="col-label">Estimasi Leader :</div><div class="col-value">${f0(s.estimasi_box)} box / ${f0(s.estimasi_bundles)} bundle</div></div>
+                <div class="row"><div class="col-label">HASIL TIMBANG BERSAMA :</div><div class="col-value"><b>${f0(s.jumlah_box)} box / ${f0(s.total_bundles)} bundle</b> (${f2(s.total_berat)} kg) - ${selTxt}</div></div>
+                ${s.catatan ? `<div class="row"><div class="col-label">Catatan :</div><div class="col-value">${esc(s.catatan)}</div></div>` : ''}
+            </div>
+            <table><thead><tr><th>Box</th><th>Tanggal</th><th>Jenis box</th><th>Layer</th><th>Timbang (kg)</th><th>Bersih (kg)</th><th>Bundles</th></tr></thead><tbody>${rows}
+            <tr class="total-row"><td colspan="4"><b>TOTAL</b></td><td><b>${f2(s.total_berat)}</b></td><td></td><td><b>${f0(s.total_bundles)}</b></td></tr></tbody></table>
+            <div class="ttd-row"><div class="ttd-box"><div>Diserahkan oleh (Leader Mesin),</div>${ttd(s.leader_setuju_oleh, s.leader_setuju_at)}</div>
+            <div class="ttd-box"><div>Diterima oleh (Admin Timbang),</div>${ttd(s.admin_setuju_oleh, s.admin_setuju_at)}</div></div>
+            <div class="footer"><p>Dicetak pada: ${new Date().toLocaleString('id-ID')} | Lembar ini sebagai bukti serah terima</p></div></div>`;
+        bukaCetak(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(s.no_dokumen)}</title><style>${PRINT_CSS}.hal{page-break-after:always;padding-bottom:10px;}.hal:last-child{page-break-after:auto;}</style></head><body>${hal('ASLI - untuk Admin Timbang', '#1e3a8a')}${hal('COPY - untuk Leader Mesin', '#b45309')}</body></html>`);
+        catatLog('CETAK_NOTA', s.no_dokumen);
     }
 
     // ========== STOK (Leader) ==========
@@ -1358,17 +1548,17 @@
         ]);
         window._stokRows = a.data || [];
         renderStok();
-        $('mutasiBody').innerHTML = (b.data || []).map(m => `<tr><td>${fmtWaktu(m.waktu)}</td><td>${esc(m.tipe)}</td><td>${esc(m.jenis_kertas)} ${esc(m.size_kertas)} ${m.gsm}gsm ${m.leaves}lv</td><td class="${m.qty > 0 ? 'good' : 'bad'}">${m.qty > 0 ? '+' : ''}${m.qty}</td><td>${esc(m.no_pi || '-')}</td><td>${esc(m.oleh || '-')}</td><td>${esc(m.catatan || '')}</td></tr>`).join('') || '<tr><td colspan="7" style="text-align:center">Belum ada mutasi</td></tr>';
+        $('mutasiBody').innerHTML = (b.data || []).map(m => `<tr><td>${fmtWaktu(m.waktu)}</td><td>${esc(m.tipe)}</td><td>${esc(m.jenis_kertas)} ${esc(m.watermark)} ${esc(m.size_kertas)} ${m.gsm}gsm ${m.leaves}lv</td><td class="${m.qty > 0 ? 'good' : 'bad'}">${m.qty > 0 ? '+' : ''}${m.qty}</td><td>${esc(m.no_pi || '-')}</td><td>${esc(m.oleh || '-')}</td><td>${esc(m.catatan || '')}</td></tr>`).join('') || '<tr><td colspan="7" style="text-align:center">Belum ada mutasi</td></tr>';
     }
     function renderStok() {
         const s = $('stSearch').value.trim().toLowerCase();
         const rows = (window._stokRows || []).filter(r => !s || `${r.jenis_kertas} ${r.size_kertas}`.toLowerCase().includes(s));
-        $('stokBody').innerHTML = rows.map(r => `<tr><td>${esc(r.jenis_kertas)}</td><td>${esc(r.size_kertas)}</td><td>${r.gsm}</td><td>${r.leaves}</td><td style="font-weight:bold;text-align:center">${r.qty}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center">📭 Belum ada stok tercatat</td></tr>';
+        $('stokBody').innerHTML = rows.map(r => `<tr><td>${esc(r.jenis_kertas)}</td><td>${esc(r.watermark)}</td><td>${esc(r.size_kertas)}</td><td>${r.gsm}</td><td>${r.leaves}</td><td style="font-weight:bold;text-align:center">${r.qty}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center">📭 Belum ada stok tercatat</td></tr>';
     }
     $('stSearch').addEventListener('input', renderStok);
     $('stPiItem').addEventListener('change', () => {
         const i = piItems.find(x => x.id === Number($('stPiItem').value)); if (!i) return;
-        $('stJenis').value = i.jenis_kertas; $('stSize').value = i.size_kertas; $('stGsm').value = i.gsm; $('stLeaves').value = i.leaves;
+        $('stJenis').value = i.jenis_kertas; $('stWm').value = i.watermark; $('stSize').value = i.size_kertas; $('stGsm').value = i.gsm; $('stLeaves').value = i.leaves;
     });
     $('stSimpanBtn').onclick = async () => {
         if (!requireRole('leader')) return;
@@ -1376,8 +1566,8 @@
         if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
         const tipe = $('stTipe').value, cat = $('stCatatan').value.trim();
         if (tipe.startsWith('KOREKSI') && !cat) { alert('Koreksi wajib disertai alasan'); return; }
-        if (!confirm(`Simpan mutasi stok?\n${tipe}\n${$('stJenis').value} · ${$('stSize').value} · ${$('stGsm').value}gsm · ${$('stLeaves').value}lv\nQty: ${qty}`)) return;
-        const ok = await rpc('mutasi_stok_manual', { p_tipe: tipe, p_size: $('stSize').value, p_gsm: parseInt($('stGsm').value), p_leaves: parseInt($('stLeaves').value), p_jenis: $('stJenis').value, p_qty: qty, p_catatan: cat, p_oleh: user.nama });
+        if (!confirm(`Simpan mutasi stok?\n${tipe}\n${$('stJenis').value} · ${$('stWm').value} · ${$('stSize').value} · ${$('stGsm').value}gsm · ${$('stLeaves').value}lv\nQty: ${qty}`)) return;
+        const ok = await rpc('mutasi_stok_manual', { p_tipe: tipe, p_size: $('stSize').value, p_gsm: parseInt($('stGsm').value), p_leaves: parseInt($('stLeaves').value), p_jenis: $('stJenis').value, p_wm: $('stWm').value, p_qty: qty, p_catatan: cat, p_oleh: user.nama });
         if (ok) { $('stQty').value = ''; $('stCatatan').value = ''; loadStok(); }
     };
 
@@ -1389,14 +1579,15 @@
             if (s && !`${p.no_pi} ${p.brand}`.toLowerCase().includes(s)) return;
             const its = piItems.filter(i => i.pi_id === p.id);
             const tgl = p.tgl_pi ? p.tgl_pi.split('-').reverse().join('/') : '-';
-            if (!its.length) rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td colspan="7" style="color:#b45309">belum ada rincian kertas</td></tr>`);
+            if (!its.length) rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td colspan="8" style="color:#b45309">belum ada rincian kertas</td></tr>`);
             its.forEach(i => {
                 const dm = piStatus[i.id] || 0, sisa = i.qty_pi - dm;
-                rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td>${esc(i.jenis_kertas)}</td><td>${esc(i.size_kertas)}</td><td>${i.gsm}</td><td>${i.leaves}</td><td><b>${i.qty_pi}</b></td><td>${dm}</td><td class="${sisa < 0 ? 'bad' : sisa === 0 ? 'good' : ''}">${sisa}</td></tr>`);
+                rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td>${esc(i.jenis_kertas)}</td><td>${esc(i.watermark)}</td><td>${esc(i.size_kertas)}</td><td>${i.gsm}</td><td>${i.leaves}</td><td><b>${i.qty_pi}</b></td><td>${dm}</td><td class="${sisa < 0 ? 'bad' : sisa === 0 ? 'good' : ''}">${sisa}</td></tr>`);
             });
         });
-        $('mpBody').innerHTML = rows.join('') || '<tr><td colspan="10" style="text-align:center">Belum ada PI</td></tr>';
+        $('mpBody').innerHTML = rows.join('') || '<tr><td colspan="11" style="text-align:center">Belum ada PI</td></tr>';
         $('mjList').innerHTML = jenisList.map(j => `<span class="chip">${esc(j.nama)}</span>`).join('');
+        $('mwList').innerHTML = wmList.map(j => `<span class="chip">${esc(j.nama)}</span>`).join('');
         $('cbBody').innerHTML = customBerat.map(c => `<tr><td>${esc(c.size_kertas)}</td><td>${c.gsm}</td><td>${c.leaves}</td><td>${esc(c.jenis_kertas || 'Semua')}</td><td>${c.gram_per_bundle}</td><td><button class="btn-hapus-small" data-id="${c.id}">🗑️</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center">Belum ada spesifikasi tambahan</td></tr>';
     }
     $('mpSearch').addEventListener('input', renderMaster);
@@ -1424,8 +1615,8 @@
         }
         if (!beratBundleKG(size, gsm, leaves, jenis) &&
             !confirm('⚠️ Berat bundle spesifikasi ini belum terdaftar (belum bisa ditimbang). Tambahkan nanti di bagian Spesifikasi di bawah.\nTetap simpan?')) return;
-        if (!confirm(`Simpan?\nNo. PI: ${no} | Brand: ${br} | Tgl PI: ${tgl.split('-').reverse().join('/')}\n${jenis} · ${size} · ${gsm}gsm · ${leaves}lv\nQty PI: ${qty} bundle\n\nItem PI tidak bisa diubah setelah disimpan.`)) return;
-        const { error } = await supabase.rpc('simpan_pi_item', { p_no: no, p_brand: br, p_tgl: tgl, p_jenis: jenis, p_size: size, p_gsm: gsm, p_leaves: leaves, p_qty: qty, p_oleh: user.nama });
+        if (!confirm(`Simpan?\nNo. PI: ${no} | Brand: ${br} | Tgl PI: ${tgl.split('-').reverse().join('/')}\n${jenis} · ${$('mpWm').value} · ${size} · ${gsm}gsm · ${leaves}lv\nQty PI: ${qty} bundle\n\nItem PI tidak bisa diubah setelah disimpan.`)) return;
+        const { error } = await supabase.rpc('simpan_pi_item', { p_no: no, p_brand: br, p_tgl: tgl, p_jenis: jenis, p_wm: $('mpWm').value, p_size: size, p_gsm: gsm, p_leaves: leaves, p_qty: qty, p_oleh: user.nama });
         if (error) { alert(error.code === '23505' ? '❌ Item kertas yang sama sudah ada di PI ini.' : '❌ ' + error.message); await loadMasterData(); return; }
         $('mpQty').value = '';
         await loadMasterData();
@@ -1457,6 +1648,16 @@
         if (error) { alert('❌ ' + error.message); return; }
         catatLog('TAMBAH_JENIS', nm);
         $('mjNama').value = '';
+        await loadMasterData();
+    };
+    $('mwSimpanBtn').onclick = async () => {
+        const nm = $('mwNama').value.trim();
+        if (!nm) { alert('Isi nama watermark'); return; }
+        if (wmList.some(j => j.nama.trim().toUpperCase() === nm.toUpperCase())) { alert('Watermark sudah ada'); return; }
+        const { error } = await supabase.from('watermark').insert([{ nama: nm, dibuat_oleh: user.nama }]);
+        if (error) { alert('❌ ' + error.message); return; }
+        catatLog('TAMBAH_WATERMARK', nm);
+        $('mwNama').value = '';
         await loadMasterData();
     };
     $('cbSimpanBtn').onclick = async () => {
@@ -1507,6 +1708,7 @@
         if (!act) return;
         if (act.id === 'page3' || act.id === 'page4') loadPermintaan();
         else if (act.id === 'page5') loadStok();
+        else if (act.id === 'page8') loadSerahTerima();
     }, 15000);
 
     // ========== MULAI ==========
