@@ -134,7 +134,7 @@
             <select id="permintaanTerkait"><option value="">— tanpa permintaan —</option></select>
             <div id="pmInfo" class="hint"></div>
 
-            <label>🧻 Jenis Kertas</label>
+            <div id="specBox"><label>🧻 Jenis Kertas</label>
             <select id="jenis"></select>
 
             <label>💧 Watermark</label>
@@ -146,7 +146,8 @@
             <div class="row-2">
                 <div><label>📄 GSM</label><select id="gsm"></select></div>
                 <div><label>📑 Leaves/Bundle</label><select id="leaves"></select></div>
-            </div>
+            </div></div>
+            <div id="specRingkas" class="hint ok" style="display:none;font-size:.8rem;margin-top:10px;"></div>
 
             <div class="row-2">
                 <div><label>📦 Jenis Box</label><select id="box">
@@ -576,7 +577,7 @@
 
     // ========== STATE ==========
     let user = null;
-    let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {}, wmList = [], userList = [], stMap = {};
+    let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {}, wmList = [], userList = [], stMap = {}, pmBox = {};
     let pmData = [], pmTimbang = {}, stokMap = {};
     let currentPage = 1, currentSearch = "", currentEditId = null, currentOrderBy = "id", currentOrderAsc = false;
     let allDataCache = [];
@@ -781,7 +782,7 @@
     $('tanggal').value = new Date().toISOString().split('T')[0];
     let permintaanTimbang = [];
 
-    function lockSpec(flag) { ['jenis', 'wm', 'size', 'gsm', 'leaves'].forEach(id => $(id).disabled = flag); }
+    function lockSpec(flag) { ['jenis', 'wm', 'size', 'gsm', 'leaves'].forEach(id => $(id).disabled = flag); $('specBox').style.display = flag ? 'none' : 'block'; if (!flag) $('specRingkas').style.display = 'none'; }
     $('noPo').addEventListener('input', onPiInput);
     $('noPo').addEventListener('change', onPiInput);
     function onPiInput() {
@@ -808,11 +809,11 @@
         let sums = {};
         if (ids.length) {
             const r = await supabase.from('ditimbang_per_permintaan').select('*').in('permintaan_id', ids);
-            (r.data || []).forEach(x => sums[x.permintaan_id] = x.bundles);
+            (r.data || []).forEach(x => sums[x.permintaan_id] = x);
         }
-        permintaanTimbang.forEach(d => d._timbang = sums[d.id] || 0);
+        permintaanTimbang.forEach(d => { d._timbang = (sums[d.id] && sums[d.id].bundles) || 0; d._box = (sums[d.id] && sums[d.id].jumlah_box) || 0; });
         sel.innerHTML = '<option value="">— tanpa permintaan —</option>' + permintaanTimbang.map(d =>
-            `<option value="${d.id}">#${d.id} · ${esc(d.jenis_kertas)} · ${esc(d.watermark)} · ${esc(d.size_kertas)} · ${d.gsm}gsm · ${d.leaves}lv · diminta ${d.qty_minta} · box ${d.box_siap} · ditimbang ${d._timbang}</option>`).join('');
+            `<option value="${d.id}">#${d.id} · ${esc(d.jenis_kertas)} · ${esc(d.watermark)} · ${esc(d.size_kertas)} · ${d.gsm}gsm · ${d.leaves}lv · diminta ${d.qty_minta} · ditimbang ${d._box}/${d.box_siap} box</option>`).join('');
         if (keep && ids.includes(Number(keep))) sel.value = keep;
         onPermintaanChange();
     }
@@ -823,12 +824,13 @@
         if (!r) { lockSpec(false); $('pmInfo').className = 'hint'; $('pmInfo').textContent = permintaanTimbang.length ? '' : ''; return; }
         $('jenis').value = r.jenis_kertas; $('wm').value = r.watermark; $('size').value = r.size_kertas; $('gsm').value = r.gsm; $('leaves').value = r.leaves;
         lockSpec(true);
+        $('specRingkas').style.display = 'block'; $('specRingkas').innerHTML = `🧻 <b>${esc(r.jenis_kertas)}</b> · 💧 ${esc(r.watermark)} · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves`;
         const sisa = r.qty_minta - r._timbang;
         $('pmInfo').className = 'hint ' + (sisa < 0 ? 'bad' : 'ok');
-        $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.box_siap} box (est. ${r.qty_siap} bundle) | sudah ditimbang ${r._timbang} | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle. Spesifikasi terkunci sesuai permintaan.`;
+        $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.box_siap} box (est. ${r.qty_siap} bundle) | sudah ditimbang ${r._box} dari ${r.box_siap} box (${r._timbang} bundle) | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle dari permintaan.`;
     }
 
-    $('hitungBtn').onclick = async () => {
+    async function hitungSimpan() {
         if (!requireRole('admin')) return;
         const piRow = findPI($('noPo').value);
         if (!piRow) { alert("No. PI belum terdaftar! Pilih dari daftar atau buat dulu di menu Master."); return; }
@@ -849,7 +851,7 @@
             return;
         }
         const bundlesDesimal = beratBersih / beratBundleKG;
-        const bundlesBulat = Math.ceil(bundlesDesimal);
+        const bundlesBulat = Math.ceil(Math.round(bundlesDesimal * 1e6) / 1e6);
 
         const pmId = $('permintaanTerkait').value ? parseInt($('permintaanTerkait').value) : null;
         if (pmId) {
@@ -887,12 +889,18 @@
         const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
         if (error) { showStatus('❌ Gagal: ' + error.message, 'error'); alert('Gagal simpan! ' + error.message); }
         else {
-            showStatus('✅ Tersimpan ke cloud!', 'success');
+            showStatus(`✅ Box tersimpan: ${bundlesBulat} bundle`, 'success');
             catatLog('TIMBANG', `PI ${piRow.no_pi} ${size} ${gsm}gsm ${leaves}lv ${jenis} = ${bundlesBulat} bundle${pmId ? ' (permintaan #' + pmId + ')' : ''}`);
-            $('berat').value = '';
+            $('berat').value = ''; $('berat').focus();
             currentPage = 1; currentSearch = ""; $('searchInput').value = "";
             loadPermintaanOptions();
         }
+    }
+    let busyHitung = false;
+    $('hitungBtn').onclick = async () => {
+        if (busyHitung) return;
+        busyHitung = true; $('hitungBtn').disabled = true;
+        try { await hitungSimpan(); } finally { busyHitung = false; $('hitungBtn').disabled = false; }
     };
     function beratBundleKG_(s, g, l, j) { return beratBundleKG(s, g, l, j); }
 
@@ -1302,7 +1310,7 @@
         if (a.error) { console.error(a.error); return; }
         pmData = a.data || [];
         piStatus = {}; (d.data || []).forEach(x => piStatus[x.pi_item_id] = Number(x.qty_diminta));
-        pmTimbang = {}; (b.data || []).forEach(x => pmTimbang[x.permintaan_id] = x.bundles);
+        pmTimbang = {}; pmBox = {}; (b.data || []).forEach(x => { pmTimbang[x.permintaan_id] = x.bundles; pmBox[x.permintaan_id] = x.jumlah_box; });
         stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas, x.watermark)] = x.qty);
         stMap = {}; (n.data || []).forEach(x => stMap[x.permintaan_id] = x);
         renderPermintaan();
@@ -1315,7 +1323,7 @@
         const nota = stMap[r.id];
         const aktifL = ['Diminta', 'Diproses', 'Produksi'].includes(r.status);
         let sel = '';
-        if (r.status !== 'Dibatalkan' && (r.box_siap > 0 || dt > 0)) {
+        if (r.status !== 'Dibatalkan' && dt > 0) {
             const diff = dt - r.qty_minta;
             sel = `<span class="${diff > 0 ? 'bad' : diff === 0 ? 'good' : 'warn'}">Ditimbang ${dt}/${r.qty_minta} (${diff === 0 ? 'sesuai' : diff > 0 ? 'LEBIH ' + diff : 'kurang ' + (-diff)})</span>`;
         }
@@ -1414,7 +1422,10 @@
         } else if (act === 'nota') {
             if (!requireRole('admin')) return;
             const dt = pmTimbang[id] || 0;
-            const d = await dialog({ title: '🧾 Buat nota serah terima', info: ringkas + `<br>Hasil timbang tercatat: <b>${dt}</b> bundle.<br><b>Setelah nota dibuat, data timbang permintaan ini terkunci.</b> Pastikan semua box sudah ditimbang.`, note: { label: 'Catatan nota (opsional)' }, ok: 'Buat nota' });
+            const d = await dialog({ title: '🧾 Buat nota serah terima', info: ringkas + `<br>Hasil timbang tercatat: <b>${pmBox[id] || 0} dari ${r.box_siap} box = ${dt} bundle</b>.`
+                + ((pmBox[id] || 0) !== r.box_siap ? `<br><b class="bad">⚠️ Jumlah box yang ditimbang (${pmBox[id] || 0}) berbeda dari yang disiapkan Leader (${r.box_siap}).</b>` : '')
+                + (r.qty_siap > 0 && Math.abs(dt - r.qty_siap) / r.qty_siap > 0.1 ? `<br><b class="bad">⚠️ Hasil timbang berbeda ${Math.round(Math.abs(dt - r.qty_siap) / r.qty_siap * 100)}% dari estimasi Leader. Periksa lagi.</b>` : '')
+                + '<br><b>Setelah nota dibuat, data timbang permintaan ini terkunci.</b>', note: { label: 'Catatan nota (opsional)' }, ok: 'Buat nota' });
             if (!d) return;
             ok = await rpc('buat_serah_terima', { p_permintaan_id: id, p_oleh: user.nama, p_catatan: d.note });
             if (ok) { await loadPermintaan(); showPage('page8'); return; }
