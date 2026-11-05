@@ -95,7 +95,25 @@
         .chip { display: inline-block; background: #e0e7ff; color: #1e3a8a; padding: 4px 10px; border-radius: 14px; margin: 3px 3px 0 0; font-size: .75rem; }
         .stok-nol { color: #b91c1c; }
         hr.sep { border: none; border-top: 1px dashed #cbd5e1; margin: 16px 0; }
-    </style>
+            .cnt{display:inline-block;background:#ef4444;color:#fff;border-radius:10px;padding:0 6px;font-size:.68rem;margin-left:4px;min-width:16px;line-height:1.5;}
+        .badge-n{position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;border-radius:10px;font-size:.62rem;padding:1px 5px;min-width:16px;line-height:1.3;}
+        #toastBox{position:fixed;top:10px;left:10px;right:10px;z-index:3000;display:flex;flex-direction:column;gap:8px;pointer-events:none;max-width:560px;margin:0 auto;}
+        .toast{background:#1e3a8a;color:#fff;border-radius:14px;padding:10px 14px;font-size:.82rem;box-shadow:0 4px 14px rgba(0,0,0,.3);pointer-events:auto;cursor:pointer;animation:tin .25s ease;}
+        .toast b{display:block;margin-bottom:2px;}
+        @keyframes tin{from{transform:translateY(-14px);opacity:0}to{transform:none;opacity:1}}
+        .warnbox{background:#fef3c7;border:1px solid #f59e0b;color:#92400e;border-radius:12px;padding:8px 10px;font-size:.75rem;margin-top:8px;line-height:1.5;}
+        .nitem{border:1px solid #cbd5e1;border-radius:12px;padding:8px 10px;margin-top:8px;font-size:.78rem;cursor:pointer;}
+        .nitem.baru{background:#eff6ff;border-color:#3b82f6;}
+        .nitem .t{font-weight:bold;color:#1e3a8a;}
+        .nitem .w{font-size:.68rem;color:#64748b;margin-top:2px;}
+        .pigroup{border:1px solid #cbd5e1;border-radius:14px;padding:10px;margin-top:10px;font-size:.78rem;}
+        .pigroup .ph{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;}
+        .pigroup .it{border-top:1px dashed #cbd5e1;margin-top:8px;padding-top:8px;}
+        .pigroup.selesai{opacity:.75;background:#f8fafc;}
+        .pigroup .nums{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;}
+        .pigroup .nums span{background:#f1f5f9;padding:3px 8px;border-radius:10px;}
+        .pigroup .acts{display:flex;gap:6px;flex-wrap:wrap;}
+</style>
 </head>
 <body>
 <div id="loginOverlay">
@@ -112,10 +130,13 @@
     </div>
 </div>
 
+<div id="toastBox"></div>
+
 <div class="container">
     <div class="userbar" id="userBar">
         <span><span class="who" id="userInfo"></span><span class="rolebadge" id="roleBadge"></span></span>
         <span style="display:flex;gap:6px;">
+            <button class="mini" id="bellBtn" style="background:#f59e0b;position:relative;">🔔<span class="badge-n" id="bellBadge" style="display:none">0</span></button>
             <button class="mini" id="pinBtn" style="background:#64748b;">🔑 PIN</button>
             <button class="mini" id="logoutBtn" style="background:#ef4444;">🚪 Keluar</button>
         </span>
@@ -125,54 +146,32 @@
     <!-- ===== PAGE 1: TIMBANG (Admin) ===== -->
     <div id="page1" class="page">
         <div class="card">
-            <h1>📦 THE ROLLING PAPER COMPANY</h1>
-            <div class="note">✅ Bundles dibulatkan KE ATAS | No. PI harus terdaftar | Pilih permintaan agar spesifikasi terkunci sesuai yang disiapkan Leader</div>
+            <h1>⚖️ TIMBANG BOX</h1>
+            <div class="note">Pilih permintaan yang sudah disiapkan Leader. Semua data kertas terisi otomatis. Bundles dibulatkan KE ATAS.</div>
 
-            <label>📅 Tanggal</label>
-            <input type="date" id="tanggal">
-
-            <label>📄 No. PI</label>
-            <input type="text" id="noPo" list="piList" placeholder="Pilih / ketik No. PI" autocomplete="off">
-            <datalist id="piList"></datalist>
-            <div id="piHint" class="hint"></div>
-
-            <label>🏷️ Brand (otomatis dari No. PI)</label>
-            <input type="text" id="brand" readonly placeholder="Otomatis terisi">
-
-            <label>🔗 Permintaan ke Leader Mesin (disarankan)</label>
-            <select id="permintaanTerkait"><option value="">— tanpa permintaan —</option></select>
+            <label>📋 Permintaan yang siap ditimbang</label>
+            <select id="permintaanTerkait"><option value="">— pilih permintaan —</option></select>
+            <div id="pmEmpty" class="hint"></div>
+            <div id="specRingkas" class="hint ok" style="display:none;font-size:.82rem;margin-top:10px;line-height:1.5;"></div>
             <div id="pmInfo" class="hint"></div>
 
-            <div id="specBox"><label>🧻 Jenis Kertas</label>
-            <select id="jenis"></select>
-
-            <label>💧 Watermark</label>
-            <select id="wm"></select>
-
-            <label>📏 Size Kertas</label>
-            <select id="size"></select>
-
-            <div class="row-2">
-                <div><label>📄 GSM</label><select id="gsm"></select></div>
-                <div><label>📑 Leaves/Bundle</label><select id="leaves"></select></div>
-            </div></div>
-            <div id="specRingkas" class="hint ok" style="display:none;font-size:.8rem;margin-top:10px;"></div>
-
-            <div class="row-2">
-                <div><label>📦 Jenis Box</label><select id="box">
-                    <option value="White">White (0.90 kg)</option>
-                    <option value="White New">White New (0.80 kg)</option>
-                    <option value="Grey">Grey (1.25 kg)</option>
-                    <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
-                </select></div>
-                <div><label>📚 Jumlah Layer</label><input type="number" id="layer" step="1" value="0"></div>
+            <div id="boxForm" style="display:none">
+                <label>📅 Tanggal</label>
+                <input type="date" id="tanggal">
+                <div class="row-2">
+                    <div><label>📦 Jenis Box</label><select id="box">
+                        <option value="White">White (0.90 kg)</option>
+                        <option value="White New">White New (0.80 kg)</option>
+                        <option value="Grey">Grey (1.25 kg)</option>
+                        <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
+                    </select></div>
+                    <div><label>📚 Jumlah Layer</label><input type="number" id="layer" step="1" value="0"></div>
+                </div>
+                <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
+                <input type="number" id="berat" step="0.01" placeholder="Contoh: 7.50" inputmode="decimal">
+                <button id="hitungBtn">✅ HITUNG & SIMPAN BOX</button>
+                <button id="goNotaBtn" style="display:none;background:#166534">🧾 Semua box sudah ditimbang → Buat nota</button>
             </div>
-
-            <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
-            <input type="number" id="berat" step="0.01" placeholder="Contoh: 2.50">
-
-            <button id="hitungBtn">✅ HITUNG & SIMPAN KE CLOUD</button>
-            <button id="resetFormBtn" class="btn-reset">🔄 Reset Form (Kosongkan PI & Brand)</button>
             <div id="statusMsg" class="status"></div>
         </div>
 
@@ -222,15 +221,14 @@
     <div id="page3" class="page">
         <div class="card">
             <h2>📝 BUAT PERMINTAAN KE LEADER MESIN</h2>
-            <div class="note">Pilih No. PI lalu item kertasnya. Brand, jenis, size, GSM, dan leaves terisi otomatis, Anda tinggal isi qty.</div>
-            <label>📄 No. PI</label>
-            <input type="text" id="pmPi" list="piList" placeholder="Pilih / ketik No. PI" autocomplete="off">
+            <div class="note">Pilih PI lalu item kertasnya, tinggal isi qty. PI yang sudah selesai diminta otomatis hilang dari daftar. Salah input? Batalkan permintaannya (atau Ubah qty selama Leader belum memproses).</div>
+            <label>📄 Pilih No. PI</label>
+            <select id="pmPi"><option value="">— pilih PI —</option></select>
             <div id="pmPiHint" class="hint"></div>
-            <label>🏷️ Brand</label>
-            <input type="text" id="pmBrand" readonly placeholder="Otomatis terisi">
-            <label>📋 Item kertas PI</label>
+            <label>📋 Item kertas</label>
             <select id="pmItem"><option value="">— pilih PI dulu —</option></select>
             <div id="pmItemInfo" class="hint"></div>
+            <div id="pmDupWarn" class="warnbox" style="display:none"></div>
             <label>📦 Qty diminta (bundles)</label>
             <input type="number" id="pmQty" step="1" min="1" placeholder="Contoh: 500">
             <label>📝 Catatan (opsional)</label>
@@ -294,9 +292,9 @@
             <button id="stSimpanBtn">💾 Simpan Mutasi Stok</button>
         </div>
         <div class="card">
-            <h2>🧾 RIWAYAT MUTASI STOK (100 terakhir)</h2>
+            <h2>🧾 RIWAYAT MUTASI STOK (200 terakhir)</h2>
             <div style="overflow-x:auto;">
-                <table><thead><tr><th>Waktu</th><th>Tipe</th><th>Spesifikasi</th><th>Qty</th><th>PI</th><th>Oleh</th><th>Catatan</th></tr></thead>
+                <table><thead><tr><th>Waktu</th><th>Tipe</th><th>Spesifikasi</th><th>Qty</th><th>PI</th><th>Oleh</th><th>Catatan</th><th></th></tr></thead>
                 <tbody id="mutasiBody"></tbody></table>
             </div>
         </div>
@@ -306,10 +304,14 @@
     <div id="page6" class="page">
         <div class="card">
             <h2>📄 MASTER NO. PI</h2>
-            <div class="note">Isi lengkap sekali di sini. Untuk PI yang sudah ada dengan item kertas lain, ketik No. PI yang sama: brand dan tanggal otomatis, lalu isi rincian kertas berikutnya.</div>
-            <label>No. PI</label>
-            <input type="text" id="mpNo" list="piList" placeholder="PI-001" autocomplete="off">
-            <div id="mpHint" class="hint"></div>
+            <div class="note">Pilih PI dari dropdown (hindari salah ketik). Untuk PI baru pilih "➕ PI baru". Salah input? Pakai tombol ✏️ Edit di daftar bawah.</div>
+            <label>📄 PI</label>
+            <select id="mpPilih"></select>
+            <div id="mpNoWrap">
+                <label>No. PI baru</label>
+                <input type="text" id="mpNo" placeholder="PI-001" autocomplete="off">
+                <div id="mpHint" class="hint"></div>
+            </div>
             <div class="row-2">
                 <div><label>📅 Tgl PI turun</label><input type="date" id="mpTgl"></div>
                 <div><label>🏷️ Brand</label><input type="text" id="mpBrand" list="brandList" placeholder="RONSON" autocomplete="off"></div>
@@ -323,13 +325,14 @@
                 <div><label>📑 Leaves/Bundle</label><select id="mpLeaves"></select></div>
             </div>
             <label>📦 Qty PI (bundles)</label><input type="number" id="mpQty" step="1" min="1" placeholder="Contoh: 5000">
-            <button id="mpSimpanBtn">➕ Simpan PI / Item</button>
+            <button id="mpSimpanBtn">➕ Simpan item PI</button>
             <button id="mpImporBtn" class="btn-reset" style="display:none;">📥 Impor PI dari riwayat timbang lama</button>
-            <input type="text" id="mpSearch" placeholder="Cari PI / Brand..." style="margin-top:12px;">
-            <div style="overflow-x:auto;margin-top:8px;max-height:260px;overflow-y:auto;">
-                <table><thead><tr><th>No. PI</th><th>Tgl PI</th><th>Brand</th><th>Jenis</th><th>WM</th><th>Size</th><th>GSM</th><th>Leaves</th><th>Qty PI</th><th>Diminta</th><th>Sisa</th></tr></thead>
-                <tbody id="mpBody"></tbody></table>
+            <h3 class="sec" style="margin-top:18px;">Daftar PI</h3>
+            <div class="search-row">
+                <input type="text" id="mpSearch" placeholder="Cari PI / Brand...">
+                <select id="mpFilter"><option value="AKTIF">PI berjalan</option><option value="SELESAI">PI selesai</option><option value="SEMUA">Semua</option></select>
             </div>
+            <div id="mpList"></div>
         </div>
         <div class="card">
             <h2>🧻 JENIS KERTAS</h2>
@@ -419,6 +422,48 @@
     </div>
 </div>
 
+<!-- Edit PI -->
+<div id="epModal" class="modal">
+    <div class="modal-content">
+        <h3>✏️ Edit PI</h3>
+        <div id="epInfo" class="hint" style="margin-bottom:6px;"></div>
+        <label>No. PI</label><input type="text" id="epNo" autocomplete="off">
+        <label>Brand</label><input type="text" id="epBrand" list="brandList" autocomplete="off">
+        <label>Tgl PI turun</label><input type="date" id="epTgl">
+        <button id="epSimpanBtn">💾 Simpan</button>
+        <button id="epBatalBtn" class="close-modal">Batal</button>
+    </div>
+</div>
+
+<!-- Edit item PI -->
+<div id="eiModal" class="modal">
+    <div class="modal-content">
+        <h3>✏️ Edit item kertas PI</h3>
+        <div id="eiInfo" class="hint" style="margin-bottom:6px;"></div>
+        <label>🧻 Jenis</label><select id="eiJenis"></select>
+        <label>💧 Watermark</label><select id="eiWm"></select>
+        <label>📏 Size</label><select id="eiSize"></select>
+        <div class="row-2">
+            <div><label>📄 GSM</label><select id="eiGsm"></select></div>
+            <div><label>📑 Leaves</label><select id="eiLeaves"></select></div>
+        </div>
+        <label>📦 Qty PI (bundles)</label><input type="number" id="eiQty" step="1" min="1">
+        <button id="eiSimpanBtn">💾 Simpan</button>
+        <button id="eiBatalBtn" class="close-modal">Batal</button>
+    </div>
+</div>
+
+<!-- Notifikasi -->
+<div id="notifModal" class="modal">
+    <div class="modal-content">
+        <h3>🔔 Notifikasi</h3>
+        <div id="notifIzin" class="hint" style="margin-bottom:6px;line-height:1.5;"></div>
+        <div id="notifList"></div>
+        <button id="notifIzinBtn" style="background:#f59e0b">🔔 Aktifkan notifikasi di HP ini</button>
+        <button id="notifTutupBtn" class="close-modal">Tutup</button>
+    </div>
+</div>
+
 <!-- Ganti PIN -->
 <div id="pinModal" class="modal">
     <div class="modal-content">
@@ -478,8 +523,8 @@
     <div class="modal-content">
         <h3>✏️ Edit Data</h3>
         <label>Tanggal</label><input type="date" id="editTanggal">
-        <label>No. PI</label><input type="text" id="editNoPo" list="piList">
-        <label>Brand</label><input type="text" id="editBrand">
+        <label>No. PI</label><select id="editNoPo"></select>
+        <label>Brand (otomatis dari PI)</label><input type="text" id="editBrand" readonly>
         <label>Jenis Kertas</label><select id="editJenis"></select>
         <label>Size Kertas</label><select id="editSize"></select>
         <label>GSM</label><select id="editGsm"></select>
@@ -586,7 +631,7 @@
 
     // ========== STATE ==========
     let user = null;
-    let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {}, wmList = [], userList = [], stMap = {}, pmBox = {};
+    let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {}, piAktif = {}, piTutup = {}, wmList = [], userList = [], stMap = {}, pmBox = {};
     let pmData = [], pmTimbang = {}, stokMap = {};
     let currentPage = 1, currentSearch = "", currentEditId = null, currentOrderBy = "id", currentOrderAsc = false;
     let allDataCache = [];
@@ -711,6 +756,7 @@
         $('mpImporBtn').style.display = user.role === 'admin' ? 'block' : 'none';
         await loadMasterData();
         buildTabs();
+        startNotif();
     }
     function buildTabs() {
         const bar = $('tabBar');
@@ -736,24 +782,31 @@
     function allSizes() { return [...new Set([...BASE_SIZES, ...customBerat.map(c => c.size_kertas)])]; }
     function allGsm() { return [...new Set([...BASE_GSM, ...customBerat.map(c => c.gsm)])].sort((a, b) => a - b); }
     function allLeaves() { return [...new Set([...BASE_LEAVES, ...customBerat.map(c => c.leaves)])].sort((a, b) => a - b); }
+    function setPiStatus(rows) {
+        piStatus = {}; piAktif = {}; piTutup = {};
+        (rows || []).forEach(x => { piStatus[x.pi_item_id] = Number(x.qty_diminta); piAktif[x.pi_item_id] = Number(x.n_aktif || 0); piTutup[x.pi_item_id] = !!x.ditutup; });
+    }
+    function itemBuka(i) { return !piTutup[i.id] && (i.qty_pi - (piStatus[i.id] || 0)) > 0; }
     function itemLabel(i) { const p = piList.find(x => x.id === i.pi_id) || {}; return `${p.no_pi || '?'} · ${p.brand || ''} · ${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv`; }
     function qtyPiSpan(r) { const pit = piItems.find(x => x.id === r.pi_item_id); return pit ? `<span>Qty PI: <b>${pit.qty_pi}</b></span>` : ''; }
     function fillStPi() {
         const el = $('stPiItem'); if (!el) return;
         const prev = el.value;
-        el.innerHTML = '<option value="">— isi manual —</option>' + piItems.map(i => `<option value="${i.id}">${esc(itemLabel(i))}</option>`).join('');
+        el.innerHTML = '<option value="">— isi manual —</option>' + piItems.filter(i => !piTutup[i.id]).map(i => `<option value="${i.id}">${esc(itemLabel(i))}</option>`).join('');
         el.value = prev;
     }
     function refreshSelects() {
         const jn = jenisList.map(j => j.nama);
-        ['jenis', 'mpJenis', 'stJenis', 'editJenis'].forEach(id => fillSelect(id, jn));
+        ['mpJenis', 'stJenis', 'editJenis', 'eiJenis'].forEach(id => fillSelect(id, jn));
         const wn = wmList.map(w => w.nama);
-        ['wm', 'mpWm', 'stWm'].forEach(id => fillSelect(id, wn));
+        ['mpWm', 'stWm', 'eiWm'].forEach(id => fillSelect(id, wn));
         fillSelect('cbJenis', ['', ...jn], v => v === '' ? '(Semua jenis)' : v);
-        ['size', 'mpSize', 'stSize', 'editSize'].forEach(id => fillSelect(id, allSizes()));
-        ['gsm', 'mpGsm', 'stGsm', 'editGsm'].forEach(id => fillSelect(id, allGsm()));
-        ['leaves', 'mpLeaves', 'stLeaves'].forEach(id => fillSelect(id, allLeaves()));
-        $('piList').innerHTML = piList.map(p => `<option value="${esc(p.no_pi)}">${esc(p.brand)}</option>`).join('');
+        ['mpSize', 'stSize', 'editSize', 'eiSize'].forEach(id => fillSelect(id, allSizes()));
+        ['mpGsm', 'stGsm', 'editGsm', 'eiGsm'].forEach(id => fillSelect(id, allGsm()));
+        ['mpLeaves', 'stLeaves', 'eiLeaves'].forEach(id => fillSelect(id, allLeaves()));
+        fillSelect('editNoPo', piList.map(p => p.no_pi));
+        fillPmPi(); if ($('pmPi').value) onPmPiInput(true); else onPmPiInput(true);
+        fillMpPilih();
         $('brandList').innerHTML = [...new Set(piList.map(p => p.brand))].map(b => `<option value="${esc(b)}">`).join('');
         fillStPi(); $('sizeList').innerHTML = allSizes().map(s => `<option value="${esc(s)}">`).join('');
         const f = (id, list) => fillSelect(id, list, v => v === 'AKTIF' ? 'Aktif (belum selesai)' : v === 'SEMUA' ? 'Semua status' : v);
@@ -772,7 +825,7 @@
         ]);
         piList = a.data || [];
         piItems = (d.data || []).map(x => ({ ...x, gsm: Number(x.gsm), leaves: Number(x.leaves), qty_pi: Number(x.qty_pi) }));
-        piStatus = {}; (e.data || []).forEach(x => piStatus[x.pi_item_id] = Number(x.qty_diminta));
+        setPiStatus(e.data);
         jenisList = b.data || [];
         wmList = w.data || []; userList = us.data || [];
         customBerat = (c.data || []).map(x => ({ ...x, gsm: Number(x.gsm), leaves: Number(x.leaves), gram_per_bundle: Number(x.gram_per_bundle) }));
@@ -791,29 +844,17 @@
     $('tanggal').value = new Date().toISOString().split('T')[0];
     let permintaanTimbang = [];
 
-    function lockSpec(flag) { ['jenis', 'wm', 'size', 'gsm', 'leaves'].forEach(id => $(id).disabled = flag); $('specBox').style.display = flag ? 'none' : 'block'; if (!flag) $('specRingkas').style.display = 'none'; }
-    $('noPo').addEventListener('input', onPiInput);
-    $('noPo').addEventListener('change', onPiInput);
-    function onPiInput() {
-        const p = findPI($('noPo').value);
-        const hint = $('piHint');
-        if (p) { $('brand').value = p.brand; hint.className = 'hint ok'; hint.textContent = '✅ PI terdaftar'; }
-        else {
-            $('brand').value = '';
-            if ($('noPo').value.trim()) { hint.className = 'hint bad'; hint.textContent = '❌ PI belum terdaftar. Buat dulu di menu Master (atau minta Leader).'; }
-            else { hint.className = 'hint'; hint.textContent = ''; }
-        }
-        loadPermintaanOptions();
-    }
+    function pmLabel(d) { return `#${d.id} · ${d.no_pi} · ${d.brand} · ${d.jenis_kertas} · ${d.watermark} · ${d.size_kertas} · ${d.gsm}gsm · ${d.leaves}lv · ${d._box}/${d.box_siap} box${d.box_siap > 0 && d._box >= d.box_siap ? ' ✅' : ''}`; }
     async function loadPermintaanOptions() {
         if (!user || user.role !== 'admin') return;
-        const sel = $('permintaanTerkait');
-        const keep = sel.value;
-        const p = findPI($('noPo').value);
-        permintaanTimbang = [];
-        if (!p) { sel.innerHTML = '<option value="">— tanpa permintaan —</option>'; $('pmInfo').textContent = ''; lockSpec(false); return; }
-        const { data } = await supabase.from('permintaan').select('*').eq('no_pi', p.no_pi).in('status', ['Diproses', 'Siap']).order('id');
-        permintaanTimbang = data || [];
+        const sel = $('permintaanTerkait'), keep = sel.value;
+        const [a, n] = await Promise.all([
+            supabase.from('permintaan').select('*').eq('status', 'Siap').order('id'),
+            supabase.from('serah_terima').select('permintaan_id').in('status', ['Menunggu', 'Disepakati'])
+        ]);
+        if (a.error) { console.error(a.error); return; }
+        const locked = new Set((n.data || []).map(x => x.permintaan_id));
+        permintaanTimbang = (a.data || []).filter(d => !locked.has(d.id));
         const ids = permintaanTimbang.map(d => d.id);
         let sums = {};
         if (ids.length) {
@@ -821,28 +862,37 @@
             (r.data || []).forEach(x => sums[x.permintaan_id] = x);
         }
         permintaanTimbang.forEach(d => { d._timbang = (sums[d.id] && sums[d.id].bundles) || 0; d._box = (sums[d.id] && sums[d.id].jumlah_box) || 0; });
-        sel.innerHTML = '<option value="">— tanpa permintaan —</option>' + permintaanTimbang.map(d =>
-            `<option value="${d.id}">#${d.id} · ${esc(d.jenis_kertas)} · ${esc(d.watermark)} · ${esc(d.size_kertas)} · ${d.gsm}gsm · ${d.leaves}lv · diminta ${d.qty_minta} · ditimbang ${d._box}/${d.box_siap} box</option>`).join('');
+        sel.innerHTML = '<option value="">— pilih permintaan —</option>' + permintaanTimbang.map(d => `<option value="${d.id}">${esc(pmLabel(d))}</option>`).join('');
         if (keep && ids.includes(Number(keep))) sel.value = keep;
+        else if (ids.length === 1) sel.value = ids[0];
+        $('pmEmpty').className = 'hint';
+        $('pmEmpty').textContent = ids.length ? '' : '📭 Belum ada permintaan yang siap ditimbang. Menunggu Leader menekan "Box siap ditimbang" (Anda akan mendapat notifikasi).';
         onPermintaanChange();
     }
     $('permintaanTerkait').addEventListener('change', onPermintaanChange);
     function onPermintaanChange() {
         const id = Number($('permintaanTerkait').value);
         const r = permintaanTimbang.find(d => d.id === id);
-        if (!r) { lockSpec(false); $('pmInfo').className = 'hint'; $('pmInfo').textContent = permintaanTimbang.length ? '' : ''; return; }
-        $('jenis').value = r.jenis_kertas; $('wm').value = r.watermark; $('size').value = r.size_kertas; $('gsm').value = r.gsm; $('leaves').value = r.leaves;
-        lockSpec(true);
-        $('specRingkas').style.display = 'block'; $('specRingkas').innerHTML = `🧻 <b>${esc(r.jenis_kertas)}</b> · 💧 ${esc(r.watermark)} · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves`;
-        const sisa = r.qty_minta - r._timbang;
+        if (!r) { $('boxForm').style.display = 'none'; $('specRingkas').style.display = 'none'; $('pmInfo').textContent = ''; $('hasilCard').style.display = 'none'; return; }
+        $('boxForm').style.display = 'block';
+        $('specRingkas').style.display = 'block';
+        $('specRingkas').innerHTML = `📄 <b>${esc(r.no_pi)}</b> · 🏷️ ${esc(r.brand)}<br>🧻 <b>${esc(r.jenis_kertas)}</b> · 💧 ${esc(r.watermark)} · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves`;
+        const sisa = r.qty_minta - r._timbang, semua = r.box_siap > 0 && r._box >= r.box_siap;
         $('pmInfo').className = 'hint ' + (sisa < 0 ? 'bad' : 'ok');
-        $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.box_siap} box (est. ${r.qty_siap} bundle) | sudah ditimbang ${r._box} dari ${r.box_siap} box (${r._timbang} bundle) | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle dari permintaan.`;
+        $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.box_siap} box (est. ${r.qty_siap} bundle) | sudah ditimbang ${r._box} dari ${r.box_siap} box (${r._timbang} bundle) | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle dari permintaan.` + (semua ? ' ✅ Semua box sudah ditimbang.' : ` Box berikutnya: ke-${r._box + 1}.`);
+        $('goNotaBtn').style.display = semua ? 'block' : 'none';
     }
+    $('goNotaBtn').onclick = async () => {
+        const id = Number($('permintaanTerkait').value); if (!id) return;
+        await loadPermintaan();
+        await aksiPermintaan('nota', id);
+    };
 
     async function hitungSimpan() {
         if (!requireRole('admin')) return;
-        const piRow = findPI($('noPo').value);
-        if (!piRow) { alert("No. PI belum terdaftar! Pilih dari daftar atau buat dulu di menu Master."); return; }
+        const pmId = Number($('permintaanTerkait').value);
+        const r = permintaanTimbang.find(d => d.id === pmId);
+        if (!r) { alert('Pilih dulu permintaan yang akan ditimbang.'); return; }
         const beratTimbang = parseFloat($('berat').value);
         if (isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
 
@@ -851,26 +901,26 @@
         const jumlahLayer = parseInt($('layer').value) || 0;
         const beratLayer = jumlahLayer * BERAT_LAYER_KG;
         const beratBersih = beratTimbang - beratBox - beratLayer;
-        if (beratBersih <= 0) { alert("Berat bersih negatif!"); return; }
+        if (beratBersih <= 0) { alert("Berat bersih negatif! Periksa berat timbang dan jenis box."); return; }
 
-        const size = $('size').value, gsm = $('gsm').value, leaves = $('leaves').value, jenis = $('jenis').value;
-        const beratBundleKG = beratBundleKG_(size, gsm, leaves, jenis);
-        if (!beratBundleKG) {
+        const size = r.size_kertas, gsm = r.gsm, leaves = r.leaves, jenis = r.jenis_kertas;
+        const bb = beratBundleKG(size, gsm, leaves, jenis);
+        if (!bb) {
             alert(`Berat bundle belum terdaftar!\nSize: ${size} | GSM: ${gsm} | Leaves: ${leaves} | Jenis: ${jenis}\n\nTambahkan di menu Master > Spesifikasi / Berat Bundle Tambahan.`);
             return;
         }
-        const bundlesDesimal = beratBersih / beratBundleKG;
+        const bundlesDesimal = beratBersih / bb;
         const bundlesBulat = Math.ceil(Math.round(bundlesDesimal * 1e6) / 1e6);
 
-        const pmId = $('permintaanTerkait').value ? parseInt($('permintaanTerkait').value) : null;
-        if (pmId) {
-            const r = permintaanTimbang.find(d => d.id === pmId);
-            const { data: cur } = await supabase.from('ditimbang_per_permintaan').select('bundles').eq('permintaan_id', pmId);
-            const sudah = (cur && cur[0] && cur[0].bundles) || 0;
-            if (r && sudah + bundlesBulat > r.qty_minta) {
-                if (!confirm(`⚠️ Total ditimbang akan menjadi ${sudah + bundlesBulat} bundle, melebihi permintaan ${r.qty_minta} bundle.\nTetap simpan?`)) return;
-            }
-        } else if (!confirm("Anda menimbang TANPA memilih permintaan Leader. Lanjut simpan?")) return;
+        const { data: cur } = await supabase.from('ditimbang_per_permintaan').select('bundles,jumlah_box').eq('permintaan_id', pmId);
+        const sudah = (cur && cur[0] && cur[0].bundles) || 0, nBox = (cur && cur[0] && cur[0].jumlah_box) || 0;
+        const ref = nBox > 0 ? sudah / nBox : (r.box_siap > 0 ? r.qty_siap / r.box_siap : 0);
+        if (ref > 0 && Math.abs(bundlesBulat - ref) / ref > 0.15 &&
+            !confirm(`⚠️ Hasil box ini ${bundlesBulat} bundle, berbeda ${Math.round(Math.abs(bundlesBulat - ref) / ref * 100)}% dari rata-rata ${nBox > 0 ? 'box sebelumnya' : 'estimasi Leader'} (${Math.round(ref)}).\nPeriksa lagi berat, jenis box, dan layer.\nTetap simpan?`)) return;
+        if (r.box_siap > 0 && nBox >= r.box_siap &&
+            !confirm(`⚠️ Leader menyiapkan ${r.box_siap} box dan ${nBox} box sudah ditimbang.\nIni akan menjadi box ke-${nBox + 1}. Yakin?`)) return;
+        if (sudah + bundlesBulat > r.qty_minta &&
+            !confirm(`⚠️ Total ditimbang akan menjadi ${sudah + bundlesBulat} bundle, melebihi permintaan ${r.qty_minta} bundle.\nTetap simpan?`)) return;
 
         $('beratBersih').innerHTML = beratBersih.toFixed(4);
         $('jumlahBundles').innerHTML = bundlesBulat;
@@ -878,31 +928,23 @@
 
         const dataToSave = {
             tanggal: formatDateToDB($('tanggal').value),
-            no_po: piRow.no_pi,
-            brand: piRow.brand,
-            size_kertas: size,
-            gsm: parseInt(gsm),
-            leaves_per_bundle: parseInt(leaves),
-            jenis_kertas: jenis,
-            watermark: $('wm').value,
-            jenis_box: boxType,
-            jumlah_layer: jumlahLayer,
-            berat_timbang_kg: beratTimbang,
-            berat_bersih_kg: beratBersih,
-            jumlah_bundles: bundlesBulat,
-            bundles_desimal: bundlesDesimal,
-            permintaan_id: pmId,
-            dibuat_oleh: user.nama
+            no_po: r.no_pi, brand: r.brand,
+            size_kertas: size, gsm: parseInt(gsm), leaves_per_bundle: parseInt(leaves),
+            jenis_kertas: jenis, watermark: r.watermark,
+            jenis_box: boxType, jumlah_layer: jumlahLayer,
+            berat_timbang_kg: beratTimbang, berat_bersih_kg: beratBersih,
+            jumlah_bundles: bundlesBulat, bundles_desimal: bundlesDesimal,
+            permintaan_id: pmId, dibuat_oleh: user.nama
         };
         showStatus('⏳ Menyimpan ke cloud...', 'loading');
         const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
         if (error) { showStatus('❌ Gagal: ' + error.message, 'error'); alert('Gagal simpan! ' + error.message); }
         else {
-            showStatus(`✅ Box tersimpan: ${bundlesBulat} bundle`, 'success');
-            catatLog('TIMBANG', `PI ${piRow.no_pi} ${size} ${gsm}gsm ${leaves}lv ${jenis} = ${bundlesBulat} bundle${pmId ? ' (permintaan #' + pmId + ')' : ''}`);
+            showStatus(`✅ Box ke-${nBox + 1} tersimpan: ${bundlesBulat} bundle`, 'success');
+            catatLog('TIMBANG', `PI ${r.no_pi} ${size} ${gsm}gsm ${leaves}lv ${jenis} = ${bundlesBulat} bundle (permintaan #${pmId})`);
             $('berat').value = ''; $('berat').focus();
             currentPage = 1; currentSearch = ""; $('searchInput').value = "";
-            loadPermintaanOptions();
+            await loadPermintaanOptions();
         }
     }
     let busyHitung = false;
@@ -910,16 +952,6 @@
         if (busyHitung) return;
         busyHitung = true; $('hitungBtn').disabled = true;
         try { await hitungSimpan(); } finally { busyHitung = false; $('hitungBtn').disabled = false; }
-    };
-    function beratBundleKG_(s, g, l, j) { return beratBundleKG(s, g, l, j); }
-
-    $('resetFormBtn').onclick = () => {
-        if (confirm("Reset form? PI dan Brand akan dikosongkan.")) {
-            $('noPo').value = ''; $('brand').value = ''; $('berat').value = '';
-            $('hasilCard').style.display = 'none';
-            onPiInput();
-            showStatus('Form direset', 'success');
-        }
     };
 
     // ========== RIWAYAT ==========
@@ -989,12 +1021,14 @@
     $('urutPOBtn').onclick = () => { currentOrderBy = "no_po"; currentOrderAsc = true; currentPage = 1; displayDataWithPagination(); };
     $('urutPOTerbalikBtn').onclick = () => { currentOrderBy = "no_po"; currentOrderAsc = false; currentPage = 1; displayDataWithPagination(); };
 
+    $('editNoPo').addEventListener('change', () => { const p = findPI($('editNoPo').value); if (p) $('editBrand').value = p.brand; });
     function editData(id) {
         if (!requireRole('admin')) return;
         const d = allDataCache.find(x => x.id === id); if (!d) return;
         currentEditId = id;
         $('editTanggal').value = formatDateForInput(d.tanggal);
-        $('editNoPo').value = d.no_po || '';
+        const sn = $('editNoPo'); if (d.no_po && ![...sn.options].some(o => o.value === d.no_po)) sn.insertAdjacentHTML('beforeend', `<option value="${esc(d.no_po)}">${esc(d.no_po)}</option>`);
+        sn.value = d.no_po || '';
         $('editBrand').value = d.brand || '';
         $('editJenis').value = d.jenis_kertas || '';
         $('editSize').value = d.size_kertas;
@@ -1252,59 +1286,65 @@
     };
 
     // ========== PERMINTAAN (Admin buat, Leader proses) ==========
-    function itemOpsiLabel(i) { const dm = piStatus[i.id] || 0; return `${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · PI ${i.qty_pi} · sisa ${i.qty_pi - dm}`; }
-    function onPmPiInput() {
-        const raw = $('pmPi').value.trim(), p = findPI($('pmPi').value), h = $('pmPiHint'), sel = $('pmItem');
+    function itemOpsiLabel(i) { const dm = piStatus[i.id] || 0; return `${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · sisa ${i.qty_pi - dm} dari ${i.qty_pi}`; }
+    function fillPmPi() {
+        const el = $('pmPi'); if (!el) return;
+        const prev = el.value;
+        const ps = piList.filter(p => piItems.some(i => i.pi_id === p.id && itemBuka(i)));
+        el.innerHTML = '<option value="">— pilih PI —</option>' + ps.map(p => `<option value="${p.id}">${esc(p.no_pi)} · ${esc(p.brand)}</option>`).join('');
+        if (ps.some(p => String(p.id) === prev)) el.value = prev;
+        $('pmPiHint').className = 'hint';
+        $('pmPiHint').textContent = ps.length ? '' : '📭 Tidak ada PI yang masih bisa diminta (semua sudah selesai/ditutup). Buat PI baru di menu Master.';
+    }
+    function onPmPiInput(keepQty) {
+        const p = piList.find(x => String(x.id) === $('pmPi').value), sel = $('pmItem');
         const prev = sel.value;
-        $('pmBrand').value = p ? p.brand : '';
-        if (!p) {
-            sel.innerHTML = '<option value="">— pilih PI dulu —</option>'; $('pmItemInfo').textContent = '';
-            h.className = raw ? 'hint bad' : 'hint'; h.textContent = raw ? '❌ PI belum terdaftar. Buat dulu di menu Master.' : '';
-            return;
-        }
-        const its = piItems.filter(i => i.pi_id === p.id);
-        if (!its.length) {
-            sel.innerHTML = '<option value="">— belum ada rincian —</option>'; $('pmItemInfo').textContent = '';
-            h.className = 'hint bad'; h.textContent = '⚠️ PI ini belum punya rincian kertas. Lengkapi dulu di menu Master.';
-            return;
-        }
-        h.className = 'hint ok'; h.textContent = '✅ PI terdaftar' + (p.tgl_pi ? ' · tgl PI ' + p.tgl_pi.split('-').reverse().join('/') : '');
+        if (!p) { sel.innerHTML = '<option value="">— pilih PI dulu —</option>'; $('pmItemInfo').textContent = ''; $('pmDupWarn').style.display = 'none'; return; }
+        const its = piItems.filter(i => i.pi_id === p.id && itemBuka(i));
         sel.innerHTML = (its.length > 1 ? '<option value="">— pilih item kertas —</option>' : '') + its.map(i => `<option value="${i.id}">${esc(itemOpsiLabel(i))}</option>`).join('');
         if (its.length === 1) sel.value = its[0].id; else if (prev && its.some(i => String(i.id) === prev)) sel.value = prev;
-        onPmItemChange();
+        $('pmPiHint').className = 'hint ok'; $('pmPiHint').textContent = `🏷️ Brand: ${p.brand}` + (p.tgl_pi ? ' · tgl PI ' + p.tgl_pi.split('-').reverse().join('/') : '');
+        onPmItemChange(keepQty === true);
     }
-    function onPmItemChange() {
-        const i = piItems.find(x => x.id === Number($('pmItem').value)), el = $('pmItemInfo');
-        if (!i) { el.className = 'hint'; el.textContent = ''; return; }
+    function onPmItemChange(keepQty) {
+        const i = piItems.find(x => x.id === Number($('pmItem').value)), el = $('pmItemInfo'), w = $('pmDupWarn');
+        if (!i) { el.className = 'hint'; el.textContent = ''; w.style.display = 'none'; return; }
         const dm = piStatus[i.id] || 0, sisa = i.qty_pi - dm;
         el.className = 'hint ' + (sisa <= 0 ? 'bad' : 'ok');
         el.textContent = `Qty PI ${i.qty_pi} | sudah diminta ${dm} | sisa ${sisa} bundle`;
-        $('pmQty').value = sisa > 0 ? sisa : '';
+        if (keepQty !== true) $('pmQty').value = sisa > 0 ? sisa : '';
+        const akt = pmData.filter(r => r.pi_item_id === i.id && AKTIF.includes(r.status));
+        if (akt.length) {
+            w.style.display = 'block';
+            w.innerHTML = `⚠️ <b>Item ini SUDAH diminta dan masih berjalan:</b><br>` + akt.map(r => `• #${r.id} — ${r.qty_minta} bundle — ${esc(r.status)} (${fmtWaktu(r.created_at)})`).join('<br>') + `<br>Pastikan ini bukan permintaan ganda. Qty yang diisi otomatis hanya <b>sisa</b> yang belum diminta.`;
+        } else w.style.display = 'none';
     }
-    $('pmPi').addEventListener('input', onPmPiInput);
-    $('pmPi').addEventListener('change', onPmPiInput);
-    $('pmItem').addEventListener('change', onPmItemChange);
+    $('pmPi').addEventListener('change', () => onPmPiInput(false));
+    $('pmItem').addEventListener('change', () => onPmItemChange(false));
+    let busyKirim = false;
     $('pmKirimBtn').onclick = async () => {
-        if (!requireRole('admin')) return;
-        const p = findPI($('pmPi').value);
-        if (!p) { alert('No. PI belum terdaftar. Buat dulu di menu Master.'); return; }
+        if (!requireRole('admin') || busyKirim) return;
+        const p = piList.find(x => String(x.id) === $('pmPi').value);
+        if (!p) { alert('Pilih No. PI terlebih dahulu'); return; }
         const i = piItems.find(x => x.id === Number($('pmItem').value));
         if (!i) { alert('Pilih item kertas PI terlebih dahulu'); return; }
         const qty = parseInt($('pmQty').value);
         if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
+        const sisa = i.qty_pi - (piStatus[i.id] || 0);
+        if (qty > sisa) { alert(`❌ Qty ${qty} melebihi sisa PI (${sisa} bundle). Kurangi qty.`); return; }
         if (!beratBundleKG(i.size_kertas, i.gsm, i.leaves, i.jenis_kertas) &&
             !confirm('⚠️ Berat bundle untuk spesifikasi ini belum terdaftar, jadi nanti belum bisa ditimbang.\nTambahkan di Master > Spesifikasi.\nTetap kirim permintaan?')) return;
-        if (!confirm(`Kirim permintaan?\nPI ${p.no_pi} (${p.brand})\n${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\nQty: ${qty} bundle`)) return;
-        const args = { p_pi_item_id: i.id, p_qty: qty, p_catatan: $('pmCatatan').value.trim() || null, p_oleh: user.nama, p_izinkan_lebih: false };
-        let { error } = await supabase.rpc('buat_permintaan', args);
-        if (error && /Melebihi qty PI/.test(error.message)) {
-            if (!confirm('⚠️ ' + error.message + '\n\nTetap kirim permintaan melebihi qty PI?')) return;
-            ({ error } = await supabase.rpc('buat_permintaan', { ...args, p_izinkan_lebih: true }));
-        }
-        if (error) { alert('❌ ' + error.message); return; }
-        $('pmQty').value = ''; $('pmCatatan').value = '';
-        await loadPermintaan();
-        onPmPiInput();
+        const akt = pmData.filter(r => r.pi_item_id === i.id && AKTIF.includes(r.status));
+        if (akt.length && !confirm(`⚠️ PERINGATAN DOUBLE INPUT\nItem ini sudah punya ${akt.length} permintaan berjalan (${akt.map(r => '#' + r.id + ' ' + r.qty_minta).join(', ')}).\nYakin ingin membuat permintaan lagi?`)) return;
+        if (!confirm(`Kirim permintaan?\nPI ${p.no_pi} (${p.brand})\n${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\nQty: ${qty} bundle`)) return;
+        busyKirim = true; $('pmKirimBtn').disabled = true;
+        try {
+            const ok = await rpc('buat_permintaan', { p_pi_item_id: i.id, p_qty: qty, p_catatan: $('pmCatatan').value.trim() || null, p_oleh: user.nama });
+            if (!ok) { await loadPermintaan(); return; }
+            $('pmQty').value = ''; $('pmCatatan').value = '';
+            await loadMasterData(); await loadPermintaan();
+            alert('✅ Permintaan terkirim. Leader Mesin akan mendapat notifikasi.');
+        } finally { busyKirim = false; $('pmKirimBtn').disabled = false; }
     };
 
     async function loadPermintaan() {
@@ -1318,11 +1358,12 @@
         ]);
         if (a.error) { console.error(a.error); return; }
         pmData = a.data || [];
-        piStatus = {}; (d.data || []).forEach(x => piStatus[x.pi_item_id] = Number(x.qty_diminta));
+        setPiStatus(d.data);
         pmTimbang = {}; pmBox = {}; (b.data || []).forEach(x => { pmTimbang[x.permintaan_id] = x.bundles; pmBox[x.permintaan_id] = x.jumlah_box; });
         stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas, x.watermark)] = x.qty);
         stMap = {}; (n.data || []).forEach(x => stMap[x.permintaan_id] = x);
         renderPermintaan();
+        if (user.role === 'admin') { fillPmPi(); onPmPiInput(true); }
     }
     function cardHtml(r, role) {
         const warna = STATUS_WARNA[r.status] || '#64748b';
@@ -1345,6 +1386,7 @@
                 if (r.box_siap > 0) acts += `<button class="mini" style="background:#166534" data-act="siap" data-id="${r.id}">⚖️ Box siap ditimbang</button>`;
             }
             if (r.status === 'Siap' && !nota) acts += `<button class="mini" style="background:#64748b" data-act="buka" data-id="${r.id}">↩ Tambah box lagi</button>`;
+            if (r.box_siap > 0 && !nota && !(pmBox[r.id] > 0) && ['Diproses', 'Produksi', 'Siap'].includes(r.status)) acts += `<button class="mini" style="background:#ef4444" data-act="reset" data-id="${r.id}">↩ Ulangi penyiapan</button>`;
         } else {
             if (r.status === 'Siap' && !nota) acts += `<button class="mini" style="background:#166534" data-act="nota" data-id="${r.id}">🧾 Buat nota serah terima</button>`;
             if (r.status === 'Diminta') acts += `<button class="mini" style="background:#f59e0b" data-act="editqty" data-id="${r.id}">✏️ Ubah qty</button>`;
@@ -1424,6 +1466,11 @@
             if (!requireRole('leader')) return;
             if (!confirm(`Tandai SIAP ditimbang?\n${r.box_siap} box, estimasi ${r.qty_siap} bundle.\nSetelah ini Admin menimbang box satu per satu.`)) return;
             ok = await rpc('tandai_siap', { p_id: id, p_oleh: user.nama, p_catatan: null });
+        } else if (act === 'reset') {
+            if (!requireRole('leader')) return;
+            const d = await dialog({ title: '↩ Ulangi penyiapan', info: ringkas + '<br><b>Box & estimasi dikosongkan. Barang dari stok dikembalikan ke stok.</b> Hanya bisa jika Admin belum menimbang.', note: { label: 'Alasan', required: true }, ok: 'Ulangi' });
+            if (!d) return;
+            ok = await rpc('reset_penyiapan', { p_id: id, p_alasan: d.note, p_oleh: user.nama });
         } else if (act === 'buka') {
             if (!requireRole('leader')) return;
             if (!confirm('Buka kembali permintaan ini untuk menambah box?')) return;
@@ -1564,11 +1611,12 @@
     async function loadStok() {
         const [a, b] = await Promise.all([
             supabase.from('stok_saat_ini').select('*').order('jenis_kertas').order('size_kertas'),
-            supabase.from('stok_mutasi').select('*').order('id', { ascending: false }).limit(100)
+            supabase.from('stok_mutasi').select('*').order('id', { ascending: false }).limit(200)
         ]);
         window._stokRows = a.data || [];
         renderStok();
-        $('mutasiBody').innerHTML = (b.data || []).map(m => `<tr><td>${fmtWaktu(m.waktu)}</td><td>${esc(m.tipe)}</td><td>${esc(m.jenis_kertas)} ${esc(m.watermark)} ${esc(m.size_kertas)} ${m.gsm}gsm ${m.leaves}lv</td><td class="${m.qty > 0 ? 'good' : 'bad'}">${m.qty > 0 ? '+' : ''}${m.qty}</td><td>${esc(m.no_pi || '-')}</td><td>${esc(m.oleh || '-')}</td><td>${esc(m.catatan || '')}</td></tr>`).join('') || '<tr><td colspan="7" style="text-align:center">Belum ada mutasi</td></tr>';
+        const rows = b.data || [], dibalik = new Set(rows.filter(m => m.membatalkan_id).map(m => m.membatalkan_id)), MAN = ['MASUK_AWAL', 'MASUK_PRODUKSI', 'KOREKSI_TAMBAH', 'KOREKSI_KURANG'];
+        $('mutasiBody').innerHTML = rows.map(m => `<tr${dibalik.has(m.id) ? ' style="opacity:.5;text-decoration:line-through"' : ''}><td>${fmtWaktu(m.waktu)}</td><td>${esc(m.tipe)}</td><td>${esc(m.jenis_kertas)} ${esc(m.watermark)} ${esc(m.size_kertas)} ${m.gsm}gsm ${m.leaves}lv</td><td class="${m.qty > 0 ? 'good' : 'bad'}">${m.qty > 0 ? '+' : ''}${m.qty}</td><td>${esc(m.no_pi || '-')}</td><td>${esc(m.oleh || '-')}</td><td>${esc(m.catatan || '')}</td><td>${!m.permintaan_id && !m.membatalkan_id && !dibalik.has(m.id) && MAN.includes(m.tipe) ? `<button class="mini" style="background:#ef4444" data-bm="${m.id}">Batalkan</button>` : ''}</td></tr>`).join('') || '<tr><td colspan="8" style="text-align:center">Belum ada mutasi</td></tr>';
     }
     function renderStok() {
         const s = $('stSearch').value.trim().toLowerCase();
@@ -1576,6 +1624,12 @@
         $('stokBody').innerHTML = rows.map(r => `<tr><td>${esc(r.jenis_kertas)}</td><td>${esc(r.watermark)}</td><td>${esc(r.size_kertas)}</td><td>${r.gsm}</td><td>${r.leaves}</td><td style="font-weight:bold;text-align:center">${r.qty}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center">📭 Belum ada stok tercatat</td></tr>';
     }
     $('stSearch').addEventListener('input', renderStok);
+    $('mutasiBody').addEventListener('click', async e => {
+        const b = e.target.closest('button[data-bm]'); if (!b || !requireRole('leader')) return;
+        const d = await dialog({ title: '↩ Batalkan catatan stok', info: `Mutasi #${b.dataset.bm} akan dibalik dengan catatan koreksi (riwayat tetap tersimpan).`, note: { label: 'Alasan pembatalan', required: true }, ok: 'Batalkan' });
+        if (!d) return;
+        if (await rpc('balik_mutasi', { p_id: Number(b.dataset.bm), p_alasan: d.note, p_oleh: user.nama })) loadStok();
+    });
     $('stPiItem').addEventListener('change', () => {
         const i = piItems.find(x => x.id === Number($('stPiItem').value)); if (!i) return;
         $('stJenis').value = i.jenis_kertas; $('stWm').value = i.watermark; $('stSize').value = i.size_kertas; $('stGsm').value = i.gsm; $('stLeaves').value = i.leaves;
@@ -1592,56 +1646,138 @@
     };
 
     // ========== MASTER ==========
+    function fillMpPilih() {
+        const el = $('mpPilih'); if (!el) return;
+        const prev = el.value;
+        el.innerHTML = '<option value="">➕ PI baru (ketik nomor)</option>' + piList.slice().sort((a, b) => a.no_pi.localeCompare(b.no_pi, undefined, { numeric: true })).map(p => `<option value="${p.id}">${esc(p.no_pi)} · ${esc(p.brand)}</option>`).join('');
+        if (piList.some(p => String(p.id) === prev)) el.value = prev;
+        onMpPilih();
+    }
+    function onMpPilih() {
+        const p = piList.find(x => String(x.id) === $('mpPilih').value);
+        $('mpNoWrap').style.display = p ? 'none' : 'block';
+        if (p) {
+            $('mpBrand').value = p.brand === '-' ? '' : p.brand; $('mpBrand').readOnly = p.brand !== '-';
+            $('mpTgl').value = p.tgl_pi || ''; $('mpTgl').disabled = !!p.tgl_pi;
+        } else { $('mpBrand').readOnly = false; $('mpTgl').disabled = false; }
+    }
+    $('mpPilih').addEventListener('change', () => { onMpPilih(); if (!$('mpPilih').value) { $('mpBrand').value = ''; $('mpTgl').value = ''; } });
+    $('mpNo').addEventListener('input', () => {
+        const hh = $('mpHint'), v = $('mpNo').value.trim();
+        const sim = v && piList.find(p => canon(p.no_pi) === canon(v));
+        if (sim) { hh.className = 'hint bad'; hh.textContent = `❌ Sudah ada: ${sim.no_pi} (${sim.brand}). Pilih dari dropdown di atas.`; }
+        else { hh.className = 'hint'; hh.textContent = v ? 'PI baru' : ''; }
+    });
+    function itemSelesai(i) { return !!piTutup[i.id] || ((i.qty_pi - (piStatus[i.id] || 0)) <= 0 && !(piAktif[i.id] > 0)); }
     function renderMaster() {
-        const s = $('mpSearch').value.trim().toLowerCase();
-        const rows = [];
+        fillMpPilih();
+        const s = $('mpSearch').value.trim().toLowerCase(), f = $('mpFilter').value || 'AKTIF';
+        const out = [];
         piList.forEach(p => {
             if (s && !`${p.no_pi} ${p.brand}`.toLowerCase().includes(s)) return;
             const its = piItems.filter(i => i.pi_id === p.id);
+            const selesai = its.length > 0 && its.every(itemSelesai);
+            if (f === 'AKTIF' && selesai) return;
+            if (f === 'SELESAI' && !selesai) return;
             const tgl = p.tgl_pi ? p.tgl_pi.split('-').reverse().join('/') : '-';
-            if (!its.length) rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td colspan="8" style="color:#b45309">belum ada rincian kertas</td></tr>`);
-            its.forEach(i => {
-                const dm = piStatus[i.id] || 0, sisa = i.qty_pi - dm;
-                rows.push(`<tr><td><b>${esc(p.no_pi)}</b></td><td>${tgl}</td><td>${esc(p.brand)}</td><td>${esc(i.jenis_kertas)}</td><td>${esc(i.watermark)}</td><td>${esc(i.size_kertas)}</td><td>${i.gsm}</td><td>${i.leaves}</td><td><b>${i.qty_pi}</b></td><td>${dm}</td><td class="${sisa < 0 ? 'bad' : sisa === 0 ? 'good' : ''}">${sisa}</td></tr>`);
-            });
+            const itHtml = its.map(i => {
+                const dm = piStatus[i.id] || 0, sisa = i.qty_pi - dm, sel = itemSelesai(i);
+                const st = piTutup[i.id] ? '<span class="bad">⛔ Ditutup</span>' : sel ? '<span class="good">✅ Selesai</span>' : sisa <= 0 ? '<span class="warn">⏳ Diproses</span>' : '<span class="warn">Belum semua diminta</span>';
+                return `<div class="it"><div>🧻 <b>${esc(i.jenis_kertas)}</b> · 💧 ${esc(i.watermark)} · 📏 ${esc(i.size_kertas)} · ${i.gsm}gsm · ${i.leaves}lv</div>
+                    <div class="nums"><span>Qty PI <b>${i.qty_pi}</b></span><span>Diminta <b>${dm}</b></span><span class="${sisa < 0 ? 'bad' : ''}">Sisa <b>${sisa}</b></span><span>${st}</span></div>
+                    <div class="acts"><button class="mini" style="background:#f59e0b" data-act="edititem" data-id="${i.id}">✏️ Edit item</button>
+                    ${piTutup[i.id] ? `<button class="mini" style="background:#10b981" data-act="buka" data-id="${i.id}">▶ Buka lagi</button>` : `<button class="mini" style="background:#64748b" data-act="tutup" data-id="${i.id}">⛔ Tutup (selesai)</button>`}
+                    <button class="mini" style="background:#ef4444" data-act="hapusitem" data-id="${i.id}">🗑️ Hapus</button></div></div>`;
+            }).join('') || '<div class="it" style="color:#b45309">Belum ada rincian kertas</div>';
+            out.push(`<div class="pigroup${selesai ? ' selesai' : ''}"><div class="ph"><div><b>${esc(p.no_pi)}</b> · ${esc(p.brand)} · 📅 ${tgl}</div>
+                <div class="acts"><button class="mini" style="background:#f59e0b" data-act="editpi" data-id="${p.id}">✏️ Edit PI</button><button class="mini" style="background:#ef4444" data-act="hapuspi" data-id="${p.id}">🗑️</button></div></div>${itHtml}</div>`);
         });
-        $('mpBody').innerHTML = rows.join('') || '<tr><td colspan="11" style="text-align:center">Belum ada PI</td></tr>';
+        $('mpList').innerHTML = out.join('') || '<div style="text-align:center;padding:16px;color:#64748b;">📭 Tidak ada PI</div>';
         $('mjList').innerHTML = jenisList.map(j => `<span class="chip">${esc(j.nama)}</span>`).join('');
         $('mwList').innerHTML = wmList.map(j => `<span class="chip">${esc(j.nama)}</span>`).join('');
         $('cbBody').innerHTML = customBerat.map(c => `<tr><td>${esc(c.size_kertas)}</td><td>${c.gsm}</td><td>${c.leaves}</td><td>${esc(c.jenis_kertas || 'Semua')}</td><td>${c.gram_per_bundle}</td><td><button class="btn-hapus-small" data-id="${c.id}">🗑️</button></td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center">Belum ada spesifikasi tambahan</td></tr>';
     }
     $('mpSearch').addEventListener('input', renderMaster);
-    $('mpNo').addEventListener('input', () => {
-        const p = findPI($('mpNo').value), hh = $('mpHint');
-        if (p) {
-            $('mpBrand').value = p.brand === '-' ? '' : p.brand; $('mpBrand').readOnly = p.brand !== '-';
-            $('mpTgl').value = p.tgl_pi || ''; $('mpTgl').disabled = !!p.tgl_pi;
-            hh.className = 'hint ok'; hh.textContent = '✅ PI sudah ada. Brand & tanggal otomatis; yang disimpan adalah item kertas tambahan.';
-        } else {
-            $('mpBrand').readOnly = false; $('mpTgl').disabled = false;
-            hh.className = 'hint'; hh.textContent = $('mpNo').value.trim() ? 'PI baru' : '';
-        }
-    });
+    $('mpFilter').addEventListener('change', renderMaster);
+
     $('mpSimpanBtn').onclick = async () => {
-        const no = normPI($('mpNo').value), br = $('mpBrand').value.trim().toUpperCase();
+        const pSel = piList.find(x => String(x.id) === $('mpPilih').value);
+        const no = pSel ? pSel.no_pi : normPI($('mpNo').value), br = $('mpBrand').value.trim().toUpperCase();
         const tgl = $('mpTgl').value, qty = parseInt($('mpQty').value);
         const jenis = $('mpJenis').value, size = $('mpSize').value, gsm = parseInt($('mpGsm').value), leaves = parseInt($('mpLeaves').value);
-        if (!no || !br) { alert('No. PI dan Brand wajib diisi'); return; }
+        if (!no) { alert('Pilih PI atau isi No. PI baru'); return; }
+        if (!br) { alert('Brand wajib diisi'); return; }
         if (!tgl) { alert('Tanggal PI turun wajib diisi'); return; }
         if (!(qty > 0)) { alert('Qty PI harus lebih dari 0'); return; }
-        if (!findPI(no)) {
+        if (!pSel) {
             const sim = piList.find(p => canon(p.no_pi) === canon(no));
-            if (sim) { alert(`❌ No. PI mirip dengan yang sudah ada: ${sim.no_pi} (${sim.brand}). Pakai penulisan yang sama persis.`); return; }
+            if (sim) { alert(`❌ No. PI sudah ada: ${sim.no_pi} (${sim.brand}). Pilih dari dropdown.`); return; }
         }
         if (!beratBundleKG(size, gsm, leaves, jenis) &&
             !confirm('⚠️ Berat bundle spesifikasi ini belum terdaftar (belum bisa ditimbang). Tambahkan nanti di bagian Spesifikasi di bawah.\nTetap simpan?')) return;
-        if (!confirm(`Simpan?\nNo. PI: ${no} | Brand: ${br} | Tgl PI: ${tgl.split('-').reverse().join('/')}\n${jenis} · ${$('mpWm').value} · ${size} · ${gsm}gsm · ${leaves}lv\nQty PI: ${qty} bundle\n\nItem PI tidak bisa diubah setelah disimpan.`)) return;
+        if (!confirm(`Simpan?\nNo. PI: ${no} | Brand: ${br} | Tgl PI: ${tgl.split('-').reverse().join('/')}\n${jenis} · ${$('mpWm').value} · ${size} · ${gsm}gsm · ${leaves}lv\nQty PI: ${qty} bundle\n\n(Salah input? Bisa diperbaiki lewat tombol ✏️ Edit.)`)) return;
         const { error } = await supabase.rpc('simpan_pi_item', { p_no: no, p_brand: br, p_tgl: tgl, p_jenis: jenis, p_wm: $('mpWm').value, p_size: size, p_gsm: gsm, p_leaves: leaves, p_qty: qty, p_oleh: user.nama });
         if (error) { alert(error.code === '23505' ? '❌ Item kertas yang sama sudah ada di PI ini.' : '❌ ' + error.message); await loadMasterData(); return; }
-        $('mpQty').value = '';
+        $('mpQty').value = ''; $('mpNo').value = '';
         await loadMasterData();
+        const baru = piList.find(p => p.no_pi === no); if (baru) { $('mpPilih').value = baru.id; onMpPilih(); }
         alert('✅ Tersimpan. Untuk item kertas lain di PI yang sama, ganti jenis/size/GSM/leaves/qty lalu simpan lagi.');
     };
+
+    // ----- Edit / hapus / tutup PI -----
+    let editPiId = null, editItemId = null;
+    async function adaPakai(tabel, kolom, nilai) {
+        try { const r = await supabase.from(tabel).select('id').eq(kolom, nilai).limit(1); return !!(r.data && r.data.length); } catch (e) { return false; }
+    }
+    $('mpList').addEventListener('click', async e => {
+        const b = e.target.closest('button[data-act]'); if (!b) return;
+        const id = parseInt(b.dataset.id), act = b.dataset.act;
+        if (act === 'editpi') {
+            const p = piList.find(x => x.id === id); if (!p) return;
+            editPiId = id;
+            $('epNo').value = p.no_pi; $('epBrand').value = p.brand === '-' ? '' : p.brand; $('epTgl').value = p.tgl_pi || '';
+            const dipakai = (await adaPakai('permintaan', 'no_pi', p.no_pi)) || (await adaPakai('riwayat_timbang', 'no_po', p.no_pi));
+            const kunciBrand = dipakai && p.brand !== '-';
+            $('epNo').disabled = dipakai; $('epBrand').disabled = kunciBrand;
+            $('epInfo').textContent = dipakai ? '🔒 No. PI & brand terkunci karena PI ini sudah dipakai di permintaan/timbangan. Tanggal masih bisa diubah.' : 'PI ini belum dipakai, semua kolom bisa diubah.';
+            $('epModal').style.display = 'flex';
+        } else if (act === 'edititem') {
+            const i = piItems.find(x => x.id === id); if (!i) return;
+            editItemId = id;
+            $('eiJenis').value = i.jenis_kertas; $('eiWm').value = i.watermark; $('eiSize').value = i.size_kertas; $('eiGsm').value = i.gsm; $('eiLeaves').value = i.leaves; $('eiQty').value = i.qty_pi;
+            const pakai = await adaPakai('permintaan', 'pi_item_id', id);
+            ['eiJenis', 'eiWm', 'eiSize', 'eiGsm', 'eiLeaves'].forEach(x => $(x).disabled = pakai);
+            $('eiInfo').textContent = pakai ? `🔒 Jenis/WM/size/GSM/leaves terkunci karena item ini sudah pernah diminta. Qty PI masih bisa diubah (tidak boleh di bawah yang sudah diminta: ${piStatus[id] || 0}).` : 'Item belum pernah diminta, semua kolom bisa diubah.';
+            $('eiModal').style.display = 'flex';
+        } else if (act === 'hapusitem') {
+            const i = piItems.find(x => x.id === id); if (!i) return;
+            if (!confirm(`Hapus item ini?\n${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · qty ${i.qty_pi}\n\nHanya bisa jika belum pernah diminta.`)) return;
+            if (await rpc('hapus_pi_item', { p_id: id, p_oleh: user.nama })) await loadMasterData();
+        } else if (act === 'hapuspi') {
+            const p = piList.find(x => x.id === id); if (!p) return;
+            if (!confirm(`Hapus PI ${p.no_pi} (${p.brand}) beserta semua itemnya?\n\nHanya bisa jika belum pernah diminta/ditimbang.`)) return;
+            if (await rpc('hapus_pi', { p_pi_id: id, p_oleh: user.nama })) await loadMasterData();
+        } else if (act === 'tutup') {
+            const i = piItems.find(x => x.id === id); if (!i) return;
+            if (!confirm(`Tutup item ini (dianggap SELESAI)?\n${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\nItem hilang dari dropdown permintaan. Bisa dibuka lagi.`)) return;
+            if (await rpc('tutup_pi_item', { p_id: id, p_oleh: user.nama })) await loadMasterData();
+        } else if (act === 'buka') {
+            if (await rpc('buka_pi_item', { p_id: id, p_oleh: user.nama })) await loadMasterData();
+        }
+    });
+    $('epBatalBtn').onclick = () => { $('epModal').style.display = 'none'; };
+    $('eiBatalBtn').onclick = () => { $('eiModal').style.display = 'none'; };
+    $('epSimpanBtn').onclick = async () => {
+        const no = normPI($('epNo').value), br = $('epBrand').value.trim().toUpperCase();
+        if (!no || !br) { alert('No. PI dan Brand wajib diisi'); return; }
+        if (await rpc('edit_pi', { p_pi_id: editPiId, p_no: no, p_brand: br, p_tgl: $('epTgl').value || null, p_oleh: user.nama })) { $('epModal').style.display = 'none'; await loadMasterData(); }
+    };
+    $('eiSimpanBtn').onclick = async () => {
+        const qty = parseInt($('eiQty').value);
+        if (!(qty > 0)) { alert('Qty PI harus lebih dari 0'); return; }
+        if (await rpc('edit_pi_item', { p_id: editItemId, p_jenis: $('eiJenis').value, p_wm: $('eiWm').value, p_size: $('eiSize').value, p_gsm: parseInt($('eiGsm').value), p_leaves: parseInt($('eiLeaves').value), p_qty: qty, p_oleh: user.nama })) { $('eiModal').style.display = 'none'; await loadMasterData(); }
+    };
+
     $('mpImporBtn').onclick = async () => {
         if (!requireRole('admin')) return;
         const { data, error } = await fetchAll(() => supabase.from('riwayat_timbang').select('no_po,brand').order('id'));
@@ -1720,16 +1856,95 @@
         if (e.target === cetakBarcodeModal) cetakBarcodeModal.style.display = 'none';
     };
 
-    // ========== REFRESH OTOMATIS (agar Leader & Admin saling melihat data terbaru) ==========
-    setInterval(() => {
-        if (!user || document.hidden) return;
-        if ($('dlgModal').style.display === 'flex') return;
-        const act = document.querySelector('.page.active-page');
-        if (!act) return;
-        if (act.id === 'page3' || act.id === 'page4') loadPermintaan();
+    // ========== NOTIFIKASI ==========
+    let notifSeen = null, notifRows = [], notifTimer = null, audioCtx = null, polling = false;
+    function beep() {
+        try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); const o = audioCtx.createOscillator(), g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination); o.frequency.value = 880; g.gain.value = 0.15; o.start(); o.stop(audioCtx.currentTime + 0.2); } catch (e) {}
+        try { if (navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
+    }
+    function showToast(n) {
+        const d = document.createElement('div'); d.className = 'toast';
+        d.innerHTML = `<b>${esc(n.judul)}</b>${esc(n.isi || '')}`;
+        d.onclick = () => { d.remove(); gotoNotif(n); };
+        $('toastBox').appendChild(d);
+        setTimeout(() => d.remove(), 8000);
+        try { if ('Notification' in window && Notification.permission === 'granted') new Notification(n.judul, { body: n.isi || '' }); } catch (e) {}
+    }
+    function gotoNotif(n) {
+        $('notifModal').style.display = 'none';
+        if (n.tab && TABS[user.role].some(t => t[0] === n.tab)) showPage(n.tab);
+    }
+    function renderNotif() {
+        $('notifList').innerHTML = notifRows.length ? notifRows.map((n, i) => `<div class="nitem${n.baru ? ' baru' : ''}" data-i="${i}"><div class="t">${n.baru ? '🔵 ' : ''}${esc(n.judul)}</div><div>${esc(n.isi || '')}</div><div class="w">${fmtWaktu(n.waktu)}</div></div>`).join('') : '<div style="text-align:center;padding:14px;color:#64748b">Belum ada notifikasi</div>';
+        const izin = ('Notification' in window) ? Notification.permission : 'tidak-didukung';
+        $('notifIzin').textContent = izin === 'granted' ? '✅ Notifikasi browser aktif. Catatan: pemberitahuan hanya muncul saat aplikasi masih terbuka (belum bisa muncul saat aplikasi ditutup).' : 'Notifikasi muncul di layar & berbunyi saat aplikasi terbuka. Agar juga muncul sebagai pemberitahuan HP, aktifkan izin di bawah.';
+        $('notifIzinBtn').style.display = izin === 'default' ? 'block' : 'none';
+    }
+    $('notifList').addEventListener('click', e => { const el = e.target.closest('.nitem'); if (el) gotoNotif(notifRows[Number(el.dataset.i)]); });
+    $('notifIzinBtn').onclick = async () => { try { await Notification.requestPermission(); } catch (e) {} renderNotif(); };
+    $('notifTutupBtn').onclick = () => { $('notifModal').style.display = 'none'; };
+    $('bellBtn').onclick = async () => {
+        renderNotif();
+        $('notifModal').style.display = 'flex';
+        const maks = Math.max(0, ...notifRows.map(n => n.id));
+        if (notifRows.some(n => n.baru)) { await supabase.rpc('notif_tandai_baca', { p_nama: user.nama, p_id: maks }); $('bellBadge').style.display = 'none'; }
+    };
+    function refreshActive() {
+        if (!user || $('dlgModal').style.display === 'flex') return;
+        const act = document.querySelector('.page.active-page'); if (!act) return;
+        if (act.id === 'page1') loadPermintaanOptions();
+        else if (act.id === 'page3' || act.id === 'page4') loadPermintaan();
         else if (act.id === 'page5') loadStok();
         else if (act.id === 'page8') loadSerahTerima();
-    }, 15000);
+    }
+    async function updateTabBadges() {
+        const [a, b] = await Promise.all([
+            supabase.from('permintaan').select('id,status').in('status', AKTIF),
+            supabase.from('serah_terima').select('permintaan_id,status,admin_setuju_oleh,leader_setuju_oleh').in('status', ['Menunggu', 'Disepakati'])
+        ]);
+        if (a.error || b.error) return;
+        const dgNota = new Set((b.data || []).map(s => s.permintaan_id));
+        const c = st => (a.data || []).filter(r => st.includes(r.status) && !(st.includes('Siap') && dgNota.has(r.id))).length;
+        const nota = (b.data || []).filter(s => s.status === 'Menunggu' && !(user.role === 'admin' ? s.admin_setuju_oleh : s.leader_setuju_oleh)).length;
+        const m = user.role === 'admin' ? { page1: c(['Siap']), page8: nota } : { page4: c(['Diminta', 'Diproses', 'Produksi']), page8: nota };
+        document.querySelectorAll('#tabBar .tab').forEach(t => {
+            const base = (TABS[user.role].find(x => x[0] === t.dataset.page) || [])[1] || '';
+            const n = m[t.dataset.page] || 0;
+            t.innerHTML = esc(base) + (n ? `<span class="cnt">${n}</span>` : '');
+        });
+    }
+    async function pollNotif() {
+        if (!user || polling) return;
+        polling = true;
+        try {
+            const { data, error } = await supabase.rpc('notif_daftar', { p_nama: user.nama, p_limit: 30 });
+            if (error) return;
+            notifRows = data || [];
+            const nBaru = notifRows.filter(n => n.baru).length;
+            $('bellBadge').textContent = nBaru; $('bellBadge').style.display = nBaru ? 'inline-block' : 'none';
+            const maks = Math.max(0, ...notifRows.map(n => n.id));
+            if (notifSeen === null) {
+                notifSeen = maks;
+                if (nBaru) { showToast({ judul: `🔔 ${nBaru} notifikasi belum dibaca`, isi: 'Ketuk 🔔 untuk melihat.', tab: null }); beep(); }
+            } else if (maks > notifSeen) {
+                const fresh = notifRows.filter(n => n.id > notifSeen).reverse();
+                notifSeen = maks;
+                fresh.slice(-3).forEach(showToast);
+                beep();
+                refreshActive();
+            }
+            if ($('notifModal').style.display === 'flex') renderNotif();
+            await updateTabBadges();
+        } finally { polling = false; }
+    }
+    function startNotif() {
+        notifSeen = null; clearInterval(notifTimer);
+        pollNotif(); notifTimer = setInterval(pollNotif, 10000);
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) pollNotif(); });
+
+    // ========== REFRESH OTOMATIS (agar Leader & Admin saling melihat data terbaru) ==========
+    setInterval(() => { if (!user || document.hidden) return; refreshActive(); }, 15000);
 
     // ========== MULAI ==========
     (async function init() {
