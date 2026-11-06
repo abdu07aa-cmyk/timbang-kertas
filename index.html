@@ -520,14 +520,19 @@
 </div>
 
 <div id="editModal" class="modal">
-    <div class="modal-content">
-        <h3>✏️ Edit Data</h3>
+    <div class="modal-content" style="max-height:92vh;overflow-y:auto;">
+        <h3>✏️ Edit Data Timbang</h3>
+        <div id="editInfo" class="hint" style="margin-bottom:6px;line-height:1.5;"></div>
         <label>Tanggal</label><input type="date" id="editTanggal">
         <label>No. PI</label><select id="editNoPo"></select>
-        <label>Brand (otomatis dari PI)</label><input type="text" id="editBrand" readonly>
+        <label>Brand</label><input type="text" id="editBrand" list="brandList" autocomplete="off">
         <label>Jenis Kertas</label><select id="editJenis"></select>
+        <label>Watermark</label><select id="editWm"></select>
         <label>Size Kertas</label><select id="editSize"></select>
-        <label>GSM</label><select id="editGsm"></select>
+        <div class="row-2">
+            <div><label>GSM</label><select id="editGsm"></select></div>
+            <div><label>Leaves/Bundle</label><select id="editLeaves"></select></div>
+        </div>
         <label>Jenis Box</label>
         <select id="editBox">
             <option value="White">White (0.90 kg)</option>
@@ -535,7 +540,11 @@
             <option value="Grey">Grey (1.25 kg)</option>
             <option value="Green Jumbo">Green Jumbo (3.80 kg)</option>
         </select>
-        <label>Jumlah Bundles</label><input type="number" id="editBundles" step="1">
+        <div class="row-2">
+            <div><label>Jumlah Layer</label><input type="number" id="editLayer" step="1" min="0"></div>
+            <div><label>Berat TIMBANG (kg)</label><input type="number" id="editBerat" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div id="editHasil" class="hint ok" style="font-size:.85rem;margin-top:8px;line-height:1.5;"></div>
         <button id="saveEditBtn">💾 Simpan Perubahan</button>
         <button id="closeModalBtn" class="close-modal">❌ Batal</button>
     </div>
@@ -799,11 +808,11 @@
         const jn = jenisList.map(j => j.nama);
         ['mpJenis', 'stJenis', 'editJenis', 'eiJenis'].forEach(id => fillSelect(id, jn));
         const wn = wmList.map(w => w.nama);
-        ['mpWm', 'stWm', 'eiWm'].forEach(id => fillSelect(id, wn));
+        ['mpWm', 'stWm', 'eiWm', 'editWm'].forEach(id => fillSelect(id, wn));
         fillSelect('cbJenis', ['', ...jn], v => v === '' ? '(Semua jenis)' : v);
         ['mpSize', 'stSize', 'editSize', 'eiSize'].forEach(id => fillSelect(id, allSizes()));
         ['mpGsm', 'stGsm', 'editGsm', 'eiGsm'].forEach(id => fillSelect(id, allGsm()));
-        ['mpLeaves', 'stLeaves', 'eiLeaves'].forEach(id => fillSelect(id, allLeaves()));
+        ['mpLeaves', 'stLeaves', 'eiLeaves', 'editLeaves'].forEach(id => fillSelect(id, allLeaves()));
         fillSelect('editNoPo', piList.map(p => p.no_pi));
         fillPmPi(); if ($('pmPi').value) onPmPiInput(true); else onPmPiInput(true);
         fillMpPilih();
@@ -1021,7 +1030,27 @@
     $('urutPOBtn').onclick = () => { currentOrderBy = "no_po"; currentOrderAsc = true; currentPage = 1; displayDataWithPagination(); };
     $('urutPOTerbalikBtn').onclick = () => { currentOrderBy = "no_po"; currentOrderAsc = false; currentPage = 1; displayDataWithPagination(); };
 
-    $('editNoPo').addEventListener('change', () => { const p = findPI($('editNoPo').value); if (p) $('editBrand').value = p.brand; });
+    const EDIT_SPEC = ['editNoPo', 'editJenis', 'editWm', 'editSize', 'editGsm', 'editLeaves'];
+    $('editNoPo').addEventListener('change', () => { const p = findPI($('editNoPo').value); if (p && p.brand !== '-') $('editBrand').value = p.brand; });
+    function hitungEdit() {
+        const berat = parseFloat($('editBerat').value), layer = parseInt($('editLayer').value) || 0;
+        const size = $('editSize').value, gsm = $('editGsm').value, lv = $('editLeaves').value, jenis = $('editJenis').value;
+        const kosong = msg => ({ ok: false, msg });
+        if (!(berat > 0)) return kosong('Isi berat timbang');
+        const bersih = berat - beratBoxMap[$('editBox').value] - layer * BERAT_LAYER_KG;
+        if (bersih <= 0) return kosong('Berat bersih negatif, periksa berat/jenis box/layer');
+        if (!size || !gsm || !lv) return kosong('Lengkapi size, GSM, dan leaves');
+        const bb = beratBundleKG(size, gsm, lv, jenis);
+        if (!bb) return kosong('Berat bundle untuk spesifikasi ini belum terdaftar (Master > Spesifikasi)');
+        const des = bersih / bb;
+        return { ok: true, bersih, des, bundles: Math.ceil(Math.round(des * 1e6) / 1e6) };
+    }
+    function previewEdit() {
+        const r = hitungEdit(), el = $('editHasil');
+        el.className = 'hint ' + (r.ok ? 'ok' : 'bad');
+        el.innerHTML = r.ok ? `⚖️ Berat bersih: <b>${r.bersih.toFixed(4)} kg</b><br>📦 Jumlah bundles (otomatis, dibulatkan ke atas): <b style="font-size:1.2rem">${r.bundles}</b>` : '⚠️ ' + r.msg;
+    }
+    ['editBerat', 'editLayer', 'editBox', 'editJenis', 'editSize', 'editGsm', 'editLeaves'].forEach(id => { $(id).addEventListener('input', previewEdit); $(id).addEventListener('change', previewEdit); });
     function editData(id) {
         if (!requireRole('admin')) return;
         const d = allDataCache.find(x => x.id === id); if (!d) return;
@@ -1031,10 +1060,19 @@
         sn.value = d.no_po || '';
         $('editBrand').value = d.brand || '';
         $('editJenis').value = d.jenis_kertas || '';
+        $('editWm').value = d.watermark || 'No WM';
         $('editSize').value = d.size_kertas;
         $('editGsm').value = d.gsm;
+        $('editLeaves').value = d.leaves_per_bundle ?? '';
         $('editBox').value = d.jenis_box;
-        $('editBundles').value = d.jumlah_bundles;
+        $('editLayer').value = d.jumlah_layer || 0;
+        $('editBerat').value = d.berat_timbang_kg ?? '';
+        const kunci = !!d.permintaan_id;
+        EDIT_SPEC.forEach(x => $(x).disabled = kunci);
+        $('editInfo').textContent = kunci
+            ? `🔒 Data ini bagian dari permintaan #${d.permintaan_id}, jadi No. PI & spesifikasi kertas mengikuti permintaan dan tidak bisa diubah di sini. Yang bisa dikoreksi: tanggal, brand, jenis box, layer, dan berat timbang. Jumlah bundles dihitung ulang otomatis.`
+            : 'Ubah data yang salah. Berat bersih dan jumlah bundles dihitung ulang otomatis sesuai sistem timbang.';
+        previewEdit();
         $('editModal').style.display = 'flex';
     }
     async function hapusSatuData(id) {
@@ -1052,24 +1090,27 @@
     $('saveEditBtn').onclick = async () => {
         if (!requireRole('admin')) return;
         const lama = allDataCache.find(x => x.id === currentEditId) || {};
-        const noPi = $('editNoPo').value.trim();
-        const pRow = findPI(noPi);
-        if (!pRow) { alert('No. PI tidak terdaftar di master PI'); return; }
+        const pRow = findPI($('editNoPo').value);
+        if (!pRow && $('editNoPo').value !== lama.no_po) { alert('No. PI tidak terdaftar di master PI'); return; }
+        const br = $('editBrand').value.trim().toUpperCase();
+        if (!br) { alert('Brand wajib diisi'); return; }
+        const r = hitungEdit();
+        if (!r.ok) { alert('❌ ' + r.msg); return; }
         const upd = {
             tanggal: formatDateToDB($('editTanggal').value),
-            no_po: pRow.no_pi,
-            brand: $('editBrand').value.trim() || pRow.brand,
-            jenis_kertas: $('editJenis').value,
-            size_kertas: $('editSize').value,
-            gsm: parseInt($('editGsm').value),
-            jenis_box: $('editBox').value,
-            jumlah_bundles: parseInt($('editBundles').value)
+            no_po: pRow ? pRow.no_pi : lama.no_po, brand: br,
+            jenis_kertas: $('editJenis').value, watermark: $('editWm').value,
+            size_kertas: $('editSize').value, gsm: parseInt($('editGsm').value), leaves_per_bundle: parseInt($('editLeaves').value),
+            jenis_box: $('editBox').value, jumlah_layer: parseInt($('editLayer').value) || 0,
+            berat_timbang_kg: parseFloat($('editBerat').value), berat_bersih_kg: r.bersih,
+            jumlah_bundles: r.bundles, bundles_desimal: r.des
         };
+        if (!confirm(`Simpan perubahan?\nBundles: ${lama.jumlah_bundles} → ${r.bundles}\nBerat timbang: ${lama.berat_timbang_kg ?? '-'} → ${upd.berat_timbang_kg} kg`)) return;
         const { error } = await supabase.from('riwayat_timbang').update(upd).eq('id', currentEditId);
         if (error) alert("Gagal update: " + error.message);
         else {
-            catatLog('EDIT_TIMBANG', `#${currentEditId}: PI ${lama.no_po}→${upd.no_po}, bundles ${lama.jumlah_bundles}→${upd.jumlah_bundles}, size ${lama.size_kertas}→${upd.size_kertas}, gsm ${lama.gsm}→${upd.gsm}`);
-            alert("Data berhasil diupdate!"); $('editModal').style.display = 'none'; loadAllData();
+            catatLog('EDIT_TIMBANG', `#${currentEditId}: PI ${lama.no_po}→${upd.no_po}, brand ${lama.brand}→${upd.brand}, berat ${lama.berat_timbang_kg}→${upd.berat_timbang_kg}, bundles ${lama.jumlah_bundles}→${upd.jumlah_bundles}, size ${lama.size_kertas}→${upd.size_kertas}, gsm ${lama.gsm}→${upd.gsm}, lv ${lama.leaves_per_bundle}→${upd.leaves_per_bundle}`);
+            alert("✅ Data berhasil diupdate! Bundles baru: " + r.bundles); $('editModal').style.display = 'none'; loadAllData();
         }
     };
     $('cariBtn').onclick = () => { currentSearch = $('searchInput').value.trim(); currentPage = 1; loadAllData(); };
@@ -1755,8 +1796,20 @@
             if (await rpc('hapus_pi_item', { p_id: id, p_oleh: user.nama })) await loadMasterData();
         } else if (act === 'hapuspi') {
             const p = piList.find(x => x.id === id); if (!p) return;
-            if (!confirm(`Hapus PI ${p.no_pi} (${p.brand}) beserta semua itemnya?\n\nHanya bisa jika belum pernah diminta/ditimbang.`)) return;
-            if (await rpc('hapus_pi', { p_pi_id: id, p_oleh: user.nama })) await loadMasterData();
+            if (!requireRole('admin')) return;
+            const pv = await supabase.rpc('pratinjau_hapus_pi', { p_pi_id: id });
+            if (pv.error) { alert('❌ ' + pv.error.message); return; }
+            const c = pv.data || {};
+            const dipakai = (c.permintaan || 0) + (c.timbangan || 0) + (c.nota || 0) + (c.mutasi_stok || 0) > 0;
+            const info = `<b>Hapus PI ${esc(p.no_pi)} (${esc(p.brand)})?</b><br>Yang ikut terhapus PERMANEN:<br>• ${c.item || 0} item kertas<br>• ${c.permintaan || 0} permintaan<br>• ${c.timbangan || 0} data timbangan milik permintaan itu<br>• ${c.nota || 0} nota serah terima<br>• ${c.mutasi_stok || 0} catatan stok milik permintaan itu (stok kembali seperti sebelum PI ini)`
+                + (c.timbangan_lama > 0 ? `<br><b class="warn">ℹ️ ${c.timbangan_lama} data timbang lama (tanpa permintaan) dengan No. PI sama TIDAK ikut dihapus.</b>` : '')
+                + (dipakai ? '<br><b class="bad">⚠️ Gunakan hanya untuk data uji coba. Tidak bisa dibatalkan.</b>' : '');
+            const d = await dialog({ title: '🗑️ Hapus PI', info, note: dipakai ? { label: `Ketik No. PI "${p.no_pi}" untuk konfirmasi`, required: true } : null, ok: 'Hapus' });
+            if (!d) return;
+            const { error } = await supabase.rpc('hapus_pi_beserta_data', { p_pi_id: id, p_konfirmasi: dipakai ? d.note : p.no_pi, p_oleh: user.nama });
+            if (error) { alert('❌ ' + error.message); return; }
+            await loadMasterData(); await loadPermintaan();
+            alert('✅ PI dan data terkait sudah dihapus.');
         } else if (act === 'tutup') {
             const i = piItems.find(x => x.id === id); if (!i) return;
             if (!confirm(`Tutup item ini (dianggap SELESAI)?\n${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\nItem hilang dari dropdown permintaan. Bisa dibuka lagi.`)) return;
