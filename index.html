@@ -790,7 +790,7 @@
         if (!TABS[user.role].some(t => t[0] === pid)) return;
         document.querySelectorAll('#tabBar .tab').forEach(t => t.classList.toggle('active', t.dataset.page === pid));
         document.querySelectorAll('.page').forEach(p => p.classList.toggle('active-page', p.id === pid));
-        const loaders = { page1: loadPermintaanOptions, page2: loadAllData, page3: loadPermintaan, page4: loadPermintaan, page5: loadStok, page6: renderMaster, page7: loadLog, page8: loadSerahTerima };
+        const loaders = { page1: loadPermintaanOptions, page2: loadAllData, page3: () => { loadMasterData(); loadPermintaan(); }, page4: loadPermintaan, page5: () => { loadStok(); loadMasterData(); }, page6: () => { renderMaster(); loadMasterData(); }, page7: loadLog, page8: loadSerahTerima };
         if (loaders[pid]) loaders[pid]();
     }
 
@@ -1711,7 +1711,7 @@
         const prev = el.value;
         el.innerHTML = '<option value="">➕ PI baru (ketik nomor)</option>' + piList.slice().sort((a, b) => a.no_pi.localeCompare(b.no_pi, undefined, { numeric: true })).map(p => `<option value="${p.id}">${esc(p.no_pi)} · ${esc(p.brand)}</option>`).join('');
         if (piList.some(p => String(p.id) === prev)) el.value = prev;
-        onMpPilih();
+        if (el.value !== prev || !el.dataset.init) { el.dataset.init = '1'; onMpPilih(); }
     }
     function onMpPilih() {
         const p = piList.find(x => String(x.id) === $('mpPilih').value);
@@ -1965,8 +1965,9 @@
         if (!user || $('dlgModal').style.display === 'flex') return;
         const act = document.querySelector('.page.active-page'); if (!act) return;
         if (act.id === 'page1') loadPermintaanOptions();
-        else if (act.id === 'page3' || act.id === 'page4') loadPermintaan();
-        else if (act.id === 'page5') loadStok();
+        else if (act.id === 'page3' || act.id === 'page4') { loadMasterData(); loadPermintaan(); }
+        else if (act.id === 'page5') { loadStok(); loadMasterData(); }
+        else if (act.id === 'page6') loadMasterData();
         else if (act.id === 'page8') loadSerahTerima();
     }
     async function updateTabBadges() {
