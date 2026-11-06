@@ -155,6 +155,19 @@
             <div id="specRingkas" class="hint ok" style="display:none;font-size:.82rem;margin-top:10px;line-height:1.5;"></div>
             <div id="pmInfo" class="hint"></div>
 
+            <div id="quickBox" style="display:none">
+                <div class="hint warn" style="line-height:1.5;margin-top:10px;">⚡ Mode cepat: tanpa PI/permintaan, tidak memengaruhi stok & nota. Hasil tetap masuk Riwayat.</div>
+                <label>📄 No. PI (opsional)</label><select id="qPi"></select>
+                <label>🏷️ Brand (opsional)</label><input type="text" id="qBrand" list="brandList" autocomplete="off" placeholder="Kosongkan jika tidak ada">
+                <label>🧻 Jenis Kertas</label><select id="qJenis"></select>
+                <label>💧 Watermark</label><select id="qWm"></select>
+                <label>📏 Size Kertas</label><select id="qSize"></select>
+                <div class="row-2">
+                    <div><label>📄 GSM</label><select id="qGsm"></select></div>
+                    <div><label>📑 Leaves/Bundle</label><select id="qLeaves"></select></div>
+                </div>
+            </div>
+
             <div id="boxForm" style="display:none">
                 <label>📅 Tanggal</label>
                 <input type="date" id="tanggal">
@@ -806,14 +819,15 @@
     }
     function refreshSelects() {
         const jn = jenisList.map(j => j.nama);
-        ['mpJenis', 'stJenis', 'editJenis', 'eiJenis'].forEach(id => fillSelect(id, jn));
+        ['mpJenis', 'stJenis', 'editJenis', 'eiJenis', 'qJenis'].forEach(id => fillSelect(id, jn));
         const wn = wmList.map(w => w.nama);
-        ['mpWm', 'stWm', 'eiWm', 'editWm'].forEach(id => fillSelect(id, wn));
+        ['mpWm', 'stWm', 'eiWm', 'editWm', 'qWm'].forEach(id => fillSelect(id, wn));
         fillSelect('cbJenis', ['', ...jn], v => v === '' ? '(Semua jenis)' : v);
-        ['mpSize', 'stSize', 'editSize', 'eiSize'].forEach(id => fillSelect(id, allSizes()));
-        ['mpGsm', 'stGsm', 'editGsm', 'eiGsm'].forEach(id => fillSelect(id, allGsm()));
-        ['mpLeaves', 'stLeaves', 'eiLeaves', 'editLeaves'].forEach(id => fillSelect(id, allLeaves()));
+        ['mpSize', 'stSize', 'editSize', 'eiSize', 'qSize'].forEach(id => fillSelect(id, allSizes()));
+        ['mpGsm', 'stGsm', 'editGsm', 'eiGsm', 'qGsm'].forEach(id => fillSelect(id, allGsm()));
+        ['mpLeaves', 'stLeaves', 'eiLeaves', 'editLeaves', 'qLeaves'].forEach(id => fillSelect(id, allLeaves()));
         fillSelect('editNoPo', piList.map(p => p.no_pi));
+        fillSelect('qPi', ['', ...piList.map(p => p.no_pi)], v => v === '' ? '— tanpa PI —' : v);
         fillPmPi(); if ($('pmPi').value) onPmPiInput(true); else onPmPiInput(true);
         fillMpPilih();
         $('brandList').innerHTML = [...new Set(piList.map(p => p.brand))].map(b => `<option value="${esc(b)}">`).join('');
@@ -871,15 +885,18 @@
             (r.data || []).forEach(x => sums[x.permintaan_id] = x);
         }
         permintaanTimbang.forEach(d => { d._timbang = (sums[d.id] && sums[d.id].bundles) || 0; d._box = (sums[d.id] && sums[d.id].jumlah_box) || 0; });
-        sel.innerHTML = '<option value="">— pilih permintaan —</option>' + permintaanTimbang.map(d => `<option value="${d.id}">${esc(pmLabel(d))}</option>`).join('');
-        if (keep && ids.includes(Number(keep))) sel.value = keep;
+        sel.innerHTML = '<option value="">— pilih permintaan —</option><option value="CEPAT">⚡ Timbang cepat / uji coba (tanpa PI & permintaan)</option>' + permintaanTimbang.map(d => `<option value="${d.id}">${esc(pmLabel(d))}</option>`).join('');
+        if (keep === 'CEPAT' || (keep && ids.includes(Number(keep)))) sel.value = keep;
         else if (ids.length === 1) sel.value = ids[0];
         $('pmEmpty').className = 'hint';
-        $('pmEmpty').textContent = ids.length ? '' : '📭 Belum ada permintaan yang siap ditimbang. Menunggu Leader menekan "Box siap ditimbang" (Anda akan mendapat notifikasi).';
+        $('pmEmpty').textContent = ids.length ? '' : '📭 Belum ada permintaan yang siap ditimbang (Anda akan mendapat notifikasi saat Leader menyiapkan). Untuk coba/timbang cepat pilih "⚡ Timbang cepat".';
         onPermintaanChange();
     }
     $('permintaanTerkait').addEventListener('change', onPermintaanChange);
     function onPermintaanChange() {
+        const cepat = $('permintaanTerkait').value === 'CEPAT';
+        $('quickBox').style.display = cepat ? 'block' : 'none';
+        if (cepat) { $('boxForm').style.display = 'block'; $('specRingkas').style.display = 'none'; $('pmInfo').className = 'hint'; $('pmInfo').textContent = ''; $('goNotaBtn').style.display = 'none'; return; }
         const id = Number($('permintaanTerkait').value);
         const r = permintaanTimbang.find(d => d.id === id);
         if (!r) { $('boxForm').style.display = 'none'; $('specRingkas').style.display = 'none'; $('pmInfo').textContent = ''; $('hasilCard').style.display = 'none'; return; }
@@ -891,6 +908,7 @@
         $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.box_siap} box (est. ${r.qty_siap} bundle) | sudah ditimbang ${r._box} dari ${r.box_siap} box (${r._timbang} bundle) | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle dari permintaan.` + (semua ? ' ✅ Semua box sudah ditimbang.' : ` Box berikutnya: ke-${r._box + 1}.`);
         $('goNotaBtn').style.display = semua ? 'block' : 'none';
     }
+    $('qPi').addEventListener('change', () => { const p = findPI($('qPi').value); if (p && p.brand !== '-') $('qBrand').value = p.brand; });
     $('goNotaBtn').onclick = async () => {
         const id = Number($('permintaanTerkait').value); if (!id) return;
         await loadPermintaan();
@@ -899,9 +917,10 @@
 
     async function hitungSimpan() {
         if (!requireRole('admin')) return;
-        const pmId = Number($('permintaanTerkait').value);
-        const r = permintaanTimbang.find(d => d.id === pmId);
-        if (!r) { alert('Pilih dulu permintaan yang akan ditimbang.'); return; }
+        const cepat = $('permintaanTerkait').value === 'CEPAT';
+        const pmId = cepat ? null : Number($('permintaanTerkait').value);
+        let r = cepat ? { no_pi: $('qPi').value || '-', brand: ($('qBrand').value.trim().toUpperCase() || (findPI($('qPi').value) || {}).brand || '-'), jenis_kertas: $('qJenis').value, watermark: $('qWm').value, size_kertas: $('qSize').value, gsm: $('qGsm').value, leaves: $('qLeaves').value } : permintaanTimbang.find(d => d.id === pmId);
+        if (!r) { alert('Pilih dulu permintaan yang akan ditimbang, atau pilih ⚡ Timbang cepat.'); return; }
         const beratTimbang = parseFloat($('berat').value);
         if (isNaN(beratTimbang) || beratTimbang <= 0) { alert("Masukkan berat timbang!"); return; }
 
@@ -921,14 +940,14 @@
         const bundlesDesimal = beratBersih / bb;
         const bundlesBulat = Math.ceil(Math.round(bundlesDesimal * 1e6) / 1e6);
 
-        const { data: cur } = await supabase.from('ditimbang_per_permintaan').select('bundles,jumlah_box').eq('permintaan_id', pmId);
+        const { data: cur } = cepat ? { data: null } : await supabase.from('ditimbang_per_permintaan').select('bundles,jumlah_box').eq('permintaan_id', pmId);
         const sudah = (cur && cur[0] && cur[0].bundles) || 0, nBox = (cur && cur[0] && cur[0].jumlah_box) || 0;
         const ref = nBox > 0 ? sudah / nBox : (r.box_siap > 0 ? r.qty_siap / r.box_siap : 0);
-        if (ref > 0 && Math.abs(bundlesBulat - ref) / ref > 0.15 &&
+        if (!cepat && ref > 0 && Math.abs(bundlesBulat - ref) / ref > 0.15 &&
             !confirm(`⚠️ Hasil box ini ${bundlesBulat} bundle, berbeda ${Math.round(Math.abs(bundlesBulat - ref) / ref * 100)}% dari rata-rata ${nBox > 0 ? 'box sebelumnya' : 'estimasi Leader'} (${Math.round(ref)}).\nPeriksa lagi berat, jenis box, dan layer.\nTetap simpan?`)) return;
-        if (r.box_siap > 0 && nBox >= r.box_siap &&
+        if (!cepat && r.box_siap > 0 && nBox >= r.box_siap &&
             !confirm(`⚠️ Leader menyiapkan ${r.box_siap} box dan ${nBox} box sudah ditimbang.\nIni akan menjadi box ke-${nBox + 1}. Yakin?`)) return;
-        if (sudah + bundlesBulat > r.qty_minta &&
+        if (!cepat && sudah + bundlesBulat > r.qty_minta &&
             !confirm(`⚠️ Total ditimbang akan menjadi ${sudah + bundlesBulat} bundle, melebihi permintaan ${r.qty_minta} bundle.\nTetap simpan?`)) return;
 
         $('beratBersih').innerHTML = beratBersih.toFixed(4);
@@ -949,8 +968,8 @@
         const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
         if (error) { showStatus('❌ Gagal: ' + error.message, 'error'); alert('Gagal simpan! ' + error.message); }
         else {
-            showStatus(`✅ Box ke-${nBox + 1} tersimpan: ${bundlesBulat} bundle`, 'success');
-            catatLog('TIMBANG', `PI ${r.no_pi} ${size} ${gsm}gsm ${leaves}lv ${jenis} = ${bundlesBulat} bundle (permintaan #${pmId})`);
+            showStatus(cepat ? `✅ Tersimpan (timbang cepat): ${bundlesBulat} bundle` : `✅ Box ke-${nBox + 1} tersimpan: ${bundlesBulat} bundle`, 'success');
+            catatLog('TIMBANG', `PI ${r.no_pi} ${size} ${gsm}gsm ${leaves}lv ${jenis} = ${bundlesBulat} bundle ${cepat ? '(timbang cepat)' : '(permintaan #' + pmId + ')'}`);
             $('berat').value = ''; $('berat').focus();
             currentPage = 1; currentSearch = ""; $('searchInput').value = "";
             await loadPermintaanOptions();
