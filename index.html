@@ -113,6 +113,13 @@
         .pigroup .nums{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;}
         .pigroup .nums span{background:#f1f5f9;padding:3px 8px;border-radius:10px;}
         .pigroup .acts{display:flex;gap:6px;flex-wrap:wrap;}
+        .prog{background:#f1f5f9;border-radius:14px;padding:12px;margin-top:12px;}
+        .prog .big{font-size:1.5rem;font-weight:bold;color:#1e3a8a;}
+        .bar{height:16px;background:#e2e8f0;border-radius:10px;overflow:hidden;margin:8px 0;}
+        .bar>i{display:block;height:100%;background:#3b82f6;}
+        .bar>i.ok{background:#16a34a;} .bar>i.over{background:#ea580c;}
+        .tercapai{background:#dcfce7;border:2px solid #16a34a;color:#166534;border-radius:12px;padding:10px;font-weight:bold;margin-top:8px;line-height:1.5;}
+        details.rinci summary{cursor:pointer;color:#0891b2;font-size:.78rem;margin-top:6px;}
 </style>
 </head>
 <body>
@@ -147,7 +154,7 @@
     <div id="page1" class="page">
         <div class="card">
             <h1>⚖️ TIMBANG BOX</h1>
-            <div class="note">Pilih permintaan yang sudah disiapkan Leader. Semua data kertas terisi otomatis. Bundles dibulatkan KE ATAS.</div>
+            <div class="note">Pilih permintaan yang sudah disiapkan Leader. Setelah tiap box disimpan, progres menuju target permintaan tampil di bawah. Bundles dibulatkan KE ATAS.</div>
 
             <label>📋 Permintaan yang siap ditimbang</label>
             <select id="permintaanTerkait"><option value="">— pilih permintaan —</option></select>
@@ -183,9 +190,16 @@
                 <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
                 <input type="number" id="berat" step="0.01" placeholder="Contoh: 7.50" inputmode="decimal">
                 <button id="hitungBtn">✅ HITUNG & SIMPAN BOX</button>
-                <button id="goNotaBtn" style="display:none;background:#166534">🧾 Semua box sudah ditimbang → Buat nota</button>
+                <button id="goNotaBtn" style="display:none;background:#166534">🧾 Selesai menimbang → Buat nota</button>
             </div>
             <div id="statusMsg" class="status"></div>
+        </div>
+
+        <div class="card" id="progCard" style="display:none">
+            <h2>📈 PROGRES PERMINTAAN</h2>
+            <div class="prog" id="progBox"></div>
+            <div id="progBanner"></div>
+            <div style="overflow-x:auto;margin-top:10px;"><table><thead><tr><th>Box</th><th>Jenis box</th><th>Layer</th><th>Timbang (kg)</th><th>Bundles</th></tr></thead><tbody id="progRows"></tbody></table></div>
         </div>
 
         <div class="card" id="hasilCard" style="display:none">
@@ -388,12 +402,47 @@
     <div id="page8" class="page">
         <div class="card">
             <h2>🧾 SERAH TERIMA (NOTA)</h2>
-            <div class="note">Alur: Leader menyiapkan box → timbang bersama (Admin input) → Admin membuat nota → kedua pihak setuju dengan PIN → cetak 2 rangkap (asli untuk Admin, copy untuk Leader).</div>
+            <div class="note">Semua nota tersimpan permanen di sini (jangan hilang): filter <b>Selesai / Disepakati</b> untuk riwayat serah terima. Alur: Leader menyiapkan box → timbang bersama (Admin input) → Admin membuat nota → kedua pihak setuju dengan PIN → cetak 2 rangkap (asli untuk Admin, copy untuk Leader).</div>
             <div class="search-row">
                 <input type="text" id="ntSearch" placeholder="Cari No. dokumen / PI / Brand...">
-                <select id="ntFilter"><option value="Menunggu">Menunggu persetujuan</option><option value="Disepakati">Disepakati</option><option value="Dibatalkan">Dibatalkan</option><option value="SEMUA">Semua</option></select>
+                <select id="ntFilter"><option value="SEMUA">Semua nota</option><option value="Menunggu">Menunggu persetujuan</option><option value="Disepakati">Selesai / Disepakati (riwayat)</option><option value="Dibatalkan">Dibatalkan</option></select>
+                <select id="ntPeriode"><option value="">Semua waktu</option><option value="0">Hari ini</option><option value="7">7 hari</option><option value="30">30 hari</option></select>
             </div>
+            <div id="ntPills" class="pills"></div>
+            <div id="ntRingkas" class="hint"></div>
             <div id="ntList"></div>
+        </div>
+    </div>
+
+    <!-- ===== PAGE 9: HITUNG ESTIMASI (Leader) ===== -->
+    <div id="page9" class="page">
+        <div class="card">
+            <h2>🧮 HITUNG ESTIMASI BOX</h2>
+            <div class="note">Alat bantu Leader: timbang beberapa box contoh, aplikasi menghitung bundle per box dan perkiraan jumlah box yang dibutuhkan. <b>Bukan data timbang resmi</b> (tidak disimpan sebagai riwayat), hanya untuk estimasi yang lebih akurat dibanding angka mesin guillotine.</div>
+            <label>📋 Untuk permintaan (opsional)</label>
+            <select id="lcPm"><option value="">— isi spesifikasi manual —</option></select>
+            <label>🧻 Jenis Kertas</label><select id="lcJenis"></select>
+            <label>💧 Watermark</label><select id="lcWm"></select>
+            <label>📏 Size Kertas</label><select id="lcSize"></select>
+            <div class="row-2">
+                <div><label>📄 GSM</label><select id="lcGsm"></select></div>
+                <div><label>📑 Leaves/Bundle</label><select id="lcLeaves"></select></div>
+            </div>
+            <label>🎯 Target (bundles)</label><input type="number" id="lcTarget" step="1" min="1" placeholder="Qty yang diminta">
+            <div class="row-2">
+                <div><label>📦 Jenis Box</label><select id="lcBox"><option value="White">White (0.90 kg)</option><option value="White New">White New (0.80 kg)</option><option value="Grey">Grey (1.25 kg)</option><option value="Green Jumbo">Green Jumbo (3.80 kg)</option></select></div>
+                <div><label>📚 Layer</label><input type="number" id="lcLayer" step="1" min="0" value="0"></div>
+            </div>
+            <label>⚖️ Berat 1 box contoh (kg)</label>
+            <input type="number" id="lcBerat" step="0.01" inputmode="decimal" placeholder="Contoh: 7.50">
+            <button id="lcTambahBtn">➕ Tambah box contoh</button>
+            <div id="lcHasil" class="prog" style="display:none"></div>
+            <div style="overflow-x:auto;margin-top:8px;"><table><thead><tr><th>#</th><th>Timbang (kg)</th><th>Bundles</th></tr></thead><tbody id="lcRows"></tbody></table></div>
+            <div class="acts" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="mini" id="lcPakaiBtn" style="background:#166534">✅ Pakai untuk estimasi permintaan ini</button>
+                <button class="mini" id="lcUndoBtn" style="background:#64748b">↩ Hapus terakhir</button>
+                <button class="mini" id="lcResetBtn" style="background:#ef4444">🗑️ Kosongkan</button>
+            </div>
         </div>
     </div>
 
@@ -646,7 +695,7 @@
     const BASE_LEAVES = [32,33,34,35,40,42,50,51,52,60];
     const TABS = {
         admin:  [['page1','📦 Timbang'],['page2','📜 Riwayat'],['page3','📝 Permintaan'],['page8','🧾 Serah Terima'],['page6','🗂️ Master'],['page7','📋 Log']],
-        leader: [['page4','🏭 Antrian'],['page5','📊 Stok'],['page8','🧾 Serah Terima'],['page6','🗂️ Master'],['page7','📋 Log']]
+        leader: [['page4','🏭 Antrian'],['page9','🧮 Hitung'],['page5','📊 Stok'],['page8','🧾 Serah Terima'],['page6','🗂️ Master'],['page7','📋 Log']]
     };
     const STATUS_WARNA = { Diminta:'#3b82f6', Diproses:'#f59e0b', Produksi:'#8b5cf6', Siap:'#10b981', Diterima:'#166534', Dibatalkan:'#94a3b8' };
     const AKTIF = ['Diminta','Diproses','Produksi','Siap'];
@@ -790,7 +839,7 @@
         if (!TABS[user.role].some(t => t[0] === pid)) return;
         document.querySelectorAll('#tabBar .tab').forEach(t => t.classList.toggle('active', t.dataset.page === pid));
         document.querySelectorAll('.page').forEach(p => p.classList.toggle('active-page', p.id === pid));
-        const loaders = { page1: loadPermintaanOptions, page2: loadAllData, page3: () => { loadMasterData(); loadPermintaan(); }, page4: loadPermintaan, page5: () => { loadStok(); loadMasterData(); }, page6: () => { renderMaster(); loadMasterData(); }, page7: loadLog, page8: loadSerahTerima };
+        const loaders = { page1: loadPermintaanOptions, page2: loadAllData, page3: () => { loadMasterData(); loadPermintaan(); }, page4: loadPermintaan, page9: async () => { await loadPermintaan(); fillLcPm(); }, page5: () => { loadStok(); loadMasterData(); }, page6: () => { renderMaster(); loadMasterData(); }, page7: loadLog, page8: loadSerahTerima };
         if (loaders[pid]) loaders[pid]();
     }
 
@@ -819,13 +868,13 @@
     }
     function refreshSelects() {
         const jn = jenisList.map(j => j.nama);
-        ['mpJenis', 'stJenis', 'editJenis', 'eiJenis', 'qJenis'].forEach(id => fillSelect(id, jn));
+        ['mpJenis', 'stJenis', 'editJenis', 'eiJenis', 'qJenis', 'lcJenis'].forEach(id => fillSelect(id, jn));
         const wn = wmList.map(w => w.nama);
-        ['mpWm', 'stWm', 'eiWm', 'editWm', 'qWm'].forEach(id => fillSelect(id, wn));
+        ['mpWm', 'stWm', 'eiWm', 'editWm', 'qWm', 'lcWm'].forEach(id => fillSelect(id, wn));
         fillSelect('cbJenis', ['', ...jn], v => v === '' ? '(Semua jenis)' : v);
-        ['mpSize', 'stSize', 'editSize', 'eiSize', 'qSize'].forEach(id => fillSelect(id, allSizes()));
-        ['mpGsm', 'stGsm', 'editGsm', 'eiGsm', 'qGsm'].forEach(id => fillSelect(id, allGsm()));
-        ['mpLeaves', 'stLeaves', 'eiLeaves', 'editLeaves', 'qLeaves'].forEach(id => fillSelect(id, allLeaves()));
+        ['mpSize', 'stSize', 'editSize', 'eiSize', 'qSize', 'lcSize'].forEach(id => fillSelect(id, allSizes()));
+        ['mpGsm', 'stGsm', 'editGsm', 'eiGsm', 'qGsm', 'lcGsm'].forEach(id => fillSelect(id, allGsm()));
+        ['mpLeaves', 'stLeaves', 'eiLeaves', 'editLeaves', 'qLeaves', 'lcLeaves'].forEach(id => fillSelect(id, allLeaves()));
         fillSelect('editNoPo', piList.map(p => p.no_pi));
         fillSelect('qPi', ['', ...piList.map(p => p.no_pi)], v => v === '' ? '— tanpa PI —' : v);
         fillPmPi(); if ($('pmPi').value) onPmPiInput(true); else onPmPiInput(true);
@@ -893,20 +942,42 @@
         onPermintaanChange();
     }
     $('permintaanTerkait').addEventListener('change', onPermintaanChange);
+    let progSeq = 0;
+    async function renderProgres(r) {
+        const seq = ++progSeq;
+        const { data } = await supabase.from('riwayat_timbang').select('id,jenis_box,jumlah_layer,berat_timbang_kg,jumlah_bundles').eq('permintaan_id', r.id).order('id');
+        if (seq !== progSeq) return;
+        const rows = data || [], tot = rows.reduce((a, x) => a + (x.jumlah_bundles || 0), 0), n = rows.length;
+        const target = r.qty_minta, pct = target > 0 ? tot / target * 100 : 0, sisa = target - tot;
+        const avg = n ? tot / n : (r.box_siap > 0 ? r.qty_siap / r.box_siap : 0);
+        const perkBox = sisa > 0 && avg > 0 ? Math.ceil(sisa / avg) : 0;
+        $('progCard').style.display = 'block';
+        $('progBox').innerHTML = `<div>📦 Box ditimbang: <span class="big">${n}</span> <span style="color:#64748b">dari ${r.box_siap} box yang disiapkan Leader</span></div>
+            <div style="margin-top:6px;">🎯 Total bundles: <span class="big">${tot.toLocaleString('id-ID')}</span> <span style="color:#64748b">/ target ${target.toLocaleString('id-ID')}</span></div>
+            <div class="bar"><i class="${pct >= 100 ? (pct > 102 ? 'over' : 'ok') : ''}" style="width:${Math.min(pct, 100).toFixed(1)}%"></i></div>
+            <div style="font-size:.82rem;line-height:1.6;">${pct.toFixed(1)}% tercapai · ${sisa > 0 ? `<b>sisa ${sisa.toLocaleString('id-ID')} bundle</b>` : `<b class="${sisa === 0 ? 'good' : 'warn'}">${sisa === 0 ? 'pas sesuai target' : 'lebih ' + (-sisa).toLocaleString('id-ID')}</b>`}${n ? ` · rata-rata ${Math.round(avg).toLocaleString('id-ID')}/box` : ''}${perkBox ? `<br>👉 Perkiraan butuh <b>±${perkBox} box lagi</b>${n + perkBox > r.box_siap ? ' (lebih dari yang disiapkan Leader, minta Leader tambah box)' : ''}` : ''}</div>`;
+        $('progBanner').innerHTML = target > 0 && tot >= target
+            ? `<div class="tercapai">✅ TARGET TERCAPAI (${pct.toFixed(1)}%)${tot > target ? ` · lebih ${(tot - target).toLocaleString('id-ID')} bundle karena box utuh` : ''}<br>Tidak perlu menimbang box lagi${r.box_siap > n ? ` — ${r.box_siap - n} box sisa tetap di Leader (tetap dihitung stok)` : ''}. Lanjut buat nota.</div>`
+            : (r.box_siap > 0 && n >= r.box_siap ? `<div class="warnbox">⚠️ Semua ${r.box_siap} box sudah ditimbang tetapi total masih kurang ${sisa.toLocaleString('id-ID')} bundle dari target. Minta Leader menambah box, atau buat nota sesuai hasil timbang.</div>` : '');
+        $('progRows').innerHTML = rows.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.jenis_box || '')}</td><td>${x.jumlah_layer || 0}</td><td>${Number(x.berat_timbang_kg || 0).toFixed(2)}</td><td><b>${x.jumlah_bundles}</b></td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center">Belum ada box ditimbang</td></tr>';
+        $('goNotaBtn').style.display = n > 0 ? 'block' : 'none';
+        $('goNotaBtn').style.background = tot >= target ? '#166534' : '#64748b';
+        $('goNotaBtn').textContent = tot >= target ? '🧾 Target tercapai → Buat nota' : '🧾 Buat nota dengan box yang sudah ditimbang';
+    }
     function onPermintaanChange() {
         const cepat = $('permintaanTerkait').value === 'CEPAT';
         $('quickBox').style.display = cepat ? 'block' : 'none';
-        if (cepat) { $('boxForm').style.display = 'block'; $('specRingkas').style.display = 'none'; $('pmInfo').className = 'hint'; $('pmInfo').textContent = ''; $('goNotaBtn').style.display = 'none'; return; }
+        if (cepat) { $('progCard').style.display = 'none'; $('boxForm').style.display = 'block'; $('specRingkas').style.display = 'none'; $('pmInfo').className = 'hint'; $('pmInfo').textContent = ''; $('goNotaBtn').style.display = 'none'; return; }
         const id = Number($('permintaanTerkait').value);
         const r = permintaanTimbang.find(d => d.id === id);
-        if (!r) { $('boxForm').style.display = 'none'; $('specRingkas').style.display = 'none'; $('pmInfo').textContent = ''; $('hasilCard').style.display = 'none'; return; }
+        if (!r) { $('progCard').style.display = 'none'; $('boxForm').style.display = 'none'; $('specRingkas').style.display = 'none'; $('pmInfo').textContent = ''; $('hasilCard').style.display = 'none'; return; }
         $('boxForm').style.display = 'block';
         $('specRingkas').style.display = 'block';
         $('specRingkas').innerHTML = `📄 <b>${esc(r.no_pi)}</b> · 🏷️ ${esc(r.brand)}<br>🧻 <b>${esc(r.jenis_kertas)}</b> · 💧 ${esc(r.watermark)} · 📏 ${esc(r.size_kertas)} · ${r.gsm} gsm · ${r.leaves} leaves`;
         const sisa = r.qty_minta - r._timbang, semua = r.box_siap > 0 && r._box >= r.box_siap;
         $('pmInfo').className = 'hint ' + (sisa < 0 ? 'bad' : 'ok');
         $('pmInfo').textContent = `Diminta ${r.qty_minta} | disiapkan Leader ${r.box_siap} box (est. ${r.qty_siap} bundle) | sudah ditimbang ${r._box} dari ${r.box_siap} box (${r._timbang} bundle) | ${sisa >= 0 ? 'sisa ' + sisa : 'LEBIH ' + (-sisa)} bundle dari permintaan.` + (semua ? ' ✅ Semua box sudah ditimbang.' : ` Box berikutnya: ke-${r._box + 1}.`);
-        $('goNotaBtn').style.display = semua ? 'block' : 'none';
+        renderProgres(r);
     }
     $('qPi').addEventListener('change', () => { const p = findPI($('qPi').value); if (p && p.brand !== '-') $('qBrand').value = p.brand; });
     $('goNotaBtn').onclick = async () => {
@@ -947,8 +1018,8 @@
             !confirm(`⚠️ Hasil box ini ${bundlesBulat} bundle, berbeda ${Math.round(Math.abs(bundlesBulat - ref) / ref * 100)}% dari rata-rata ${nBox > 0 ? 'box sebelumnya' : 'estimasi Leader'} (${Math.round(ref)}).\nPeriksa lagi berat, jenis box, dan layer.\nTetap simpan?`)) return;
         if (!cepat && r.box_siap > 0 && nBox >= r.box_siap &&
             !confirm(`⚠️ Leader menyiapkan ${r.box_siap} box dan ${nBox} box sudah ditimbang.\nIni akan menjadi box ke-${nBox + 1}. Yakin?`)) return;
-        if (!cepat && sudah + bundlesBulat > r.qty_minta &&
-            !confirm(`⚠️ Total ditimbang akan menjadi ${sudah + bundlesBulat} bundle, melebihi permintaan ${r.qty_minta} bundle.\nTetap simpan?`)) return;
+        if (!cepat && sudah >= r.qty_minta &&
+            !confirm(`⚠️ TARGET SUDAH TERCAPAI (${sudah} dari ${r.qty_minta} bundle).\nBox tambahan ini akan membuat hasil melebihi permintaan. Biasanya sudah tidak perlu menimbang lagi — langsung buat nota.\nTetap simpan box ini?`)) return;
 
         $('beratBersih').innerHTML = beratBersih.toFixed(4);
         $('jumlahBundles').innerHTML = bundlesBulat;
@@ -968,7 +1039,7 @@
         const { error } = await supabase.from('riwayat_timbang').insert([dataToSave]);
         if (error) { showStatus('❌ Gagal: ' + error.message, 'error'); alert('Gagal simpan! ' + error.message); }
         else {
-            showStatus(cepat ? `✅ Tersimpan (timbang cepat): ${bundlesBulat} bundle` : `✅ Box ke-${nBox + 1} tersimpan: ${bundlesBulat} bundle`, 'success');
+            showStatus(cepat ? `✅ Tersimpan (timbang cepat): ${bundlesBulat} bundle` : `✅ Box ke-${nBox + 1} tersimpan: ${bundlesBulat} bundle → total ${sudah + bundlesBulat} / ${r.qty_minta}${sudah + bundlesBulat >= r.qty_minta ? ' ✅ TARGET TERCAPAI' : ''}`, 'success');
             catatLog('TIMBANG', `PI ${r.no_pi} ${size} ${gsm}gsm ${leaves}lv ${jenis} = ${bundlesBulat} bundle ${cepat ? '(timbang cepat)' : '(permintaan #' + pmId + ')'}`);
             $('berat').value = ''; $('berat').focus();
             currentPage = 1; currentSearch = ""; $('searchInput').value = "";
@@ -1423,7 +1494,7 @@
         stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas, x.watermark)] = x.qty);
         stMap = {}; (n.data || []).forEach(x => stMap[x.permintaan_id] = x);
         renderPermintaan();
-        if (user.role === 'admin') { fillPmPi(); onPmPiInput(true); }
+        if (user.role === 'admin') { fillPmPi(); onPmPiInput(true); } else fillLcPm();
     }
     function cardHtml(r, role) {
         const warna = STATUS_WARNA[r.status] || '#64748b';
@@ -1452,6 +1523,7 @@
             if (r.status === 'Diminta') acts += `<button class="mini" style="background:#f59e0b" data-act="editqty" data-id="${r.id}">✏️ Ubah qty</button>`;
             if (AKTIF.includes(r.status) && !nota) acts += `<button class="mini" style="background:#ef4444" data-act="batal" data-id="${r.id}">✖ Batalkan</button>`;
         }
+        if (nota) acts += `<button class="mini" style="background:#8b5cf6" data-act="gotonota" data-id="${r.id}">🧾 Lihat nota</button>`;
         if (r.box_siap > 0 || dt > 0) acts += `<button class="mini" style="background:#0891b2" data-act="lihat" data-id="${r.id}">📋 Lihat timbangan</button>`;
         const stokInfo = (role === 'leader' && aktifL) ? `<span class="${stok > 0 ? 'good' : 'stok-nol'}">Stok tersedia: ${stok}</span>` : '';
         return `<div class="pcard" style="border-left-color:${warna}">
@@ -1460,7 +1532,7 @@
             <div class="nums">${qtyPiSpan(r)}<span>Diminta: <b>${r.qty_minta}</b></span><span>Box siap: <b>${r.box_siap}</b></span><span>Estimasi: <b>${r.qty_siap}</b></span>${aktifL && kurang > 0 ? `<span>Kurang (est.): <b>${kurang}</b></span>` : ''}${stokInfo ? `<span>${stokInfo}</span>` : ''}${sel ? `<span>${sel}</span>` : ''}</div>
             ${r.catatan ? `<div class="meta">📝 Admin: ${esc(r.catatan)}</div>` : ''}
             ${r.catatan_leader ? `<div class="meta">🏭 Leader: ${esc(r.catatan_leader)}</div>` : ''}
-            ${nota ? `<div class="meta">🧾 Nota ${esc(nota.no_dokumen)} (${esc(nota.status)}) - lihat tab Serah Terima</div>` : ''}
+            ${nota ? `<div class="meta">🧾 Nota ${esc(nota.no_dokumen)} (${esc(nota.status)})</div>` : ''}
             <div class="meta">Diminta ${esc(r.diminta_oleh || '-')} · ${fmtWaktu(r.created_at)}${r.disiapkan_oleh ? ' · Disiapkan ' + esc(r.disiapkan_oleh) : ''}${r.diterima_oleh ? ' · Diterima ' + esc(r.diterima_oleh) : ''}</div>
             ${acts ? `<div class="acts">${acts}</div>` : ''}</div>`;
     }
@@ -1505,10 +1577,11 @@
         const stok = stokMap[specKey(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas, r.watermark)] || 0;
         let ok = false;
         if (act === 'lihat') { await lihatTimbangan(r); return; }
+        if (act === 'gotonota') { const n = stMap[r.id]; $('ntFilter').value = 'SEMUA'; $('ntSearch').value = n ? n.no_dokumen : ''; showPage('page8'); return; }
         if (act === 'stok') {
             if (!requireRole('leader')) return;
             if (stok <= 0) { alert('Stok untuk spesifikasi ini kosong. Gunakan "Mulai produksi".'); return; }
-            const d = await dialog({ title: '📦 Siapkan dari stok', info: ringkas + `<br>Stok tersedia: <b>${stok}</b> bundle`, qty: { label: 'Jumlah box', value: '' }, qty2: { label: 'Estimasi bundle per box (dari mesin guillotine)', value: estLama }, note: { label: 'Catatan (opsional)' }, ok: 'Siapkan' });
+            const d = await dialog({ title: '📦 Siapkan dari stok', info: ringkas + `<br>Stok tersedia: <b>${stok}</b> bundle`, qty: { label: 'Jumlah box', value: (estTersimpan(id) || {}).box || '' }, qty2: { label: 'Estimasi bundle per box (hitung dari box contoh / guillotine)', value: (estTersimpan(id) || {}).avg || estLama }, note: { label: 'Catatan (opsional)' }, ok: 'Siapkan' });
             if (!d) return;
             if (d.qty * d.qty2 > stok) { alert(`Stok tidak cukup: ${d.qty} x ${d.qty2} = ${d.qty * d.qty2}, tersedia ${stok}`); return; }
             ok = await rpc('siapkan_dari_stok', { p_id: id, p_box: d.qty, p_est: d.qty2, p_oleh: user.nama, p_catatan: d.note });
@@ -1519,7 +1592,7 @@
             ok = await rpc('tandai_produksi', { p_id: id, p_oleh: user.nama, p_catatan: d.note });
         } else if (act === 'selesaiprod') {
             if (!requireRole('leader')) return;
-            const d = await dialog({ title: '✅ Input hasil produksi', info: ringkas + '<br>Box hasil produksi ini langsung dipakai untuk permintaan.', qty: { label: 'Jumlah box', value: '' }, qty2: { label: 'Estimasi bundle per box (dari mesin guillotine)', value: estLama }, note: { label: 'Catatan (opsional)' }, ok: 'Simpan' });
+            const d = await dialog({ title: '✅ Input hasil produksi', info: ringkas + '<br>Box hasil produksi ini langsung dipakai untuk permintaan.', qty: { label: 'Jumlah box', value: (estTersimpan(id) || {}).box || '' }, qty2: { label: 'Estimasi bundle per box (hitung dari box contoh / guillotine)', value: (estTersimpan(id) || {}).avg || estLama }, note: { label: 'Catatan (opsional)' }, ok: 'Simpan' });
             if (!d) return;
             ok = await rpc('selesai_produksi', { p_id: id, p_box: d.qty, p_est: d.qty2, p_oleh: user.nama, p_catatan: d.note });
         } else if (act === 'siap') {
@@ -1537,14 +1610,15 @@
             ok = await rpc('buka_kembali', { p_id: id, p_oleh: user.nama });
         } else if (act === 'nota') {
             if (!requireRole('admin')) return;
-            const dt = pmTimbang[id] || 0;
-            const d = await dialog({ title: '🧾 Buat nota serah terima', info: ringkas + `<br>Hasil timbang tercatat: <b>${pmBox[id] || 0} dari ${r.box_siap} box = ${dt} bundle</b>.`
-                + ((pmBox[id] || 0) !== r.box_siap ? `<br><b class="bad">⚠️ Jumlah box yang ditimbang (${pmBox[id] || 0}) berbeda dari yang disiapkan Leader (${r.box_siap}).</b>` : '')
-                + (r.qty_siap > 0 && Math.abs(dt - r.qty_siap) / r.qty_siap > 0.1 ? `<br><b class="bad">⚠️ Hasil timbang berbeda ${Math.round(Math.abs(dt - r.qty_siap) / r.qty_siap * 100)}% dari estimasi Leader. Periksa lagi.</b>` : '')
+            const dt = pmTimbang[id] || 0, nb = pmBox[id] || 0, sisaBox = r.box_siap - nb, selT = dt - r.qty_minta;
+            const d = await dialog({ title: '🧾 Buat nota serah terima', info: ringkas + `<br>Hasil timbang tercatat: <b>${nb} box = ${dt} bundle</b> (target ${r.qty_minta}).`
+                + (selT >= 0 ? `<br><b class="good">✅ Target tercapai${selT > 0 ? ' (lebih ' + selT + ' karena box utuh)' : ''}.</b>` : `<br><b class="bad">⚠️ Masih kurang ${-selT} bundle dari permintaan.</b>`)
+                + (sisaBox > 0 ? `<br>ℹ️ ${sisaBox} box yang disiapkan Leader tidak ditimbang → <b>tidak ikut diserahkan</b>, tetap di Leader dan tetap dihitung sebagai stok.` : (sisaBox < 0 ? `<br><b class="bad">⚠️ Box yang ditimbang (${nb}) lebih banyak dari yang disiapkan (${r.box_siap}).</b>` : ''))
+                + (r.qty_siap > 0 && Math.abs(dt - r.qty_siap) / r.qty_siap > 0.1 ? `<br>ℹ️ Hasil timbang berbeda ${Math.round(Math.abs(dt - r.qty_siap) / r.qty_siap * 100)}% dari estimasi Leader (${r.qty_siap}). Wajar bila estimasi guillotine kurang akurat; stok disesuaikan otomatis dengan hasil timbang.` : '')
                 + '<br><b>Setelah nota dibuat, data timbang permintaan ini terkunci.</b>', note: { label: 'Catatan nota (opsional)' }, ok: 'Buat nota' });
             if (!d) return;
             ok = await rpc('buat_serah_terima', { p_permintaan_id: id, p_oleh: user.nama, p_catatan: d.note });
-            if (ok) { await loadPermintaan(); showPage('page8'); return; }
+            if (ok) { await loadPermintaan(); $('ntFilter').value = 'Menunggu'; $('ntSearch').value = ''; showPage('page8'); return; }
         } else if (act === 'batal') {
             if (!requireRole('admin')) return;
             const d = await dialog({ title: '✖ Batalkan permintaan', info: ringkas + (r.qty_siap > 0 ? `<br><b>${r.qty_siap} bundle yang sudah disiapkan akan dikembalikan ke stok.</b>` : ''), note: { label: 'Alasan pembatalan', required: true }, ok: 'Batalkan' });
@@ -1586,17 +1660,25 @@
             <div class="nums"><span class="${sel === 0 ? 'good' : sel > 0 ? 'bad' : 'warn'}">Vs permintaan: ${sel === 0 ? 'sesuai' : sel > 0 ? 'LEBIH ' + sel : 'kurang ' + (-sel)}</span><span>Vs estimasi: ${selEst > 0 ? '+' : ''}${selEst}</span></div>
             <div class="meta">Admin: ${apv(s.admin_setuju_oleh, s.admin_setuju_at)}<br>Leader: ${apv(s.leader_setuju_oleh, s.leader_setuju_at)}</div>
             ${s.catatan ? `<div class="meta">📝 ${esc(s.catatan)}</div>` : ''}
-            <div class="meta">Dibuat ${esc(s.dibuat_oleh || '-')} · ${fmtWaktu(s.created_at)}</div>
+            <div class="meta">Dibuat ${esc(s.dibuat_oleh || '-')} · ${fmtWaktu(s.created_at)}${s.selesai_at ? ' · Selesai ' + fmtWaktu(s.selesai_at) : ''}</div>
+            <details class="rinci"><summary>📋 Lihat rincian ${(s.rincian || []).length} box</summary><div style="overflow-x:auto;"><table><thead><tr><th>Box</th><th>Tgl</th><th>Jenis box</th><th>Layer</th><th>Timbang</th><th>Bundles</th></tr></thead><tbody>${(Array.isArray(s.rincian) ? s.rincian : []).map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.tanggal || '')}</td><td>${esc(x.jenis_box || '')}</td><td>${x.jumlah_layer || 0}</td><td>${Number(x.berat_timbang_kg || 0).toFixed(2)}</td><td><b>${x.jumlah_bundles}</b></td></tr>`).join('')}</tbody></table></div></details>
             <div class="acts">${acts}</div></div>`;
     }
     function renderSerahTerima() {
         if (!user) return;
-        const f = $('ntFilter').value || 'Menunggu', s = $('ntSearch').value.trim().toLowerCase();
+        const f = $('ntFilter').value || 'SEMUA', s = $('ntSearch').value.trim().toLowerCase(), per = $('ntPeriode').value;
         let list = stRows.filter(r => f === 'SEMUA' ? true : r.status === f);
+        if (per !== '') { const batas = new Date(); batas.setHours(0, 0, 0, 0); batas.setDate(batas.getDate() - Number(per)); list = list.filter(r => new Date(r.created_at) >= batas); }
+        const cnt = st => stRows.filter(r => r.status === st).length, WN = { Menunggu: '#f59e0b', Disepakati: '#166534', Dibatalkan: '#94a3b8' };
+        $('ntPills').innerHTML = ['Menunggu', 'Disepakati', 'Dibatalkan'].map(st => `<span class="pill" style="background:${WN[st]}">${st}: ${cnt(st)}</span>`).join('');
         if (s) list = list.filter(r => [r.no_dokumen, r.no_pi, r.brand, r.jenis_kertas, r.watermark].join(' ').toLowerCase().includes(s));
+        const sep = list.filter(r => r.status === 'Disepakati');
+        $('ntRingkas').textContent = list.length ? `${list.length} nota ditampilkan` + (sep.length ? ` · ${sep.length} selesai · total diserahkan ${sep.reduce((a, r) => a + (r.total_bundles || 0), 0).toLocaleString('id-ID')} bundle (${sep.reduce((a, r) => a + (r.jumlah_box || 0), 0)} box)` : '') : '';
+        list.sort((a, b) => (a.status === 'Menunggu' ? 0 : 1) - (b.status === 'Menunggu' ? 0 : 1) || b.id - a.id);
         $('ntList').innerHTML = list.length ? list.map(notaCard).join('') : '<div style="text-align:center;padding:16px;color:#64748b;">📭 Tidak ada nota</div>';
     }
     $('ntFilter').addEventListener('change', renderSerahTerima);
+    $('ntPeriode').addEventListener('change', renderSerahTerima);
     $('ntSearch').addEventListener('input', renderSerahTerima);
     $('ntList').addEventListener('click', async e => {
         const b = e.target.closest('button[data-act]'); if (!b) return;
@@ -1631,7 +1713,8 @@
         $('apvModal').style.display = 'none';
         await loadSerahTerima();
         if (data === 'DISEPAKATI') {
-            alert('✅ Kedua pihak setuju. Serah terima SELESAI dan stok sudah disesuaikan dengan hasil timbang.');
+            $('ntFilter').value = 'Disepakati'; renderSerahTerima();
+            alert('✅ Kedua pihak setuju. Serah terima SELESAI dan stok sudah disesuaikan dengan hasil timbang.\n\nNota tersimpan permanen di menu Serah Terima → filter "Selesai / Disepakati" (bisa dicetak ulang kapan saja).');
             const s = stRows.find(x => x.id === apvId);
             if (s && confirm('Cetak nota 2 rangkap sekarang?')) cetakNota(s);
         } else alert('✅ Persetujuan tercatat. Menunggu pihak lainnya.');
@@ -1927,6 +2010,55 @@
         if (e.target === cetakModal) cetakModal.style.display = 'none';
         if (e.target === cetakBarcodeModal) cetakBarcodeModal.style.display = 'none';
     };
+
+    // ========== HITUNG ESTIMASI (Leader) ==========
+    let lcSampel = [];
+    function lcPmAktif() { return pmData.find(x => String(x.id) === $('lcPm').value); }
+    function lcSimpanLokal() { try { const r = lcPmAktif(); if (r) localStorage.setItem('lc_' + r.id, JSON.stringify(lcSampel)); } catch (e) {} }
+    function lcMuatLokal() { lcSampel = []; try { const r = lcPmAktif(); if (r) lcSampel = JSON.parse(localStorage.getItem('lc_' + r.id) || '[]'); } catch (e) {} }
+    function fillLcPm() {
+        const el = $('lcPm'); if (!el) return; const prev = el.value;
+        const ls = pmData.filter(r => ['Diminta', 'Diproses', 'Produksi'].includes(r.status));
+        el.innerHTML = '<option value="">— isi spesifikasi manual —</option>' + ls.map(r => `<option value="${r.id}">#${r.id} · ${esc(r.no_pi)} · ${esc(r.brand)} · ${esc(r.size_kertas)} · ${r.gsm}gsm · ${r.qty_minta}</option>`).join('');
+        if (ls.some(r => String(r.id) === prev)) el.value = prev;
+    }
+    $('lcPm').addEventListener('change', () => {
+        const r = lcPmAktif();
+        if (r) { $('lcJenis').value = r.jenis_kertas; $('lcWm').value = r.watermark; $('lcSize').value = r.size_kertas; $('lcGsm').value = r.gsm; $('lcLeaves').value = r.leaves; $('lcTarget').value = r.qty_minta; }
+        ['lcJenis', 'lcWm', 'lcSize', 'lcGsm', 'lcLeaves'].forEach(x => $(x).disabled = !!r);
+        lcMuatLokal(); lcRender();
+    });
+    function lcBundles(berat) {
+        const bersih = berat - beratBoxMap[$('lcBox').value] - (parseInt($('lcLayer').value) || 0) * BERAT_LAYER_KG;
+        if (bersih <= 0) return { err: 'Berat bersih negatif, periksa berat/jenis box/layer' };
+        const bb = beratBundleKG($('lcSize').value, $('lcGsm').value, $('lcLeaves').value, $('lcJenis').value);
+        if (!bb) return { err: 'Berat bundle spesifikasi ini belum terdaftar (minta Admin menambah di Master > Spesifikasi)' };
+        return { n: Math.ceil(Math.round(bersih / bb * 1e6) / 1e6) };
+    }
+    function lcRender() {
+        const n = lcSampel.length, tot = lcSampel.reduce((a, x) => a + x.b, 0), avg = n ? tot / n : 0, target = parseInt($('lcTarget').value) || 0;
+        const box = avg > 0 && target > 0 ? Math.ceil(target / avg) : 0;
+        $('lcHasil').style.display = n ? 'block' : 'none';
+        $('lcHasil').innerHTML = n ? `<div>Rata-rata <span class="big">${Math.round(avg).toLocaleString('id-ID')}</span> bundle/box <span style="color:#64748b">(dari ${n} box contoh${n > 1 ? `, terendah ${Math.min(...lcSampel.map(x => x.b))}, tertinggi ${Math.max(...lcSampel.map(x => x.b))}` : ''})</span></div>${box ? `<div style="margin-top:6px;">🎯 Untuk target ${target.toLocaleString('id-ID')} bundle ≈ <span class="big">${box}</span> box</div>` : ''}<div style="font-size:.75rem;color:#64748b;margin-top:4px;">Makin banyak box contoh, makin akurat. Isi box tiap mesin bisa berbeda, jadi ambil contoh dari beberapa box.</div>` : '';
+        $('lcRows').innerHTML = lcSampel.map((x, i) => `<tr><td>${i + 1}</td><td>${Number(x.kg).toFixed(2)}</td><td><b>${x.b}</b></td></tr>`).join('') || '<tr><td colspan="3" style="text-align:center">Belum ada box contoh</td></tr>';
+    }
+    $('lcTarget').addEventListener('input', lcRender);
+    $('lcTambahBtn').onclick = () => {
+        const kg = parseFloat($('lcBerat').value);
+        if (!(kg > 0)) { alert('Isi berat box contoh'); return; }
+        const r = lcBundles(kg); if (r.err) { alert('❌ ' + r.err); return; }
+        lcSampel.push({ kg, b: r.n }); lcSimpanLokal(); $('lcBerat').value = ''; $('lcBerat').focus(); lcRender();
+    };
+    $('lcUndoBtn').onclick = () => { lcSampel.pop(); lcSimpanLokal(); lcRender(); };
+    $('lcResetBtn').onclick = () => { if (lcSampel.length && !confirm('Kosongkan semua box contoh?')) return; lcSampel = []; lcSimpanLokal(); lcRender(); };
+    $('lcPakaiBtn').onclick = () => {
+        const r = lcPmAktif(); if (!r) { alert('Pilih dulu permintaannya di bagian atas.'); return; }
+        if (!lcSampel.length) { alert('Tambahkan minimal 1 box contoh.'); return; }
+        const avg = Math.round(lcSampel.reduce((a, x) => a + x.b, 0) / lcSampel.length), box = Math.ceil(r.qty_minta / avg);
+        try { localStorage.setItem('est_' + r.id, JSON.stringify({ avg, box })); } catch (e) {}
+        alert(`✅ Tersimpan: ±${avg} bundle/box, ±${box} box untuk #${r.id}.\nSaat menekan "Siapkan dari stok" / "Hasil produksi", angka ini terisi otomatis (masih bisa diubah).`);
+    };
+    function estTersimpan(id) { try { return JSON.parse(localStorage.getItem('est_' + id) || 'null'); } catch (e) { return null; } }
 
     // ========== NOTIFIKASI ==========
     let notifSeen = null, notifRows = [], notifTimer = null, audioCtx = null, polling = false;
