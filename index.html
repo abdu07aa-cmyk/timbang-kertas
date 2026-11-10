@@ -1723,30 +1723,44 @@
         const rinci = Array.isArray(s.rincian) ? s.rincian : [];
         const f0 = n => Number(n || 0).toLocaleString('id-ID');
         const f2 = n => Number(n || 0).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        const rows = rinci.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.tanggal || '')}</td><td>${esc(x.jenis_box || '')}</td><td>${x.jumlah_layer || 0}</td><td>${f2(x.berat_timbang_kg)}</td><td>${f2(x.berat_bersih_kg)}</td><td><b>${f0(x.jumlah_bundles)}</b></td></tr>`).join('');
+        const nk = rinci.length <= 6 ? 1 : rinci.length <= 14 ? 2 : rinci.length <= 24 ? 3 : 4, per = Math.ceil(rinci.length / nk) || 1;
+        const kolom = Array.from({ length: nk }, (_, c) => rinci.slice(c * per, (c + 1) * per).map((x, i) => `<tr><td>${c * per + i + 1}</td><td>${f2(x.berat_timbang_kg)}</td><td><b>${f0(x.jumlah_bundles)}</b></td></tr>`).join('')).filter(Boolean);
+        const tabelBox = `<div class="kolom">${kolom.map(k => `<table class="mini"><thead><tr><th>Box</th><th>Timbang (kg)</th><th>Bundles</th></tr></thead><tbody>${k}</tbody></table>`).join('')}</div>`;
         const sel = s.total_bundles - s.qty_minta;
         const selTxt = sel === 0 ? 'Sesuai permintaan' : sel > 0 ? `Lebih ${f0(sel)} bundle dari permintaan` : `Kurang ${f0(-sel)} bundle dari permintaan`;
         const stat = s.status === 'Disepakati' ? 'DISEPAKATI' : s.status === 'Dibatalkan' ? 'DIBATALKAN' : 'BELUM DISEPAKATI';
         const ttd = (nama, at) => nama ? `<div style="height:50px;"></div><div class="ttd-line"></div><div><b>${esc(nama)}</b></div><div style="font-size:9px;">Disetujui di aplikasi ${esc(fmtWaktu(at))}</div>` : `<div style="height:50px;"></div><div class="ttd-line"></div><div><b>( ........................ )</b></div><div style="font-size:9px;">belum disetujui di aplikasi</div>`;
         const hal = (label, warna) => `<div class="hal">
-            <div class="header"><h1>THE ROLLING PAPER COMPANY</h1><h2>NOTA SERAH TERIMA KERTAS</h2><p>${ALAMAT}</p></div>
-            <div style="float:right;font-weight:bold;color:${warna};border:2px solid ${warna};padding:4px 12px;border-radius:6px;">${label}</div>
-            <div class="nomor-dokumen" style="clear:both;">No. Dokumen: ${esc(s.no_dokumen)} &nbsp;|&nbsp; Status: ${stat} &nbsp;|&nbsp; Tanggal: ${esc(fmtWaktu(s.created_at))}</div>
-            <div class="serah-terima-box">
-                <div class="row"><div class="col-label">No. PI / Brand :</div><div class="col-value">${esc(s.no_pi)} / ${esc(s.brand)}</div></div>
-                <div class="row"><div class="col-label">Jenis Kertas :</div><div class="col-value">${esc(s.jenis_kertas)} · ${esc(s.watermark)}</div></div>
-                <div class="row"><div class="col-label">Size / GSM / Leaves :</div><div class="col-value">${esc(s.size_kertas)} / ${s.gsm} gsm / ${s.leaves} leaves</div></div>
-                <div class="row"><div class="col-label">Qty diminta :</div><div class="col-value">${f0(s.qty_minta)} bundle</div></div>
-                <div class="row"><div class="col-label">Estimasi Leader :</div><div class="col-value">${f0(s.estimasi_box)} box / ${f0(s.estimasi_bundles)} bundle</div></div>
-                <div class="row"><div class="col-label">HASIL TIMBANG BERSAMA :</div><div class="col-value"><b>${f0(s.jumlah_box)} box / ${f0(s.total_bundles)} bundle</b> (${f2(s.total_berat)} kg) - ${selTxt}</div></div>
-                ${s.catatan ? `<div class="row"><div class="col-label">Catatan :</div><div class="col-value">${esc(s.catatan)}</div></div>` : ''}
+            <div class="hd"><div><b class="firma">THE ROLLING PAPER COMPANY</b><br><span class="jdl">NOTA SERAH TERIMA KERTAS</span></div><div class="lbl" style="color:${warna};border-color:${warna};">${label}</div></div>
+            <div class="nomor">No. ${esc(s.no_dokumen)} &nbsp;|&nbsp; ${stat} &nbsp;|&nbsp; ${esc(fmtWaktu(s.created_at))}</div>
+            <div class="info">
+                <div><b>PI / Brand:</b> ${esc(s.no_pi)} / ${esc(s.brand)}</div>
+                <div><b>Kertas:</b> ${esc(s.jenis_kertas)} · ${esc(s.watermark)} · ${esc(s.size_kertas)} · ${s.gsm}gsm · ${s.leaves}lv</div>
+                <div><b>Diminta:</b> ${f0(s.qty_minta)} bundle &nbsp; <b>Estimasi Leader:</b> ${f0(s.estimasi_box)} box / ${f0(s.estimasi_bundles)}</div>
+                <div class="hasil"><b>HASIL TIMBANG:</b> ${f0(s.jumlah_box)} box / <b>${f0(s.total_bundles)} bundle</b> (${f2(s.total_berat)} kg) — ${selTxt}</div>
+                ${s.catatan ? `<div><b>Catatan:</b> ${esc(s.catatan)}</div>` : ''}
             </div>
-            <table><thead><tr><th>Box</th><th>Tanggal</th><th>Jenis box</th><th>Layer</th><th>Timbang (kg)</th><th>Bersih (kg)</th><th>Bundles</th></tr></thead><tbody>${rows}
-            <tr class="total-row"><td colspan="4"><b>TOTAL</b></td><td><b>${f2(s.total_berat)}</b></td><td></td><td><b>${f0(s.total_bundles)}</b></td></tr></tbody></table>
-            <div class="ttd-row"><div class="ttd-box"><div>Diserahkan oleh (Leader Mesin),</div>${ttd(s.leader_setuju_oleh, s.leader_setuju_at)}</div>
-            <div class="ttd-box"><div>Diterima oleh (Admin Timbang),</div>${ttd(s.admin_setuju_oleh, s.admin_setuju_at)}</div></div>
-            <div class="footer"><p>Dicetak pada: ${new Date().toLocaleString('id-ID')} | Lembar ini sebagai bukti serah terima</p></div></div>`;
-        bukaCetak(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(s.no_dokumen)}</title><style>${PRINT_CSS}.hal{page-break-after:always;padding-bottom:10px;}.hal:last-child{page-break-after:auto;}</style></head><body>${hal('ASLI - untuk Admin Timbang', '#1e3a8a')}${hal('COPY - untuk Leader Mesin', '#b45309')}</body></html>`);
+            ${tabelBox}
+            <div class="ttd"><div class="tb"><div>Diserahkan (Leader Mesin)</div>${ttd(s.leader_setuju_oleh, s.leader_setuju_at)}</div>
+            <div class="tb"><div>Diterima (Admin Timbang)</div>${ttd(s.admin_setuju_oleh, s.admin_setuju_at)}</div></div>
+            <div class="ft">${ALAMAT} · Dicetak ${new Date().toLocaleString('id-ID')}</div></div>`;
+        const NOTA_CSS = `@page{size:A4 portrait;margin:7mm;}
+            *{margin:0;padding:0;box-sizing:border-box;} body{font-family:Arial,sans-serif;font-size:11px;color:#000;background:#fff;}
+            .lembar{width:196mm;height:283mm;display:flex;flex-direction:column;overflow:hidden;}
+            .hal{flex:1 1 0;min-height:0;overflow:hidden;padding:3mm 2mm;transform-origin:top left;}
+            .hal+.hal{border-top:1.5px dashed #888;}
+            .hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1e3a8a;padding-bottom:3px;}
+            .firma{font-size:14px;color:#1e3a8a;letter-spacing:1px;} .jdl{font-size:11px;font-weight:bold;}
+            .lbl{font-weight:bold;border:2px solid;padding:2px 8px;border-radius:5px;font-size:10px;}
+            .nomor{background:#f1f5f9;text-align:center;font-weight:bold;padding:2px;margin:3px 0;font-size:10px;}
+            .info{border:1.5px solid #1e3a8a;border-radius:6px;padding:4px 6px;line-height:1.5;} .hasil{background:#fef9c3;padding:1px 3px;}
+            .kolom{display:flex;gap:6px;margin:4px 0;align-items:flex-start;}
+            table.mini{flex:1;border-collapse:collapse;font-size:10px;} table.mini th,table.mini td{border:1px solid #999;padding:1px 3px;text-align:center;}
+            table.mini th{background:#1e3a8a;color:#fff;}
+            .ttd{display:flex;justify-content:space-around;margin-top:4px;text-align:center;font-size:10px;} .tb{width:44%;}
+            .ttd-line{margin-top:2px;border-top:1px solid #000;} .ft{margin-top:3px;text-align:center;font-size:8px;color:#555;}`;
+        const FIT = `<script>(function(){var hs=document.querySelectorAll('.hal');hs.forEach(function(el){var inner=el.scrollHeight,box=el.clientHeight;if(inner>box+1){var z=box/inner;el.style.zoom=z;}});})();<\/script>`;
+        bukaCetak(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(s.no_dokumen)}</title><style>${NOTA_CSS}</style></head><body><div class="lembar">${hal('ASLI - untuk Admin', '#1e3a8a')}${hal('COPY - untuk Leader', '#b45309')}</div>${FIT}</body></html>`);
         catatLog('CETAK_NOTA', s.no_dokumen);
     }
 
