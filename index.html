@@ -721,6 +721,7 @@ body.sbOn #sidebar{display:flex;}
 #gpHost .gm-masuk .radio-group{flex-direction: column; gap: 8px;}
 #gpHost .gm-masuk table{font-size: 9px; min-width: 1000px;}
 #gpHost .gm-masuk th,#gpHost .gm-masuk td{padding: 3px;}}
+#gpHost .gm-ret .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-ret .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-ret label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-ret input,#gpHost .gm-ret select,#gpHost .gm-ret textarea{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-ret button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-ret .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold}
 </style>
 </head>
 <body>
@@ -1275,7 +1276,7 @@ body.sbOn #sidebar{display:flex;}
 <script>
 // ========== KONEKSI SUPABASE GUDANG PRO (login email + modul gudang) ==========
 window.GUDANG_URL = 'https://txvgclavcmhyxamxgvsi.supabase.co';
-window.GUDANG_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4dmdjbGF2Y21oeXhhbXhndnNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzEyMDgsImV4cCI6MjA5MzEwNzIwOH0.oq3lH7_mRR-TIUV0sW8EtbYqS2SjmKOzneSrV3n45mY';   // <- ganti dengan anon key project Gudang Pro (lihat config.js Gudang Pro)
+window.GUDANG_KEY = 'ISI_ANON_KEY_GUDANG_PRO';   // <- ganti dengan anon key project Gudang Pro (lihat config.js Gudang Pro)
 window.GP_KEY_OK = !/^ISI_/.test(window.GUDANG_KEY);
 window.sbG = window.supabase.createClient(window.GUDANG_URL, window.GP_KEY_OK ? window.GUDANG_KEY : 'x.y.z', { auth: { persistSession: true, storageKey: 'gp_auth' } });
 window.GP = { mods: {}, params: new URLSearchParams(), me: null, toast: function(m){ alert(m); }, log: function(){}, go: function(){} };
@@ -5610,6 +5611,70 @@ NS.mount = async function(host){
 };
 })();
 
+(function(){
+const sb = window.sbG, GP = window.GP;
+const NS = GP.mods.ret = {};
+let rows = [], mine = [];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Number(n || 0).toLocaleString('id-ID');
+const WARNA = { PENDING:'#b45309', DIPROSES:'#1d4ed8', SELESAI:'#15803d', DITOLAK:'#b91c1c' };
+NS.mount = async function(host){
+  const admin = !!GP.me.admin;
+  host.innerHTML = '<div class="gm-ret">' +
+    (admin ? '' : '<div class="card"><div class="card-title">↩️ Ajukan Return</div>' +
+      '<label>Barang yang pernah diserahkan</label><select id="retPerm"></select>' +
+      '<label>Jenis masalah</label><select id="retTipe"><option value="NG">NG / barang cacat</option><option value="KURANG">Kekurangan jumlah pengiriman</option></select>' +
+      '<label>Jumlah (pcs)</label><input type="number" id="retQty" min="1" placeholder="0">' +
+      '<label>Keterangan</label><textarea id="retNote" rows="2" placeholder="Jelaskan masalahnya"></textarea>' +
+      '<button class="btn-primary" id="retSave" style="margin-top:12px">Kirim Pengajuan Return</button><div id="retMsg" style="margin-top:8px;font-size:13px"></div></div>') +
+    '<div class="card"><div class="card-title">' + (admin ? '📋 Pengajuan Return' : '📋 Pengajuan Saya') + '</div><div id="retList" style="overflow-x:auto"></div></div></div>';
+  if (!admin) { host.querySelector('#retSave').onclick = save; await loadMine(); }
+  await load();
+};
+async function loadMine(){
+  const { data } = await sb.from('permintaan_produksi').select('id,no_pi,brand,jenis,qty_diberikan,processed_at').eq('status','SELESAI').eq('requested_by', GP.me.email).order('processed_at',{ascending:false}).limit(100);
+  mine = data || [];
+  const el = document.getElementById('retPerm');
+  el.innerHTML = '<option value="">-- Pilih --</option>' + mine.map(r => `<option value="${r.id}">${esc(r.no_pi)} - ${esc(r.brand)} ${esc(r.jenis)} (diterima ${fmt(r.qty_diberikan)})</option>`).join('');
+}
+async function load(){
+  let q = sb.from('return_produksi').select('*').order('created_at',{ascending:false}).limit(200);
+  if (!GP.me.admin) q = q.eq('requested_by', GP.me.email);
+  const { data, error } = await q;
+  const el = document.getElementById('retList');
+  if (error) { el.innerHTML = '<div style="color:#b91c1c">❌ ' + esc(error.message) + '<br><small>Tabel return_produksi belum dibuat? Jalankan SQL return di Supabase Gudang Pro.</small></div>'; return; }
+  rows = data || [];
+  if (!rows.length) { el.innerHTML = '<div style="color:#64748b;padding:10px">Belum ada pengajuan return.</div>'; return; }
+  const admin = !!GP.me.admin;
+  el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">Tanggal</th><th>Pengaju</th><th>PI / Barang</th><th>Jenis</th><th>Qty</th><th>Keterangan</th><th>Status</th>' + (admin ? '<th>Aksi</th>' : '') + '</tr></thead><tbody>' +
+    rows.map(r => `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${new Date(r.created_at).toLocaleDateString('id-ID')}</td><td>${esc((r.requested_by||'').split('@')[0])}</td><td>${esc(r.no_pi)}<br>${esc(r.brand)} ${esc(r.jenis)}</td><td>${r.tipe === 'NG' ? 'NG' : 'Kurang'}</td><td>${fmt(r.qty)}</td><td>${esc(r.catatan)}${r.alasan_tolak ? '<br><i>Tolak: ' + esc(r.alasan_tolak) + '</i>' : ''}</td><td><b style="color:${WARNA[r.status]||'#475569'}">${esc(r.status)}</b></td>` +
+      (admin ? `<td style="white-space:nowrap">${r.status === 'PENDING' ? `<button onclick="GP.mods.ret.aksi(${r.id},'DIPROSES')">▶ Proses</button> <button onclick="GP.mods.ret.aksi(${r.id},'DITOLAK')">❌ Tolak</button>` : r.status === 'DIPROSES' ? `<button onclick="GP.mods.ret.aksi(${r.id},'SELESAI')">✅ Selesai</button>` : ''}</td>` : '') + '</tr>').join('') + '</tbody></table>';
+}
+async function save(){
+  const msg = document.getElementById('retMsg');
+  const p = mine.find(x => String(x.id) === document.getElementById('retPerm').value);
+  const qty = parseInt(document.getElementById('retQty').value);
+  if (!p) { msg.style.color = '#b91c1c'; msg.textContent = 'Pilih barang dulu'; return; }
+  if (!qty || qty <= 0) { msg.style.color = '#b91c1c'; msg.textContent = 'Jumlah tidak valid'; return; }
+  const note = document.getElementById('retNote').value.trim();
+  if (!note) { msg.style.color = '#b91c1c'; msg.textContent = 'Isi keterangan'; return; }
+  const { error } = await sb.from('return_produksi').insert([{ permintaan_id: p.id, no_pi: p.no_pi, brand: p.brand, jenis: p.jenis, tipe: document.getElementById('retTipe').value, qty, catatan: note, status: 'PENDING', requested_by: GP.me.email }]);
+  if (error) { msg.style.color = '#b91c1c'; msg.textContent = '❌ ' + error.message; return; }
+  GP.log('AJUKAN RETURN', `${GP.me.email}: ${qty} ${p.brand} ${p.jenis} (${p.no_pi})`);
+  GP.toast('Pengajuan return terkirim', 'success');
+  document.getElementById('retQty').value = ''; document.getElementById('retNote').value = ''; msg.textContent = '';
+  await load();
+}
+NS.aksi = async function(id, st){
+  const upd = { status: st, processed_by: GP.me.email, processed_at: new Date().toISOString() };
+  if (st === 'DITOLAK') { const a = prompt('Alasan menolak:'); if (!a) return; upd.alasan_tolak = a; }
+  const { error } = await sb.from('return_produksi').update(upd).eq('id', id);
+  if (error) { alert('Gagal: ' + error.message); return; }
+  GP.log('RETURN ' + st, 'Return #' + id);
+  await load();
+};
+})();
+
 </script>
 <script>
 (function() {
@@ -5655,17 +5720,18 @@ NS.mount = async function(host){
     const LEADER_MESIN_EMAILS = [];   // opsional: email akun yang dianggap Leader Mesin (selain user_profiles.role berisi 'mesin')
     const TABS = {
         produksi: [],
+        qc: [],
         admin:  [['page1','📦 Timbang'],['page2','📜 Riwayat'],['page3','📝 Permintaan'],['page8','🧾 Serah Terima'],['page6','🗂️ Master'],['page7','📋 Log']],
         leader: [['page4','🏭 Antrian'],['page9','🧮 Hitung'],['page5','📊 Stok'],['page8','🧾 Serah Terima'],['page6','🗂️ Master'],['page7','📋 Log']]
     };
     const MENU = [
-        ['UTAMA', [['gp:dash','📊','Dashboard',['admin','leader','produksi']]]],
+        ['UTAMA', [['gp:dash','📊','Dashboard',['admin','leader','produksi','qc']]]],
         ['GUDANG', [['gp:pi','📝','Input PI',['admin']],['gp:masuk','📥','Barang Masuk',['admin']]]],
-        ['PRODUKSI', [['gp:qc','🔍','QC Inspection',['admin','produksi']],['gp:diecut','✂️','Proses Diecut',['admin','produksi']],['gp:perm','📋','Permintaan Produksi',['admin','produksi']]]],
+        ['PRODUKSI', [['gp:qc','🔍','QC Inspection',['admin','qc']],['gp:diecut','✂️','Proses Diecut',['admin','leader']],['gp:perm','📋','Permintaan Produksi',['admin','produksi']],['gp:ret','↩️','Return Produksi',['admin','produksi']]]],
         ['TIMBANGAN KERTAS', [['page1','📦','Timbang',['admin']],['page2','📜','Riwayat',['admin']],['page3','📝','Permintaan Kertas',['admin']],['page4','🏭','Antrian',['leader']],['page9','🧮','Hitung',['leader']],['page5','📊','Stok Kertas',['leader']],['page8','🧾','Serah Terima',['admin','leader']],['page6','🗂️','Master',['admin','leader']],['page7','📋','Log',['admin','leader']]]]
     ];
-    const ROLE_LABEL = { admin: 'ADMIN', leader: 'LEADER MESIN', produksi: 'LEADER PRODUKSI' };
-    const ROLE_WARNA = { admin: '#1e3a8a', leader: '#b45309', produksi: '#0f766e' };
+    const ROLE_LABEL = { admin: 'ADMIN', leader: 'LEADER MESIN', produksi: 'LEADER PRODUKSI', qc: 'LEADER QC' };
+    const ROLE_WARNA = { admin: '#1e3a8a', leader: '#b45309', produksi: '#0f766e', qc: '#7c3aed' };
     const STATUS_WARNA = { Diminta:'#3b82f6', Diproses:'#f59e0b', Produksi:'#8b5cf6', Siap:'#10b981', Diterima:'#166534', Dibatalkan:'#94a3b8' };
     const AKTIF = ['Diminta','Diproses','Produksi','Siap'];
 
@@ -5784,6 +5850,7 @@ NS.mount = async function(host){
         const { data: prof } = await window.sbG.from('user_profiles').select('role,email').eq('email', authUser.email).maybeSingle();
         const gr = String((prof && prof.role) || '').toLowerCase();
         if (gr === 'admin') return { nama: 'Admin Timbang', role: 'admin', email, gp: true };
+        if (gr.includes('qc')) return { nama: email.split('@')[0], role: 'qc', email, gp: true };
         if (gr.includes('mesin') || LEADER_MESIN_EMAILS.map(x => x.toLowerCase()).includes(email)) return { nama: 'Leader Mesin', role: 'leader', email, gp: true };
         return { nama: email.split('@')[0], role: 'produksi', email, gp: true };
     }
@@ -5828,13 +5895,14 @@ NS.mount = async function(host){
         $('roleBadge').textContent = ROLE_LABEL[user.role] || '';
         $('roleBadge').style.background = ROLE_WARNA[user.role] || '#475569';
         $('mpImporBtn').style.display = user.role === 'admin' ? 'block' : 'none';
-        $('pinBtn').style.display = user.role === 'produksi' ? 'none' : '';
-        $('bellBtn').style.display = user.role === 'produksi' ? 'none' : '';
+        $('pinBtn').style.display = !HAS_T() ? 'none' : '';
+        $('bellBtn').style.display = !HAS_T() ? 'none' : '';
         window.GP.me = user.gp ? { email: user.email, admin: user.role === 'admin', role: user.role } : null;
-        if (user.role !== 'produksi') await loadMasterData();
+        if (HAS_T()) await loadMasterData();
         buildTabs();
-        if (user.role !== 'produksi') startNotif();
+        if (HAS_T()) startNotif();
     }
+    function HAS_T() { return user.role === 'admin' || user.role === 'leader'; }
     function menuAllowed(it) {
         if (!it[3].includes(user.role)) return false;
         if (it[0].startsWith('gp:')) return !!user.gp;
