@@ -1275,7 +1275,7 @@ body.sbOn #sidebar{display:flex;}
 <script>
 // ========== KONEKSI SUPABASE GUDANG PRO (login email + modul gudang) ==========
 window.GUDANG_URL = 'https://txvgclavcmhyxamxgvsi.supabase.co';
-window.GUDANG_KEY = 'Buka file, cari ISI_ANON_KEY_GUDANG_PRO, lalu ganti dengan anon key project Gudang Pro. Anda bisa menemukannya di config.js aplikasi Gudang Pro. Tanpa itu, login email belum bisa dipakai.';   // <- ganti dengan anon key project Gudang Pro (lihat config.js Gudang Pro)
+window.GUDANG_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4dmdjbGF2Y21oeXhhbXhndnNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzEyMDgsImV4cCI6MjA5MzEwNzIwOH0.oq3lH7_mRR-TIUV0sW8EtbYqS2SjmKOzneSrV3n45mY';   // <- ganti dengan anon key project Gudang Pro (lihat config.js Gudang Pro)
 window.GP_KEY_OK = !/^ISI_/.test(window.GUDANG_KEY);
 window.sbG = window.supabase.createClient(window.GUDANG_URL, window.GP_KEY_OK ? window.GUDANG_KEY : 'x.y.z', { auth: { persistSession: true, storageKey: 'gp_auth' } });
 window.GP = { mods: {}, params: new URLSearchParams(), me: null, toast: function(m){ alert(m); }, log: function(){}, go: function(){} };
