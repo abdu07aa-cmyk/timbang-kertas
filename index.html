@@ -721,7 +721,7 @@ body.sbOn #sidebar{display:flex;}
 #gpHost .gm-masuk .radio-group{flex-direction: column; gap: 8px;}
 #gpHost .gm-masuk table{font-size: 9px; min-width: 1000px;}
 #gpHost .gm-masuk th,#gpHost .gm-masuk td{padding: 3px;}}
-#gpHost .gm-ret .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-ret .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-ret label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-ret input,#gpHost .gm-ret select,#gpHost .gm-ret textarea{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-ret button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-ret .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold}
+#gpHost .gm-ret .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-ret .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-ret label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-ret input,#gpHost .gm-ret select,#gpHost .gm-ret textarea{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-ret button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold;border-radius:8px;cursor:pointer}#gpHost .gm-usr .card,#gpHost .gm-klr .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-usr .card-title,#gpHost .gm-klr .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-usr label,#gpHost .gm-klr label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-usr input,#gpHost .gm-usr select,#gpHost .gm-klr input,#gpHost .gm-klr select{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-usr button,#gpHost .gm-klr button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0}#gpHost .gm-ret .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold}
 </style>
 </head>
 <body>
@@ -1272,12 +1272,13 @@ body.sbOn #sidebar{display:flex;}
     </div>
 </div>
 
+<script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 // ========== KONEKSI SUPABASE GUDANG PRO (login email + modul gudang) ==========
-window.GUDANG_URL = 'https://txvgclavcmhyxamxgvsi.supabase.co';
-window.GUDANG_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR4dmdjbGF2Y21oeXhhbXhndnNpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MzEyMDgsImV4cCI6MjA5MzEwNzIwOH0.oq3lH7_mRR-TIUV0sW8EtbYqS2SjmKOzneSrV3n45mY';   // <- ganti dengan anon key project Gudang Pro (lihat config.js Gudang Pro)
-window.GP_KEY_OK = !/^ISI_/.test(window.GUDANG_KEY);
+// URL & anon key diambil dari config.js (file terpisah, supaya tidak perlu diisi ulang tiap update index.html)
+window.GUDANG_URL = window.GUDANG_URL || 'https://txvgclavcmhyxamxgvsi.supabase.co';
+window.GP_KEY_OK = !!window.GUDANG_KEY && !/^ISI_/.test(window.GUDANG_KEY);
 window.sbG = window.supabase.createClient(window.GUDANG_URL, window.GP_KEY_OK ? window.GUDANG_KEY : 'x.y.z', { auth: { persistSession: true, storageKey: 'gp_auth' } });
 window.GP = { mods: {}, params: new URLSearchParams(), me: null, toast: function(m){ alert(m); }, log: function(){}, go: function(){} };
 </script>
@@ -5621,18 +5622,20 @@ const WARNA = { PENDING:'#b45309', DIPROSES:'#1d4ed8', SELESAI:'#15803d', DITOLA
 NS.mount = async function(host){
   const admin = !!GP.me.admin;
   host.innerHTML = '<div class="gm-ret">' +
-    (admin ? '' : '<div class="card"><div class="card-title">↩️ Ajukan Return</div>' +
+    ('<div class="card"><div class="card-title">↩️ Ajukan Return</div>' +
       '<label>Barang yang pernah diserahkan</label><select id="retPerm"></select>' +
       '<label>Jenis masalah</label><select id="retTipe"><option value="NG">NG / barang cacat</option><option value="KURANG">Kekurangan jumlah pengiriman</option></select>' +
       '<label>Jumlah (pcs)</label><input type="number" id="retQty" min="1" placeholder="0">' +
       '<label>Keterangan</label><textarea id="retNote" rows="2" placeholder="Jelaskan masalahnya"></textarea>' +
       '<button class="btn-primary" id="retSave" style="margin-top:12px">Kirim Pengajuan Return</button><div id="retMsg" style="margin-top:8px;font-size:13px"></div></div>') +
     '<div class="card"><div class="card-title">' + (admin ? '📋 Pengajuan Return' : '📋 Pengajuan Saya') + '</div><div id="retList" style="overflow-x:auto"></div></div></div>';
-  if (!admin) { host.querySelector('#retSave').onclick = save; await loadMine(); }
+  host.querySelector('#retSave').onclick = save; await loadMine();
   await load();
 };
 async function loadMine(){
-  const { data } = await sb.from('permintaan_produksi').select('id,no_pi,brand,jenis,qty_diberikan,processed_at').eq('status','SELESAI').eq('requested_by', GP.me.email).order('processed_at',{ascending:false}).limit(100);
+  let mq = sb.from('permintaan_produksi').select('id,no_pi,brand,jenis,qty_diberikan,processed_at');
+  if (!GP.me.admin) mq = mq.eq('requested_by', GP.me.email);
+  const { data } = await mq.eq('status','SELESAI').order('processed_at',{ascending:false}).limit(100);
   mine = data || [];
   const el = document.getElementById('retPerm');
   el.innerHTML = '<option value="">-- Pilih --</option>' + mine.map(r => `<option value="${r.id}">${esc(r.no_pi)} - ${esc(r.brand)} ${esc(r.jenis)} (diterima ${fmt(r.qty_diberikan)})</option>`).join('');
@@ -5672,6 +5675,145 @@ NS.aksi = async function(id, st){
   if (error) { alert('Gagal: ' + error.message); return; }
   GP.log('RETURN ' + st, 'Return #' + id);
   await load();
+};
+})();
+
+(function(){
+const sb = window.sbG, GP = window.GP;
+const NS = GP.mods.users = {};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const OPTS = [['admin','Admin'],['leader_mesin','Leader Mesin'],['leader_qc','Leader QC'],['leader_produksi','Leader Produksi']];
+let rows = [];
+function norm(r){ r = String(r || '').toLowerCase(); if (r === 'admin') return 'admin'; if (r.includes('qc')) return 'leader_qc'; if (r.includes('mesin')) return 'leader_mesin'; return 'leader_produksi'; }
+NS.mount = async function(host){
+  if (!GP.me || !GP.me.admin) { host.innerHTML = '<div class="gm-usr"><div class="card">⛔ Hanya Admin.</div></div>'; return; }
+  host.innerHTML = '<div class="gm-usr"><div class="card"><div class="card-title">👥 Pengaturan Akun & Role</div>' +
+    '<div style="font-size:13px;color:#475569;margin-bottom:10px">Akun login dibuat di Supabase Gudang Pro (Authentication → Users). Di sini Anda mengatur role akun tersebut. Perubahan berlaku saat pengguna login ulang.</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:end"><div style="flex:2;min-width:180px"><label>Email akun</label><input id="usrEmail" type="email" placeholder="email@perusahaan.com"></div>' +
+    '<div style="flex:1;min-width:150px"><label>Role</label><select id="usrRole">' + OPTS.map(o => `<option value="${o[0]}">${o[1]}</option>`).join('') + '</select></div>' +
+    '<button class="btn-primary" id="usrAdd">➕ Tambah / Atur</button></div><div id="usrMsg" style="margin-top:8px;font-size:13px"></div></div>' +
+    '<div class="card"><div class="card-title">Daftar Akun</div><div id="usrList" style="overflow-x:auto"></div></div></div>';
+  document.getElementById('usrAdd').onclick = add;
+  await load();
+};
+async function load(){
+  const el = document.getElementById('usrList');
+  const { data, error } = await sb.from('user_profiles').select('*').order('email');
+  if (error) { el.innerHTML = '<div style="color:#b91c1c">❌ ' + esc(error.message) + '</div>'; return; }
+  rows = data || [];
+  el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">Email</th><th>Role di database</th><th>Role aplikasi</th><th>Aksi</th></tr></thead><tbody>' +
+    rows.map((r, i) => `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${esc(r.email)}</td><td>${esc(r.role)}</td><td><select id="usrSel${i}">${OPTS.map(o => `<option value="${o[0]}"${norm(r.role) === o[0] ? ' selected' : ''}>${o[1]}</option>`).join('')}</select></td><td style="white-space:nowrap"><button onclick="GP.mods.users.simpan(${i})">💾 Simpan</button> <button onclick="GP.mods.users.hapus(${i})">🗑️</button></td></tr>`).join('') + '</tbody></table>' +
+    (rows.length ? '' : '<div style="padding:10px;color:#64748b">Belum ada data.</div>');
+}
+function msg(t, ok){ const m = document.getElementById('usrMsg'); if (m) { m.style.color = ok ? '#15803d' : '#b91c1c'; m.textContent = t; } }
+async function setRole(email, role){
+  if (email.toLowerCase() === GP.me.email.toLowerCase() && role !== 'admin' && !confirm('Anda mengubah role akun Anda sendiri dari Admin. Lanjutkan?')) return false;
+  const ex = rows.find(r => String(r.email).toLowerCase() === email.toLowerCase());
+  const q = ex ? sb.from('user_profiles').update({ role }).eq('email', ex.email) : sb.from('user_profiles').insert([{ email, role }]);
+  const { error } = await q;
+  if (error) { alert('❌ Gagal: ' + error.message + '\n\nJika ini soal izin (RLS), admin perlu diberi hak ubah di tabel user_profiles.'); return false; }
+  GP.log('ATUR ROLE', email + ' → ' + role);
+  return true;
+}
+async function add(){
+  const email = document.getElementById('usrEmail').value.trim();
+  if (!/^\S+@\S+\.\S+$/.test(email)) { msg('Email tidak valid'); return; }
+  if (await setRole(email, document.getElementById('usrRole').value)) { msg('✅ Tersimpan', true); document.getElementById('usrEmail').value = ''; await load(); }
+}
+NS.simpan = async function(i){
+  const r = rows[i]; if (!r) return;
+  if (await setRole(r.email, document.getElementById('usrSel' + i).value)) { msg('✅ Role ' + r.email + ' diperbarui', true); await load(); }
+};
+NS.hapus = async function(i){
+  const r = rows[i]; if (!r) return;
+  if (String(r.email).toLowerCase() === GP.me.email.toLowerCase()) { alert('Tidak bisa menghapus akun sendiri.'); return; }
+  if (!confirm('Hapus pengaturan role untuk ' + r.email + '? (Akun login tidak ikut terhapus; ia akan menjadi Leader Produksi.)')) return;
+  const { error } = await sb.from('user_profiles').delete().eq('email', r.email);
+  if (error) { alert('❌ ' + error.message); return; }
+  GP.log('HAPUS ROLE', r.email);
+  await load();
+};
+})();
+
+(function(){
+const sb = window.sbG, GP = window.GP;
+const NS = GP.mods.keluar = {};
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Number(n || 0).toLocaleString('id-ID');
+let items = [];
+NS.mount = async function(host){
+  host.innerHTML = '<div class="gm-klr"><div class="card"><div class="card-title">📤 Barang Keluar</div>' +
+    '<label>No PI</label><select id="klrPi"><option value="">-- Pilih No PI --</option></select>' +
+    '<label>Item</label><select id="klrItem"><option value="">-- Pilih Item --</option></select>' +
+    '<div id="klrInfo" style="margin:8px 0;font-size:13px;color:#475569"></div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><label>Tanggal</label><input type="date" id="klrTgl"></div><div style="flex:1;min-width:140px"><label>Jumlah (pcs)</label><input type="number" id="klrQty" min="1"></div></div>' +
+    '<label>Keterangan / Tujuan</label><input id="klrKet" placeholder="mis. kirim ke customer, sample, dll">' +
+    '<button class="btn-primary" id="klrSave" style="margin-top:12px">Simpan Barang Keluar</button><div id="klrMsg" style="margin-top:8px;font-size:13px"></div></div>' +
+    '<div class="card"><div class="card-title">Riwayat Barang Keluar</div><div id="klrList" style="overflow-x:auto"></div></div></div>';
+  document.getElementById('klrTgl').value = new Date().toISOString().split('T')[0];
+  document.getElementById('klrPi').onchange = loadItems;
+  document.getElementById('klrItem').onchange = showInfo;
+  document.getElementById('klrSave').onclick = save;
+  const { data } = await sb.from('pi_header').select('id,no_pi,tanggal').eq('is_archived', false).order('id', { ascending: false });
+  document.getElementById('klrPi').innerHTML += (data || []).map(p => `<option value="${p.id}">${esc(p.no_pi)}</option>`).join('');
+  await loadHist();
+};
+async function stokMap(ids){
+  const m = {}; ids.forEach(i => m[i] = 0);
+  if (!ids.length) return m;
+  const [a, b] = await Promise.all([sb.from('barang_masuk').select('detail_id,qty').in('detail_id', ids), sb.from('barang_keluar').select('detail_id,qty').in('detail_id', ids)]);
+  (a.data || []).forEach(x => m[x.detail_id] += Number(x.qty || 0));
+  (b.data || []).forEach(x => m[x.detail_id] -= Number(x.qty || 0));
+  return m;
+}
+async function loadItems(){
+  const pid = document.getElementById('klrPi').value, sel = document.getElementById('klrItem');
+  sel.innerHTML = '<option value="">-- Pilih Item --</option>'; items = []; showInfo();
+  if (!pid) return;
+  const { data } = await sb.from('pi_detail').select('id,brand,jenis,paper,size,qty_pi').eq('pi_id', pid).order('id');
+  const sm = await stokMap((data || []).map(d => d.id));
+  items = (data || []).map(d => ({ ...d, stok: sm[d.id] || 0 }));
+  sel.innerHTML += items.map(d => `<option value="${d.id}">${esc(d.brand)} | ${esc(d.jenis)} | ${esc(d.paper)} | ${esc(d.size)} — stok ${fmt(d.stok)}</option>`).join('');
+}
+function showInfo(){
+  const d = items.find(x => String(x.id) === document.getElementById('klrItem').value);
+  document.getElementById('klrInfo').innerHTML = d ? `Qty PI: <b>${fmt(d.qty_pi)}</b> · Stok gudang saat ini: <b style="color:${d.stok > 0 ? '#15803d' : '#b91c1c'}">${fmt(d.stok)}</b>` : '';
+}
+function msg(t, ok){ const m = document.getElementById('klrMsg'); m.style.color = ok ? '#15803d' : '#b91c1c'; m.textContent = t; }
+async function save(){
+  const d = items.find(x => String(x.id) === document.getElementById('klrItem').value);
+  const qty = parseInt(document.getElementById('klrQty').value);
+  if (!d) { msg('Pilih PI dan item dulu'); return; }
+  if (!qty || qty <= 0) { msg('Jumlah tidak valid'); return; }
+  const tgl = document.getElementById('klrTgl').value; if (!tgl) { msg('Isi tanggal'); return; }
+  if (qty > d.stok && !confirm(`Stok hanya ${fmt(d.stok)}. Tetap keluarkan ${fmt(qty)}? (stok akan minus)`)) return;
+  const { error } = await sb.from('barang_keluar').insert([{ detail_id: d.id, tanggal: tgl, qty, keterangan: document.getElementById('klrKet').value.trim(), created_by: GP.me.email }]);
+  if (error) { msg('❌ ' + error.message); return; }
+  GP.log('BARANG KELUAR', `${qty} ${d.brand} ${d.jenis} (${document.getElementById('klrPi').selectedOptions[0].textContent})`);
+  GP.toast('Barang keluar tersimpan', 'success');
+  document.getElementById('klrQty').value = ''; document.getElementById('klrKet').value = ''; msg('');
+  await loadItems(); document.getElementById('klrItem').value = String(d.id); showInfo(); await loadHist();
+}
+async function loadHist(){
+  const el = document.getElementById('klrList');
+  const { data, error } = await sb.from('barang_keluar').select('*').order('id', { ascending: false }).limit(100);
+  if (error) { el.innerHTML = '<div style="color:#b91c1c">❌ ' + esc(error.message) + '</div>'; return; }
+  const rows = data || [];
+  if (!rows.length) { el.innerHTML = '<div style="padding:10px;color:#64748b">Belum ada barang keluar.</div>'; return; }
+  const dids = [...new Set(rows.map(r => r.detail_id))];
+  const det = (await sb.from('pi_detail').select('id,brand,jenis,pi_id').in('id', dids)).data || [];
+  const pids = [...new Set(det.map(d => d.pi_id))];
+  const hd = pids.length ? (await sb.from('pi_header').select('id,no_pi').in('id', pids)).data || [] : [];
+  const dm = {}; det.forEach(d => dm[d.id] = d); const hm = {}; hd.forEach(h => hm[h.id] = h.no_pi);
+  el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">Tanggal</th><th>PI</th><th>Barang</th><th>Qty</th><th>Keterangan</th><th>Oleh</th>' + (GP.me.admin ? '<th></th>' : '') + '</tr></thead><tbody>' +
+    rows.map(r => { const d = dm[r.detail_id] || {}; return `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${esc(r.tanggal)}</td><td>${esc(hm[d.pi_id] || '-')}</td><td>${esc(d.brand)} ${esc(d.jenis)}</td><td>${fmt(r.qty)}</td><td>${esc(r.keterangan)}</td><td>${esc(String(r.created_by || '').split('@')[0])}</td>` + (GP.me.admin ? `<td><button onclick="GP.mods.keluar.hapus(${r.id})">🗑️</button></td>` : '') + '</tr>'; }).join('') + '</tbody></table>';
+}
+NS.hapus = async function(id){
+  if (!confirm('Hapus catatan barang keluar ini? Stok akan bertambah kembali.')) return;
+  const { error } = await sb.from('barang_keluar').delete().eq('id', id);
+  if (error) { alert('❌ ' + error.message); return; }
+  GP.log('HAPUS BARANG KELUAR', '#' + id);
+  await loadItems(); await loadHist();
 };
 })();
 
@@ -5726,9 +5868,10 @@ NS.aksi = async function(id, st){
     };
     const MENU = [
         ['UTAMA', [['gp:dash','📊','Dashboard',['admin','leader','produksi','qc']]]],
-        ['GUDANG', [['gp:pi','📝','Input PI',['admin']],['gp:masuk','📥','Barang Masuk',['admin']]]],
+        ['GUDANG', [['gp:pi','📝','Input PI',['admin']],['gp:masuk','📥','Barang Masuk',['admin']],['gp:keluar','📤','Barang Keluar',['admin']]]],
         ['PRODUKSI', [['gp:qc','🔍','QC Inspection',['admin','qc']],['gp:diecut','✂️','Proses Diecut',['admin','leader']],['gp:perm','📋','Permintaan Produksi',['admin','produksi']],['gp:ret','↩️','Return Produksi',['admin','produksi']]]],
         ['TIMBANGAN KERTAS', [['page1','📦','Timbang',['admin']],['page2','📜','Riwayat',['admin']],['page3','📝','Permintaan Kertas',['admin']],['page4','🏭','Antrian',['leader']],['page9','🧮','Hitung',['leader']],['page5','📊','Stok Kertas',['leader']],['page8','🧾','Serah Terima',['admin','leader']],['page6','🗂️','Master',['admin','leader']],['page7','📋','Log',['admin','leader']]]]
+        ,['SISTEM', [['gp:users','👥','Pengaturan Akun',['admin']]]]
     ];
     const ROLE_LABEL = { admin: 'ADMIN', leader: 'LEADER MESIN', produksi: 'LEADER PRODUKSI', qc: 'LEADER QC' };
     const ROLE_WARNA = { admin: '#1e3a8a', leader: '#b45309', produksi: '#0f766e', qc: '#7c3aed' };
@@ -5737,6 +5880,8 @@ NS.aksi = async function(id, st){
 
     // ========== STATE ==========
     let user = null;
+    let actAs = null;
+    function curRole() { return actAs || (user && user.role); }
     let piList = [], jenisList = [], customBerat = [], piItems = [], piStatus = {}, piAktif = {}, piTutup = {}, wmList = [], userList = [], stMap = {}, pmBox = {};
     let pmData = [], pmTimbang = {}, stokMap = {};
     let currentPage = 1, currentSearch = "", currentEditId = null, currentOrderBy = "id", currentOrderAsc = false;
@@ -5784,7 +5929,7 @@ NS.aksi = async function(id, st){
         return true;
     }
     function requireRole(role) {
-        if (!user || user.role !== role) { alert('⛔ Menu ini hanya untuk ' + (role === 'admin' ? 'Admin Timbang' : 'Leader Mesin')); return false; }
+        if (!user || curRole() !== role) { alert('⛔ Menu ini hanya untuk ' + (role === 'admin' ? 'Admin Timbang' : 'Leader Mesin')); return false; }
         return true;
     }
 
@@ -5855,7 +6000,7 @@ NS.aksi = async function(id, st){
         return { nama: email.split('@')[0], role: 'produksi', email, gp: true };
     }
     $('loginEmailBtn').onclick = async () => {
-        if (!window.GP_KEY_OK) { setMsg('⚠️ Kunci Gudang Pro belum diisi di aplikasi. Gunakan login PIN, atau isi GUDANG_KEY dulu.'); return; }
+        if (!window.GP_KEY_OK) { setMsg('⚠️ Kunci Gudang Pro belum terbaca. Pastikan file config.js ada di folder yang sama dengan index.html dan GUDANG_KEY sudah diisi.'); return; }
         const email = $('loginEmail').value.trim(), pw = $('loginPass').value;
         if (!email || !pw) { setMsg('Isi email dan password'); return; }
         $('loginEmailBtn').disabled = true;
@@ -5903,10 +6048,12 @@ NS.aksi = async function(id, st){
         if (HAS_T()) startNotif();
     }
     function HAS_T() { return user.role === 'admin' || user.role === 'leader'; }
+    const ALL_T = ['page1','page2','page3','page4','page9','page5','page8','page6','page7'];
+    function tabAllowed(pid) { return user.role === 'admin' ? ALL_T.includes(pid) : TABS[user.role].some(t => t[0] === pid); }
     function menuAllowed(it) {
-        if (!it[3].includes(user.role)) return false;
+        if (user.role !== 'admin' && !it[3].includes(user.role)) return false;
         if (it[0].startsWith('gp:')) return !!user.gp;
-        return TABS[user.role].some(t => t[0] === it[0]);
+        return tabAllowed(it[0]);
     }
     function buildTabs() {
         document.body.classList.add('sbOn');
@@ -5936,7 +6083,8 @@ NS.aksi = async function(id, st){
         if (!user) return;
         const isGp = pid.startsWith('gp:');
         if (isGp) { if (!user.gp || !MENU.some(([, its]) => its.some(it => it[0] === pid && menuAllowed(it)))) return; }
-        else if (!TABS[user.role].some(t => t[0] === pid)) return;
+        else if (!tabAllowed(pid)) return;
+        actAs = (user.role === 'admin' && ['page4','page9','page5'].includes(pid)) ? 'leader' : null;
         document.querySelectorAll('#sbMenu .sbi').forEach(t => t.classList.toggle('active', t.dataset.page === pid));
         document.querySelectorAll('.page').forEach(p => p.classList.toggle('active-page', p.id === pid));
         $('mainContainer').classList.toggle('wide', isGp);
@@ -6605,7 +6753,7 @@ NS.aksi = async function(id, st){
         stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas, x.watermark)] = x.qty);
         stMap = {}; (n.data || []).forEach(x => stMap[x.permintaan_id] = x);
         renderPermintaan();
-        if (user.role === 'admin') { fillPmPi(); onPmPiInput(true); } else fillLcPm();
+        if (curRole() === 'admin') { fillPmPi(); onPmPiInput(true); } else fillLcPm();
     }
     function cardHtml(r, role) {
         const warna = STATUS_WARNA[r.status] || '#64748b';
@@ -6649,7 +6797,7 @@ NS.aksi = async function(id, st){
     }
     function renderPermintaan() {
         [['pm', 'admin'], ['q', 'leader']].forEach(([pre, role]) => {
-            if (user.role !== role) return;
+            if (curRole() !== role) return;
             const f = $(pre + 'Filter').value || 'AKTIF';
             const s = $(pre + 'Search').value.trim().toLowerCase();
             let list = pmData.filter(r => f === 'SEMUA' ? true : f === 'AKTIF' ? AKTIF.includes(r.status) : r.status === f);
@@ -7201,7 +7349,7 @@ NS.aksi = async function(id, st){
     }
     function gotoNotif(n) {
         $('notifModal').style.display = 'none';
-        if (n.tab && TABS[user.role].some(t => t[0] === n.tab)) showPage(n.tab);
+        if (n.tab && tabAllowed(n.tab)) showPage(n.tab);
     }
     function renderNotif() {
         $('notifList').innerHTML = notifRows.length ? notifRows.map((n, i) => `<div class="nitem${n.baru ? ' baru' : ''}" data-i="${i}"><div class="t">${n.baru ? '🔵 ' : ''}${esc(n.judul)}</div><div>${esc(n.isi || '')}</div><div class="w">${fmtWaktu(n.waktu)}</div></div>`).join('') : '<div style="text-align:center;padding:14px;color:#64748b">Belum ada notifikasi</div>';
