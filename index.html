@@ -721,6 +721,7 @@ body.sbOn #sidebar{display:flex;}
 #gpHost .gm-masuk .radio-group{flex-direction: column; gap: 8px;}
 #gpHost .gm-masuk table{font-size: 9px; min-width: 1000px;}
 #gpHost .gm-masuk th,#gpHost .gm-masuk td{padding: 3px;}}
+#gpHost .gm-pi .item-row{flex-wrap:wrap}#gpHost .gm-pi .item-row input{min-width:110px}
 #gpHost .gm-ret .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-ret .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-ret label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-ret input,#gpHost .gm-ret select,#gpHost .gm-ret textarea{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-ret button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold;border-radius:8px;cursor:pointer}#gpHost .gm-usr .card,#gpHost .gm-klr .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-usr .card-title,#gpHost .gm-klr .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-usr label,#gpHost .gm-klr label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-usr input,#gpHost .gm-usr select,#gpHost .gm-klr input,#gpHost .gm-klr select{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-usr button,#gpHost .gm-klr button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0}#gpHost .gm-ret .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold}
 </style>
 </head>
@@ -952,6 +953,8 @@ body.sbOn #sidebar{display:flex;}
     <div id="page6" class="page">
         <div class="card">
             <h2>📄 MASTER NO. PI</h2>
+            <div id="mpGpNote" class="note" style="display:none">✅ Data PI kini diambil dari menu <b>Input PI</b>. Master PI otomatis terbentuk saat Permintaan Kertas dibuat. Di sini Anda hanya mengelola/menutup PI yang sudah berjalan.</div>
+            <div id="mpForm">
             <div class="note">Pilih PI dari dropdown (hindari salah ketik). Untuk PI baru pilih "➕ PI baru". Salah input? Pakai tombol ✏️ Edit di daftar bawah.</div>
             <label>📄 PI</label>
             <select id="mpPilih"></select>
@@ -975,6 +978,7 @@ body.sbOn #sidebar{display:flex;}
             <label>📦 Qty PI (bundles)</label><input type="number" id="mpQty" step="1" min="1" placeholder="Contoh: 5000">
             <button id="mpSimpanBtn">➕ Simpan item PI</button>
             <button id="mpImporBtn" class="btn-reset" style="display:none;">📥 Impor PI dari riwayat timbang lama</button>
+            </div>
             <h3 class="sec" style="margin-top:18px;">Daftar PI</h3>
             <div class="search-row">
                 <input type="text" id="mpSearch" placeholder="Cari PI / Brand...">
@@ -4303,7 +4307,7 @@ function showToast(m,t){ GP.toast(m,t); }
 function addLog(a,d){ return GP.log(a,d); }
 const NS = GP.mods.pi = {};
 
-    let itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '' }];
+    let itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
     let brandList = [], jenisList = [], paperList = [], sizeList = [];
     let mode = 'new';
     let editingPiId = null;
@@ -4336,6 +4340,10 @@ const NS = GP.mods.pi = {};
                     <input type="text" placeholder="Paper" value="${itemList[i].paper}" onchange="GP.mods.pi.updateItem(${i}, 'paper', this.value)" list="paperSuggest">
                     <input type="text" placeholder="Size" value="${itemList[i].size}" onchange="GP.mods.pi.updateItem(${i}, 'size', this.value)" list="sizeSuggest">
                     <input type="number" placeholder="Qty *" value="${itemList[i].qty}" onchange="GP.mods.pi.updateItem(${i}, 'qty', this.value)">
+                        ${EXT ? `<input type="number" placeholder="GSM" title="GSM kertas" value="${itemList[i].gsm}" onchange="GP.mods.pi.updateItem(${i}, 'gsm', this.value)">
+                        <input type="number" placeholder="Leaves" title="Leaves per bundle" value="${itemList[i].leaves}" onchange="GP.mods.pi.updateItem(${i}, 'leaves', this.value)">
+                        <input type="text" placeholder="Watermark" title="Watermark (mis. No WM)" value="${itemList[i].wm}" onchange="GP.mods.pi.updateItem(${i}, 'wm', this.value)">
+                        <input type="number" placeholder="Qty Bundle" title="Qty PI dalam bundle (untuk Permintaan Kertas)" value="${itemList[i].qtyb}" onchange="GP.mods.pi.updateItem(${i}, 'qtyb', this.value)">` : ''}
                     <button class="btn-remove" onclick="GP.mods.pi.hapusItem(${i})">✖</button>
                 </div>
             `;
@@ -4352,7 +4360,7 @@ const NS = GP.mods.pi = {};
     }
     
     function tambahItem() {
-        itemList.push({ id: null, brand: '', jenis: '', paper: '', size: '', qty: '' });
+        itemList.push({ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' });
         renderItemForm();
     }
     
@@ -4365,7 +4373,9 @@ const NS = GP.mods.pi = {};
         }
     }
     
-    function updateItem(index, field, value) {
+    let EXT = true;
+function extFields(it) { if (!EXT) return {}; return { gsm: parseInt(it.gsm) || null, leaves: parseInt(it.leaves) || null, watermark: (it.wm || 'No WM').trim(), qty_bundle: parseInt(it.qtyb) || null }; }
+function updateItem(index, field, value) {
         itemList[index][field] = value;
     }
     
@@ -4401,7 +4411,7 @@ const NS = GP.mods.pi = {};
             btnArsip.textContent = header.is_archived ? '📤 Buka dari Arsip' : '📦 Arsipkan PI';
         }
         const { data: details } = await sb.from('pi_detail').select('*').eq('pi_id', piId).order('id', { ascending: true });
-        itemList = details.map(d => ({ id: d.id, brand: d.brand, jenis: d.jenis, paper: d.paper || '', size: d.size || '', qty: d.qty_pi }));
+        itemList = details.map(d => ({ id: d.id, brand: d.brand, jenis: d.jenis, paper: d.paper || '', size: d.size || '', qty: d.qty_pi, gsm: d.gsm || '', leaves: d.leaves || '', wm: d.watermark || 'No WM', qtyb: d.qty_bundle || '' }));
         renderItemForm();
         document.getElementById('msgInput').innerHTML = '<div class="alert alert-success">✅ Data PI dimuat, silakan edit</div>';
     }
@@ -4457,7 +4467,7 @@ const NS = GP.mods.pi = {};
         }
         const piId = header[0].id;
         for (const item of validItems) {
-            await sb.from('pi_detail').insert({ pi_id: piId, brand: item.brand, jenis: item.jenis, paper: item.paper || null, size: item.size || null, qty_pi: parseInt(item.qty) });
+            await sb.from('pi_detail').insert({ pi_id: piId, brand: item.brand, jenis: item.jenis, paper: item.paper || null, size: item.size || null, qty_pi: parseInt(item.qty), ...extFields(item) });
         }
         await loadMasterData();
         showToast('✅ PI baru berhasil disimpan!', 'success');
@@ -4490,10 +4500,10 @@ const NS = GP.mods.pi = {};
         for (const item of validItems) {
             if (item.id) {
                 // Item lama: update HANYA baris dengan id ini, apapun urutannya
-                await sb.from('pi_detail').update({ brand: item.brand, jenis: item.jenis, paper: item.paper || null, size: item.size || null, qty_pi: parseInt(item.qty) }).eq('id', item.id);
+                await sb.from('pi_detail').update({ brand: item.brand, jenis: item.jenis, paper: item.paper || null, size: item.size || null, qty_pi: parseInt(item.qty), ...extFields(item) }).eq('id', item.id);
             } else {
                 // Item baru (ditambahkan saat edit): insert baris baru
-                await sb.from('pi_detail').insert({ pi_id: editingPiId, brand: item.brand, jenis: item.jenis, paper: item.paper || null, size: item.size || null, qty_pi: parseInt(item.qty) });
+                await sb.from('pi_detail').insert({ pi_id: editingPiId, brand: item.brand, jenis: item.jenis, paper: item.paper || null, size: item.size || null, qty_pi: parseInt(item.qty), ...extFields(item) });
             }
         }
         
@@ -4586,7 +4596,7 @@ const NS = GP.mods.pi = {};
         document.getElementById('msgInputEdit').innerHTML = '<div class="alert alert-success">✅ PI berhasil dihapus! Daftar sudah diperbarui.</div>';
 
         await loadPiList();
-        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '' }];
+        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
         await switchMode('new');
         
     } catch (err) {
@@ -4596,7 +4606,7 @@ const NS = GP.mods.pi = {};
 }
     
     function resetForm() {
-        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '' }];
+        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
         document.getElementById('no_pi').value = '';
         renderItemForm();
     }
@@ -4618,7 +4628,7 @@ const NS = GP.mods.pi = {};
         document.getElementById('msgInputEdit').innerHTML = '';
         document.getElementById('msgInput').innerHTML = '';
         await loadPiList();
-        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '' }];
+        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
         renderItemForm();
     }
 }
@@ -4628,7 +4638,7 @@ const NS = GP.mods.pi = {};
         await loadMasterData();
         document.getElementById('gpMain').innerHTML = `
             <div class="card">
-                <div class="card-title">📝 Manajemen PI</div>
+                <div class="card-title">📝 Manajemen PI</div>${EXT ? '<div style="font-size:12px;color:#475569;margin-bottom:8px">Untuk item kertas yang akan diminta di menu <b>Permintaan Kertas</b>, isi juga GSM, Leaves, Watermark, dan Qty Bundle.<br>Urutan kolom: Brand · Jenis · Paper · Size · Qty · GSM · Leaves · Watermark · Qty Bundle. (<b>Paper</b> dipakai sebagai jenis kertas di Timbangan.)</div>' : '<div style="background:#fef3c7;border:1px solid #f59e0b;padding:8px;border-radius:8px;margin-bottom:8px;font-size:12px">⚠️ Kolom GSM/Leaves/Watermark/Qty Bundle belum ada di database Gudang Pro. Jalankan file <b>supabase_gudang_pi_kertas.sql</b> dulu agar Permintaan Kertas bisa memakai PI ini.</div>'}
                 <div class="mode-switch">
                     <div id="modeNew" class="mode-btn active" onclick="GP.mods.pi.switchMode('new')">➕ PI Baru</div>
                     <div id="modeEdit" class="mode-btn" onclick="GP.mods.pi.switchMode('edit')">✏️ Edit/Hapus PI</div>
@@ -4664,6 +4674,10 @@ const NS = GP.mods.pi = {};
                         <input type="text" placeholder="Paper" value="${itemList[i].paper}" onchange="GP.mods.pi.updateItem(${i}, 'paper', this.value)" list="paperSuggest">
                         <input type="text" placeholder="Size" value="${itemList[i].size}" onchange="GP.mods.pi.updateItem(${i}, 'size', this.value)" list="sizeSuggest">
                         <input type="number" placeholder="Qty *" value="${itemList[i].qty}" onchange="GP.mods.pi.updateItem(${i}, 'qty', this.value)">
+                        ${EXT ? `<input type="number" placeholder="GSM" title="GSM kertas" value="${itemList[i].gsm}" onchange="GP.mods.pi.updateItem(${i}, 'gsm', this.value)">
+                        <input type="number" placeholder="Leaves" title="Leaves per bundle" value="${itemList[i].leaves}" onchange="GP.mods.pi.updateItem(${i}, 'leaves', this.value)">
+                        <input type="text" placeholder="Watermark" title="Watermark (mis. No WM)" value="${itemList[i].wm}" onchange="GP.mods.pi.updateItem(${i}, 'wm', this.value)">
+                        <input type="number" placeholder="Qty Bundle" title="Qty PI dalam bundle (untuk Permintaan Kertas)" value="${itemList[i].qtyb}" onchange="GP.mods.pi.updateItem(${i}, 'qtyb', this.value)">` : ''}
                         <button class="btn-remove" onclick="GP.mods.pi.hapusItem(${i})">✖</button>
                     </div>`;
                 }
@@ -4682,6 +4696,10 @@ const NS = GP.mods.pi = {};
                         <input type="text" placeholder="Paper" value="${itemList[i].paper}" onchange="GP.mods.pi.updateItem(${i}, 'paper', this.value)" list="paperSuggest2">
                         <input type="text" placeholder="Size" value="${itemList[i].size}" onchange="GP.mods.pi.updateItem(${i}, 'size', this.value)" list="sizeSuggest2">
                         <input type="number" placeholder="Qty *" value="${itemList[i].qty}" onchange="GP.mods.pi.updateItem(${i}, 'qty', this.value)">
+                        ${EXT ? `<input type="number" placeholder="GSM" title="GSM kertas" value="${itemList[i].gsm}" onchange="GP.mods.pi.updateItem(${i}, 'gsm', this.value)">
+                        <input type="number" placeholder="Leaves" title="Leaves per bundle" value="${itemList[i].leaves}" onchange="GP.mods.pi.updateItem(${i}, 'leaves', this.value)">
+                        <input type="text" placeholder="Watermark" title="Watermark (mis. No WM)" value="${itemList[i].wm}" onchange="GP.mods.pi.updateItem(${i}, 'wm', this.value)">
+                        <input type="number" placeholder="Qty Bundle" title="Qty PI dalam bundle (untuk Permintaan Kertas)" value="${itemList[i].qtyb}" onchange="GP.mods.pi.updateItem(${i}, 'qtyb', this.value)">` : ''}
                         <button class="btn-remove" onclick="GP.mods.pi.hapusItem(${i})">✖</button>
                     </div>`;
                 }
@@ -4696,11 +4714,12 @@ const NS = GP.mods.pi = {};
         renderItemForm();
     }
 
-async function init(){ itemList=[{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '' }]; mode='new'; editingPiId=null; await loadHalaman(); }
+async function init(){ itemList=[{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }]; mode='new'; editingPiId=null; const t = await sb.from('pi_detail').select('gsm,leaves,watermark,qty_bundle').limit(1); EXT = !t.error; await loadHalaman(); }
 NS.loadMasterData = loadMasterData;
 NS.renderItemForm = renderItemForm;
 NS.tambahItem = tambahItem;
 NS.hapusItem = hapusItem;
+NS.extFields = extFields;
 NS.updateItem = updateItem;
 NS.loadPiList = loadPiList;
 NS.onSelectPiForEdit = onSelectPiForEdit;
@@ -6040,6 +6059,8 @@ NS.hapus = async function(id){
         $('roleBadge').textContent = ROLE_LABEL[user.role] || '';
         $('roleBadge').style.background = ROLE_WARNA[user.role] || '#475569';
         $('mpImporBtn').style.display = user.role === 'admin' ? 'block' : 'none';
+        $('mpForm').style.display = user.gp ? 'none' : '';
+        $('mpGpNote').style.display = user.gp ? '' : 'none';
         $('pinBtn').style.display = !HAS_T() ? 'none' : '';
         $('bellBtn').style.display = !HAS_T() ? 'none' : '';
         window.GP.me = user.gp ? { email: user.email, admin: user.role === 'admin', role: user.role } : null;
@@ -6676,8 +6697,79 @@ NS.hapus = async function(id){
     };
 
     // ========== PERMINTAAN (Admin buat, Leader proses) ==========
+
+    // ===== PI dari menu Input PI (Gudang Pro) — Timbangan disinkronkan otomatis =====
+    let gpPi = [], gpItems = [], gpAt = 0, gpErr = '';
+    const U = x => String(x == null ? '' : x).trim().toUpperCase();
+    const gKertas = d => d.paper || d.jenis;
+    const gpBrand = p => [...new Set(gpItems.filter(d => d.pi_id === p.id).map(d => d.brand))].join(' / ');
+    async function loadGpPi(force) {
+        if (!user || !user.gp) return;
+        if (!force && Date.now() - gpAt < 20000) return;
+        const h = await fetchAll(() => window.sbG.from('pi_header').select('id,no_pi,tanggal').eq('is_archived', false).order('id', { ascending: false }));
+        const d = await fetchAll(() => window.sbG.from('pi_detail').select('id,pi_id,brand,jenis,paper,size,gsm,leaves,watermark,qty_bundle').order('id'));
+        if (h.error || d.error) { gpErr = (h.error || d.error).message; gpPi = []; gpItems = []; return; }
+        gpErr = ''; gpAt = Date.now();
+        gpItems = (d.data || []).filter(x => x.gsm > 0 && x.leaves > 0 && x.qty_bundle > 0 && x.size && gKertas(x));
+        const ok = new Set(gpItems.map(x => x.pi_id));
+        gpPi = (h.data || []).filter(p => ok.has(p.id));
+    }
+    function mirrorItem(d) {
+        const h = gpPi.find(p => p.id === d.pi_id); const p = h && piList.find(x => canon(x.no_pi) === canon(h.no_pi)); if (!p) return null;
+        return piItems.find(i => i.pi_id === p.id && U(i.jenis_kertas) === U(gKertas(d)) && U(i.watermark) === U(d.watermark || 'No WM') && U(i.size_kertas) === U(d.size) && Number(i.gsm) === Number(d.gsm) && Number(i.leaves) === Number(d.leaves));
+    }
+    function gpBuka(d) { const m = mirrorItem(d); return !m || itemBuka(m); }
+    function gpLabel(d) { const m = mirrorItem(d), dm = m ? (piStatus[m.id] || 0) : 0; return `${gKertas(d)} · ${d.watermark || 'No WM'} · ${d.size} · ${d.gsm}gsm · ${d.leaves}lv · sisa ${d.qty_bundle - dm} dari ${d.qty_bundle}`; }
+    function fillPmPiG() {
+        const el = $('pmPi'); if (!el) return;
+        const prev = el.value;
+        const ps = gpPi.filter(p => gpItems.some(d => d.pi_id === p.id && gpBuka(d)));
+        el.innerHTML = '<option value="">— pilih PI —</option>' + ps.map(p => `<option value="${p.id}">${esc(p.no_pi)} · ${esc(gpBrand(p))}</option>`).join('');
+        if (ps.some(p => String(p.id) === prev)) el.value = prev;
+        $('pmPiHint').className = 'hint';
+        $('pmPiHint').textContent = gpErr ? '❌ Gagal mengambil PI dari Input PI: ' + gpErr + ' (sudah menjalankan SQL kolom kertas di Gudang Pro?)' : (ps.length ? '' : '📭 Belum ada PI dengan data kertas lengkap. Isi GSM, Leaves, Watermark & Qty Bundle di menu Input PI.');
+    }
+    function onPmPiInputG(keepQty) {
+        const p = gpPi.find(x => String(x.id) === $('pmPi').value), sel = $('pmItem');
+        const prev = sel.value;
+        if (!p) { sel.innerHTML = '<option value="">— pilih PI dulu —</option>'; $('pmItemInfo').textContent = ''; $('pmDupWarn').style.display = 'none'; return; }
+        const its = gpItems.filter(d => d.pi_id === p.id && gpBuka(d));
+        sel.innerHTML = (its.length > 1 ? '<option value="">— pilih item kertas —</option>' : '') + its.map(d => `<option value="${d.id}">${esc(gpLabel(d))}</option>`).join('');
+        if (its.length === 1) sel.value = its[0].id; else if (prev && its.some(d => String(d.id) === prev)) sel.value = prev;
+        $('pmPiHint').className = 'hint ok'; $('pmPiHint').textContent = `🏷️ Brand: ${gpBrand(p)}` + (p.tanggal ? ' · tgl PI ' + String(p.tanggal).split('-').reverse().join('/') : '') + ' · dari Input PI';
+        onPmItemChangeG(keepQty === true);
+    }
+    function onPmItemChangeG(keepQty) {
+        const d = gpItems.find(x => String(x.id) === $('pmItem').value), el = $('pmItemInfo'), w = $('pmDupWarn');
+        if (!d) { el.className = 'hint'; el.textContent = ''; w.style.display = 'none'; return; }
+        const m = mirrorItem(d), dm = m ? (piStatus[m.id] || 0) : 0, sisa = d.qty_bundle - dm;
+        el.className = 'hint ' + (sisa <= 0 ? 'bad' : 'ok');
+        el.textContent = `Qty PI ${d.qty_bundle} | sudah diminta ${dm} | sisa ${sisa} bundle`;
+        if (keepQty !== true) $('pmQty').value = sisa > 0 ? sisa : '';
+        const akt = m ? pmData.filter(r => r.pi_item_id === m.id && AKTIF.includes(r.status)) : [];
+        if (akt.length) {
+            w.style.display = 'block';
+            w.innerHTML = `⚠️ <b>Item ini SUDAH diminta dan masih berjalan:</b><br>` + akt.map(r => `• #${r.id} — ${r.qty_minta} bundle — ${esc(r.status)} (${fmtWaktu(r.created_at)})`).join('<br>') + `<br>Pastikan ini bukan input ganda.`;
+        } else w.style.display = 'none';
+    }
+    async function ensureMirror(g) {
+        const h = gpPi.find(x => x.id === g.pi_id);
+        let m = mirrorItem(g);
+        if (!m) {
+            const { error } = await supabase.rpc('simpan_pi_item', { p_no: normPI(h.no_pi), p_brand: U(g.brand), p_tgl: h.tanggal, p_jenis: gKertas(g), p_wm: g.watermark || 'No WM', p_size: g.size, p_gsm: g.gsm, p_leaves: g.leaves, p_qty: g.qty_bundle, p_oleh: user.nama });
+            if (error && error.code !== '23505') { alert('❌ Gagal menyinkronkan PI ke Timbangan: ' + error.message); return null; }
+            await loadMasterData(); m = mirrorItem(g);
+            if (!m) { alert('❌ Item PI belum tersinkron ke Timbangan. Coba lagi.'); return null; }
+        } else if (Number(m.qty_pi) !== Number(g.qty_bundle)) {
+            const ok = await rpc('edit_pi_item', { p_id: m.id, p_jenis: m.jenis_kertas, p_wm: m.watermark, p_size: m.size_kertas, p_gsm: m.gsm, p_leaves: m.leaves, p_qty: g.qty_bundle, p_oleh: user.nama });
+            if (!ok) return null;
+            await loadMasterData(); m = mirrorItem(g);
+        }
+        return m;
+    }
     function itemOpsiLabel(i) { const dm = piStatus[i.id] || 0; return `${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · sisa ${i.qty_pi - dm} dari ${i.qty_pi}`; }
     function fillPmPi() {
+        if (user && user.gp) return fillPmPiG();
         const el = $('pmPi'); if (!el) return;
         const prev = el.value;
         const ps = piList.filter(p => piItems.some(i => i.pi_id === p.id && itemBuka(i)));
@@ -6687,6 +6779,7 @@ NS.hapus = async function(id){
         $('pmPiHint').textContent = ps.length ? '' : '📭 Tidak ada PI yang masih bisa diminta (semua sudah selesai/ditutup). Buat PI baru di menu Master.';
     }
     function onPmPiInput(keepQty) {
+        if (user && user.gp) return onPmPiInputG(keepQty);
         const p = piList.find(x => String(x.id) === $('pmPi').value), sel = $('pmItem');
         const prev = sel.value;
         if (!p) { sel.innerHTML = '<option value="">— pilih PI dulu —</option>'; $('pmItemInfo').textContent = ''; $('pmDupWarn').style.display = 'none'; return; }
@@ -6697,6 +6790,7 @@ NS.hapus = async function(id){
         onPmItemChange(keepQty === true);
     }
     function onPmItemChange(keepQty) {
+        if (user && user.gp) return onPmItemChangeG(keepQty);
         const i = piItems.find(x => x.id === Number($('pmItem').value)), el = $('pmItemInfo'), w = $('pmDupWarn');
         if (!i) { el.className = 'hint'; el.textContent = ''; w.style.display = 'none'; return; }
         const dm = piStatus[i.id] || 0, sisa = i.qty_pi - dm;
@@ -6714,10 +6808,21 @@ NS.hapus = async function(id){
     let busyKirim = false;
     $('pmKirimBtn').onclick = async () => {
         if (!requireRole('admin') || busyKirim) return;
-        const p = piList.find(x => String(x.id) === $('pmPi').value);
-        if (!p) { alert('Pilih No. PI terlebih dahulu'); return; }
-        const i = piItems.find(x => x.id === Number($('pmItem').value));
-        if (!i) { alert('Pilih item kertas PI terlebih dahulu'); return; }
+        let p, i;
+        if (user.gp) {
+            const gid = $('pmItem').value; await loadGpPi(true);
+            const g = gpItems.find(x => String(x.id) === gid);
+            if (!g) { alert('Pilih PI dan item kertas terlebih dahulu'); return; }
+            busyKirim = true; $('pmKirimBtn').disabled = true;
+            try { i = await ensureMirror(g); } finally { busyKirim = false; $('pmKirimBtn').disabled = false; }
+            if (!i) return;
+            p = piList.find(x => x.id === i.pi_id);
+        } else {
+            p = piList.find(x => String(x.id) === $('pmPi').value);
+            if (!p) { alert('Pilih No. PI terlebih dahulu'); return; }
+            i = piItems.find(x => x.id === Number($('pmItem').value));
+            if (!i) { alert('Pilih item kertas PI terlebih dahulu'); return; }
+        }
         const qty = parseInt($('pmQty').value);
         if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
         const sisa = i.qty_pi - (piStatus[i.id] || 0);
@@ -6731,7 +6836,7 @@ NS.hapus = async function(id){
         try {
             const ok = await rpc('buat_permintaan', { p_pi_item_id: i.id, p_qty: qty, p_catatan: $('pmCatatan').value.trim() || null, p_oleh: user.nama });
             if (!ok) { await loadPermintaan(); return; }
-            $('pmQty').value = ''; $('pmCatatan').value = '';
+            $('pmQty').value = ''; $('pmCatatan').value = ''; gpAt = 0;
             await loadMasterData(); await loadPermintaan();
             alert('✅ Permintaan terkirim. Leader Mesin akan mendapat notifikasi.');
         } finally { busyKirim = false; $('pmKirimBtn').disabled = false; }
@@ -6753,7 +6858,7 @@ NS.hapus = async function(id){
         stokMap = {}; (c.data || []).forEach(x => stokMap[specKey(x.size_kertas, x.gsm, x.leaves, x.jenis_kertas, x.watermark)] = x.qty);
         stMap = {}; (n.data || []).forEach(x => stMap[x.permintaan_id] = x);
         renderPermintaan();
-        if (curRole() === 'admin') { fillPmPi(); onPmPiInput(true); } else fillLcPm();
+        if (curRole() === 'admin') { await loadGpPi(); fillPmPi(); onPmPiInput(true); } else fillLcPm();
     }
     function cardHtml(r, role) {
         const warna = STATUS_WARNA[r.status] || '#64748b';
