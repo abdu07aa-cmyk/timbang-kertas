@@ -4307,7 +4307,7 @@ function showToast(m,t){ GP.toast(m,t); }
 function addLog(a,d){ return GP.log(a,d); }
 const NS = GP.mods.pi = {};
 
-    let itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
+    let itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: defWm(), qtyb: '' }];
     let brandList = [], jenisList = [], paperList = [], sizeList = [];
     let mode = 'new';
     let editingPiId = null;
@@ -4359,7 +4359,7 @@ const NS = GP.mods.pi = {};
     }
     
     function tambahItem() {
-        itemList.push({ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' });
+        itemList.push({ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: defWm(), qtyb: '' });
         renderItemForm();
     }
     
@@ -4373,6 +4373,7 @@ const NS = GP.mods.pi = {};
     }
     
     let EXT = true, origMap = {};
+function defWm() { const l = (GP.opts ? GP.opts().wm : []); return l.find(x => /TRPC/i.test(x)) || 'No WM'; }
 function szAll() { return [...new Set([...(sizeList || []), ...((GP.opts && GP.opts().sizes) || [])])]; }
 function optSel(i, field, list, ph) {
   const cur = String(itemList[i][field] || ''); const l = list.map(String); if (cur && !l.includes(cur)) l.unshift(cur);
@@ -4635,7 +4636,7 @@ function updateItem(index, field, value) {
         document.getElementById('msgInputEdit').innerHTML = '<div class="alert alert-success">✅ PI berhasil dihapus! Daftar sudah diperbarui.</div>';
 
         await loadPiList();
-        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
+        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: defWm(), qtyb: '' }];
         await switchMode('new');
         
     } catch (err) {
@@ -4645,7 +4646,7 @@ function updateItem(index, field, value) {
 }
     
     function resetForm() {
-        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
+        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: defWm(), qtyb: '' }];
         document.getElementById('no_pi').value = '';
         renderItemForm();
     }
@@ -4667,7 +4668,7 @@ function updateItem(index, field, value) {
         document.getElementById('msgInputEdit').innerHTML = '';
         document.getElementById('msgInput').innerHTML = '';
         await loadPiList();
-        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }];
+        itemList = [{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: defWm(), qtyb: '' }];
         renderItemForm();
     }
 }
@@ -4751,11 +4752,12 @@ function updateItem(index, field, value) {
         renderItemForm();
     }
 
-async function init(){ itemList=[{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: 'No WM', qtyb: '' }]; mode='new'; editingPiId=null; const t = await sb.from('pi_detail').select('gsm,leaves,watermark,qty_bundle').limit(1); EXT = !t.error; await loadHalaman(); }
+async function init(){ itemList=[{ id: null, brand: '', jenis: '', paper: '', size: '', qty: '', gsm: '', leaves: '', wm: defWm(), qtyb: '' }]; mode='new'; editingPiId=null; const t = await sb.from('pi_detail').select('gsm,leaves,watermark,qty_bundle').limit(1); EXT = !t.error; await loadHalaman(); }
 NS.loadMasterData = loadMasterData;
 NS.renderItemForm = renderItemForm;
 NS.tambahItem = tambahItem;
 NS.hapusItem = hapusItem;
+NS.defWm = defWm;
 NS.szAll = szAll;
 NS.optSel = optSel;
 NS.cekPermintaanKertas = cekPermintaanKertas;
@@ -6670,7 +6672,7 @@ NS.hapus = async function(id){
         if (bersih <= 0) return kosong('Berat bersih negatif, periksa berat/jenis box/layer');
         if (!size || !gsm || !lv) return kosong('Lengkapi size, GSM, dan leaves');
         const bb = beratBundleKG(size, gsm, lv, jenis);
-        if (!bb) return kosong('Berat bundle untuk spesifikasi ini belum terdaftar (Master > Spesifikasi)');
+        if (!bb) return kosong('Berat bundle untuk spesifikasi ini belum terdaftar (isi saat membuat Permintaan Kertas)');
         const des = bersih / bb;
         return { ok: true, bersih, des, bundles: Math.ceil(Math.round(des * 1e6) / 1e6) };
     }
@@ -6978,6 +6980,7 @@ NS.hapus = async function(id){
         const c = x => String(x || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
         const all = allSizes(), cs = c(s); if (!cs) return String(s || '').trim();
         const ex = all.find(z => c(z) === cs); if (ex) return ex;
+        const awal = all.filter(z => c(z).startsWith(cs)); if (awal.length === 1) return awal[0];
         const part = all.filter(z => c(z).includes(cs)); if (part.length === 1) return part[0];
         return String(s || '').trim();
     }
@@ -7013,7 +7016,7 @@ NS.hapus = async function(id){
         el.innerHTML = '<option value="">— pilih PI & item kertas —</option>' + ds.map(d => { const p = gpPi.find(x => x.id === d.pi_id); return `<option value="${d.id}">${esc(p ? p.no_pi : '')} · ${esc(gpLabel(d))}</option>`; }).join('');
         if (ds.some(d => String(d.id) === prev)) el.value = prev;
         $('pmPiHint').className = 'hint';
-        $('pmPiHint').textContent = gpErr ? '❌ Gagal mengambil PI dari Input PI: ' + gpErr + ' (sudah menjalankan SQL kolom kertas di Gudang Pro?)' : (ds.length ? '' : '📭 Belum ada item kertas. Item tampil jika Jenis/Paper-nya memuat nama Jenis Kertas di Master (mis. Velin, Bleached) dan Size, Leaves, serta GSM (boleh dari tulisan "13GSM") sudah terisi di Input PI. Item lain (booklet, display, dll) memang tidak ditampilkan.');
+        $('pmPiHint').textContent = gpErr ? '❌ Gagal mengambil PI dari Input PI: ' + gpErr + ' (sudah menjalankan SQL kolom kertas di Gudang Pro?)' : (ds.length ? '' : '📭 Belum ada item kertas. Item tampil jika Jenis/Paper-nya memuat nama jenis kertas (mis. Velin, Bleached) dan Size, Leaves, serta GSM (boleh dari tulisan "13GSM") sudah terisi di Input PI. Item lain (booklet, display, dll) memang tidak ditampilkan.');
     }
     function onPmPiInputG(keepQty) {
         const d = gpItems.find(x => String(x.id) === $('pmPi').value), sel = $('pmItem');
@@ -7037,9 +7040,30 @@ NS.hapus = async function(id){
             w.innerHTML = `⚠️ <b>Item ini SUDAH diminta dan masih berjalan:</b><br>` + akt.map(r => `• #${r.id} — ${r.qty_minta} bundle — ${esc(r.status)} (${fmtWaktu(r.created_at)})`).join('<br>') + `<br>Pastikan ini bukan input ganda.`;
         } else w.style.display = 'none';
     }
+    // Berat bundle belum ada -> isi langsung saat membuat permintaan (tidak perlu buka Master)
+    async function isiBeratInline(i) {
+        const s = prompt(`Berat per bundle belum terdaftar untuk:\n${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\n\nIsi berat per bundle dalam GRAM (contoh 1430).\nKosongkan lalu OK = kirim tanpa berat (belum bisa ditimbang).\nCancel = batal kirim.`);
+        if (s === null) return null;
+        const g = parseFloat(String(s).replace(',', '.'));
+        if (!s.trim()) return true;
+        if (!(g > 0)) { alert('Berat tidak valid'); return null; }
+        const { error } = await supabase.from('berat_bundle_custom').insert([{ size_kertas: i.size_kertas, gsm: i.gsm, leaves: i.leaves, jenis_kertas: i.jenis_kertas, gram_per_bundle: g, dibuat_oleh: user.nama }]);
+        if (error) { alert('❌ Gagal menyimpan berat: ' + error.message); return null; }
+        catatLog('TAMBAH_BERAT', `${i.size_kertas} ${i.gsm}gsm ${i.leaves}lv ${i.jenis_kertas} = ${g} gram`);
+        await loadMasterData();
+        return true;
+    }
     async function ensureMirror(g) {
         const h = gpPi.find(x => x.id === g.pi_id);
         let m = mirrorItem(g);
+        if (!m) {
+            const pm = piList.find(x => canon(x.no_pi) === canon(h.no_pi));
+            const lama = pm && piItems.find(i => i.pi_id === pm.id && U(i.jenis_kertas) === U(gKertas(g)) && U(i.watermark) === U(g.watermark || 'No WM') && Number(i.gsm) === Number(g.gsm) && Number(i.leaves) === Number(g.leaves) && sizeNama(i.size_kertas) === g.size && i.size_kertas !== g.size && !(piAktif[i.id] > 0));
+            if (lama) {
+                const { error } = await supabase.rpc('edit_pi_item', { p_id: lama.id, p_jenis: lama.jenis_kertas, p_wm: lama.watermark, p_size: g.size, p_gsm: lama.gsm, p_leaves: lama.leaves, p_qty: Math.max(g.qty_bundle, piStatus[lama.id] || 0), p_oleh: user.nama });
+                if (!error) { await loadMasterData(); m = mirrorItem(g); }
+            }
+        }
         if (!m) {
             const { error } = await supabase.rpc('simpan_pi_item', { p_no: normPI(h.no_pi), p_brand: U(g.brand), p_tgl: h.tanggal, p_jenis: gKertas(g), p_wm: g.watermark || 'No WM', p_size: g.size, p_gsm: g.gsm, p_leaves: g.leaves, p_qty: g.qty_bundle, p_oleh: user.nama });
             if (error && error.code !== '23505') { alert('❌ Gagal menyinkronkan PI ke Timbangan: ' + error.message); return null; }
@@ -7112,8 +7136,10 @@ NS.hapus = async function(id){
         if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
         const sisa = i.qty_pi - (piStatus[i.id] || 0);
         if (qty > sisa) { alert(`❌ Qty ${qty} melebihi sisa PI (${sisa} bundle). Kurangi qty.`); return; }
-        if (!beratBundleKG(i.size_kertas, i.gsm, i.leaves, i.jenis_kertas) &&
-            !confirm('⚠️ Berat bundle untuk spesifikasi ini belum terdaftar, jadi nanti belum bisa ditimbang.\nTambahkan di Master > Spesifikasi.\nTetap kirim permintaan?')) return;
+        if (!beratBundleKG(i.size_kertas, i.gsm, i.leaves, i.jenis_kertas)) {
+            if (user.gp) { if (await isiBeratInline(i) === null) return; }
+            else if (!confirm('⚠️ Berat bundle untuk spesifikasi ini belum terdaftar, jadi nanti belum bisa ditimbang.\nTetap kirim permintaan?')) return;
+        }
         const akt = pmData.filter(r => r.pi_item_id === i.id && AKTIF.includes(r.status));
         if (akt.length && !confirm(`⚠️ PERINGATAN DOUBLE INPUT\nItem ini sudah punya ${akt.length} permintaan berjalan (${akt.map(r => '#' + r.id + ' ' + r.qty_minta).join(', ')}).\nYakin ingin membuat permintaan lagi?`)) return;
         if (!confirm(`Kirim permintaan?\nPI ${p.no_pi} (${p.brand})\n${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\nQty: ${qty} bundle`)) return;
