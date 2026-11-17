@@ -4352,7 +4352,7 @@ const NS = GP.mods.pi = {};
             <datalist id="brandSuggest">${brandList.map(b => `<option value="${b}">`).join('')}</datalist>
             <datalist id="jenisSuggest">${jenisList.map(j => `<option value="${j}">`).join('')}</datalist>
             <datalist id="paperSuggest">${paperList.map(p => `<option value="${p}">`).join('')}</datalist>
-            <datalist id="sizeSuggest">${sizeList.map(s => `<option value="${s}">`).join('')}</datalist>
+            <datalist id="sizeSuggest">${szAll().map(s => `<option value="${s}">`).join('')}</datalist>
             <button type="button" class="btn-add" onclick="GP.mods.pi.tambahItem()">+ Tambah Item Barang</button>
         `;
         container.innerHTML = html;
@@ -4373,12 +4373,14 @@ const NS = GP.mods.pi = {};
     }
     
     let EXT = true, origMap = {};
+function szAll() { return [...new Set([...(sizeList || []), ...((GP.opts && GP.opts().sizes) || [])])]; }
 function optSel(i, field, list, ph) {
   const cur = String(itemList[i][field] || ''); const l = list.map(String); if (cur && !l.includes(cur)) l.unshift(cur);
   return `<select data-ss="1" title="${ph}" onchange="GP.mods.pi.updateItem(${i}, '${field}', this.value)"><option value="">${ph}</option>${l.map(v => `<option value="${v}"${v === cur ? ' selected' : ''}>${v}</option>`).join('')}</select>`;
 }
 const cU = x => String(x == null ? '' : x).trim().toUpperCase();
 const kn = x => GP.kertasNama ? GP.kertasNama(x.paper, x.jenis) : (x.paper || x.jenis);
+const sn = s => GP.sizeNama ? GP.sizeNama(s) : s;
 const gs = x => GP.gsmDari ? GP.gsmDari(x) : Number(x.gsm);
 const cCanon = x => String(x || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 // Item yang sudah diminta di Timbangan: spesifikasi kertas tidak boleh berubah & qty bundle tidak boleh di bawah yang sudah diminta
@@ -4386,7 +4388,7 @@ async function cekPermintaanKertas(noPi, items) {
   if (!EXT || !GP.tsb) return '';
   const ubah = items.filter(it => {
     const o = it.id && origMap[it.id]; if (!o) return false;
-    const spec = cU(kn(o)) !== cU(kn(it)) || cU(o.size) !== cU(it.size) || gs(o) !== gs(it) || Number(o.leaves) !== Number(it.leaves) || cU(o.wm) !== cU(it.wm || 'No WM');
+    const spec = cU(kn(o)) !== cU(kn(it)) || cU(sn(o.size)) !== cU(sn(it.size)) || gs(o) !== gs(it) || Number(o.leaves) !== Number(it.leaves) || cU(o.wm) !== cU(it.wm || 'No WM');
     const turun = parseInt(it.qty) < parseInt(o.qtyb || 0);
     return spec || turun;
   });
@@ -4397,12 +4399,12 @@ async function cekPermintaanKertas(noPi, items) {
   const { data: pits } = await GP.tsb.from('pi_item').select('*').eq('pi_id', orgNo.id);
   for (const it of ubah) {
     const o = origMap[it.id];
-    const m = (pits || []).find(x => cU(x.jenis_kertas) === cU(kn(o)) && cU(x.watermark) === cU(o.wm) && cU(x.size_kertas) === cU(o.size) && Number(x.gsm) === gs(o) && Number(x.leaves) === Number(o.leaves));
+    const m = (pits || []).find(x => cU(x.jenis_kertas) === cU(kn(o)) && cU(x.watermark) === cU(o.wm) && cU(x.size_kertas) === cU(sn(o.size)) && Number(x.gsm) === gs(o) && Number(x.leaves) === Number(o.leaves));
     if (!m) continue;
     const { data: pm } = await GP.tsb.from('permintaan').select('qty_minta,status').eq('pi_item_id', m.id);
     const minta = (pm || []).filter(r => r.status !== 'Dibatalkan').reduce((a, r) => a + Number(r.qty_minta || 0), 0);
     if (minta <= 0) continue;
-    const spec = cU(kn(o)) !== cU(kn(it)) || cU(o.size) !== cU(it.size) || gs(o) !== gs(it) || Number(o.leaves) !== Number(it.leaves) || cU(o.wm) !== cU(it.wm || 'No WM');
+    const spec = cU(kn(o)) !== cU(kn(it)) || cU(sn(o.size)) !== cU(sn(it.size)) || gs(o) !== gs(it) || Number(o.leaves) !== Number(it.leaves) || cU(o.wm) !== cU(it.wm || 'No WM');
     if (spec) return `Item ${it.brand} ${it.jenis} (${o.paper} ${o.size}) sudah diminta ${minta} bundle di Timbangan, jadi Paper/Size/GSM/Leaves/Watermark tidak bisa diubah. Hanya Qty yang boleh diubah (atau batalkan permintaannya dulu).`;
     return `Item ${it.brand} ${it.jenis} sudah diminta ${minta} bundle di Timbangan. Qty tidak boleh lebih kecil dari ${minta}.`;
   }
@@ -4720,7 +4722,7 @@ function updateItem(index, field, value) {
                 html += `<datalist id="brandSuggest">${brandList.map(b => `<option value="${b}">`).join('')}</datalist>
                     <datalist id="jenisSuggest">${jenisList.map(j => `<option value="${j}">`).join('')}</datalist>
                     <datalist id="paperSuggest">${paperList.map(p => `<option value="${p}">`).join('')}</datalist>
-                    <datalist id="sizeSuggest">${sizeList.map(s => `<option value="${s}">`).join('')}</datalist>
+                    <datalist id="sizeSuggest">${szAll().map(s => `<option value="${s}">`).join('')}</datalist>
                     <button type="button" class="btn-add" onclick="GP.mods.pi.tambahItem()">+ Tambah Item Barang</button>`;
                 containerNew.innerHTML = html;
             } else if (mode === 'edit' && containerEdit) {
@@ -4741,7 +4743,7 @@ function updateItem(index, field, value) {
                 html += `<datalist id="brandSuggest2">${brandList.map(b => `<option value="${b}">`).join('')}</datalist>
                     <datalist id="jenisSuggest2">${jenisList.map(j => `<option value="${j}">`).join('')}</datalist>
                     <datalist id="paperSuggest2">${paperList.map(p => `<option value="${p}">`).join('')}</datalist>
-                    <datalist id="sizeSuggest2">${sizeList.map(s => `<option value="${s}">`).join('')}</datalist>
+                    <datalist id="sizeSuggest2">${szAll().map(s => `<option value="${s}">`).join('')}</datalist>
                     <button type="button" class="btn-add" onclick="GP.mods.pi.tambahItem()">+ Tambah Item Barang</button>`;
                 containerEdit.innerHTML = html;
             }
@@ -4754,6 +4756,7 @@ NS.loadMasterData = loadMasterData;
 NS.renderItemForm = renderItemForm;
 NS.tambahItem = tambahItem;
 NS.hapusItem = hapusItem;
+NS.szAll = szAll;
 NS.optSel = optSel;
 NS.cekPermintaanKertas = cekPermintaanKertas;
 NS.extFields = extFields;
@@ -5676,7 +5679,7 @@ async function terimaTimbangan(i) {
   const { data: dets } = await sb.from('pi_detail').select('*').eq('pi_id', h.id).order('id');
   if (!dets || !dets.length) { alert('❌ PI ini belum punya item.'); return; }
   const hasG = dets.some(d => d.gsm != null);
-  const cocok = dets.filter(d => tbU(d.paper || d.jenis) === tbU(n.jenis_kertas) && tbU(d.size) === tbU(n.size_kertas) && (!hasG || (Number(d.gsm) === Number(n.gsm) && Number(d.leaves) === Number(n.leaves))));
+  const cocok = dets.filter(d => tbU(d.paper || d.jenis) === tbU(n.jenis_kertas) && tbU(GP.sizeNama ? GP.sizeNama(d.size) : d.size) === tbU(n.size_kertas) && (!hasG || (Number(d.gsm) === Number(n.gsm) && Number(d.leaves) === Number(n.leaves))));
   tbCur = { n, h, dets, pre: cocok.length === 1 ? cocok[0].id : '' };
   const lembar = n.total_bundles * n.leaves;
   const old = document.getElementById('tbModal'); if (old) old.remove();
@@ -6244,7 +6247,7 @@ NS.hapus = async function(id){
     window.GP.log = (a, d) => catatLog(a, d);
     window.GP.go = (page, params) => showPage('gp:' + page, params);
     window.GP.tsb = supabase;
-    window.GP.opts = () => ({ gsm: allGsm(), leaves: allLeaves(), wm: (() => { const w = wmList.map(x => x.nama); return w.includes('No WM') ? w : ['No WM', ...w]; })() });
+    window.GP.opts = () => ({ sizes: allSizes(), gsm: allGsm(), leaves: allLeaves(), wm: (() => { const w = wmList.map(x => x.nama); return w.includes('No WM') ? w : ['No WM', ...w]; })() });
 
     // ========== LOGIN ==========
     async function initLogin() {
@@ -6970,6 +6973,15 @@ NS.hapus = async function(id){
         const txt = U(d.paper) + ' ' + U(d.jenis);
         return (jenisList || []).some(j => j.nama && txt.includes(U(j.nama)));
     }
+    // Size dari Input PI dicocokkan ke nama size resmi Timbangan (abaikan spasi/huruf besar-kecil; "54X97" -> "KS 54X97" jika unik)
+    function sizeNama(s) {
+        const c = x => String(x || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const all = allSizes(), cs = c(s); if (!cs) return String(s || '').trim();
+        const ex = all.find(z => c(z) === cs); if (ex) return ex;
+        const part = all.filter(z => c(z).includes(cs)); if (part.length === 1) return part[0];
+        return String(s || '').trim();
+    }
+    window.GP.sizeNama = sizeNama;
     function gsmDari(d) { if (Number(d.gsm) > 0) return Number(d.gsm); const m = (U(d.jenis) + ' ' + U(d.paper)).match(/(\d{1,3})\s*GSM/); return m ? Number(m[1]) : 0; }
     window.GP.kertasNama = kertasNama; window.GP.gsmDari = gsmDari;
     const gKertas = d => kertasNama(d.paper, d.jenis);
@@ -6981,7 +6993,7 @@ NS.hapus = async function(id){
         const d = await fetchAll(() => window.sbG.from('pi_detail').select('id,pi_id,brand,jenis,paper,size,qty_pi,gsm,leaves,watermark,qty_bundle').order('id'));
         if (h.error || d.error) { gpErr = (h.error || d.error).message; gpPi = []; gpItems = []; return; }
         gpErr = ''; gpAt = Date.now();
-        gpItems = (d.data || []).map(x => ({ ...x, gsm: gsmDari(x), qty_bundle: x.qty_bundle || x.qty_pi })).filter(x => x.gsm > 0 && x.leaves > 0 && x.qty_bundle > 0 && x.size && kertasKenal(x));
+        gpItems = (d.data || []).map(x => ({ ...x, size: sizeNama(x.size), gsm: gsmDari(x), qty_bundle: x.qty_bundle || x.qty_pi })).filter(x => x.gsm > 0 && x.leaves > 0 && x.qty_bundle > 0 && x.size && kertasKenal(x));
         gpItems.forEach(x => { x.qty_bundle = Number(x.qty_bundle); });
         const ok = new Set(gpItems.map(x => x.pi_id));
         gpPi = (h.data || []).filter(p => ok.has(p.id));
