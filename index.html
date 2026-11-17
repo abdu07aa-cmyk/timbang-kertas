@@ -4413,6 +4413,11 @@ async function cekPermintaanKertas(noPi, items) {
 }
 function extFields(it) { if (!EXT) return {}; return { gsm: parseInt(it.gsm) || null, leaves: parseInt(it.leaves) || null, watermark: (it.wm || 'No WM').trim(), qty_bundle: parseInt(it.qty) || null }; }
 function updateItem(index, field, value) {
+  const _it = itemList[index]; let _re = false;
+  if (EXT && field === 'leaves' && value && (!_it.paper || /^\s*\d+\s*leaves?\s*$/i.test(_it.paper))) { const np = value + ' Leaves'; if (_it.paper !== np) { _it.paper = np; _re = true; } }
+  if (EXT && field === 'paper') { const m = /(\d+)\s*leaves?/i.exec(value), g = /(\d+)\s*gsm/i.exec(value); if (m && !_it.leaves) { _it.leaves = m[1]; _re = true; } if (g && !_it.gsm) { _it.gsm = g[1]; _re = true; } }
+  if (_re) setTimeout(renderItemForm, 0);
+
         itemList[index][field] = value;
     }
     
@@ -6546,7 +6551,7 @@ NS.hapus = async function(id){
         const size = r.size_kertas, gsm = r.gsm, leaves = r.leaves, jenis = r.jenis_kertas;
         let bb = beratBundleKG(size, gsm, leaves, jenis);
         if (!bb) {
-            const ok = await isiBeratInline({ size_kertas: size, gsm, leaves, jenis_kertas: jenis });
+            const ok = await isiBeratInline({ size_kertas: size, gsm, leaves, jenis_kertas: jenis }, true);
             if (ok === null) return;
             bb = beratBundleKG(size, gsm, leaves, jenis);
             if (!bb) { alert('Berat per bundle belum diisi, jadi box belum bisa dihitung.'); return; }
@@ -7043,8 +7048,8 @@ NS.hapus = async function(id){
         } else w.style.display = 'none';
     }
     // Berat bundle belum ada -> isi langsung saat membuat permintaan (tidak perlu buka Master)
-    async function isiBeratInline(i) {
-        const s = prompt(`Berat per bundle belum terdaftar untuk:\n${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\n\nIsi berat per bundle dalam GRAM (contoh 1430).\nKosongkan lalu OK = kirim tanpa berat (belum bisa ditimbang).\nCancel = batal kirim.`);
+    async function isiBeratInline(i, timbang) {
+        const s = prompt(`Berat per bundle belum terdaftar untuk:\n${i.jenis_kertas} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\n\nIsi berat 1 bundle kertas ini dalam GRAM (contoh 1430). Cukup diisi sekali, nanti diingat.${timbang ? '\\nCancel = batal hitung.' : '\\nKosongkan lalu OK = kirim tanpa berat (belum bisa ditimbang).\\nCancel = batal kirim.'}`);
         if (s === null) return null;
         const g = parseFloat(String(s).replace(',', '.'));
         if (!s.trim()) return true;
