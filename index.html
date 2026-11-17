@@ -721,7 +721,7 @@ body.sbOn #sidebar{display:flex;}
 #gpHost .gm-masuk .radio-group{flex-direction: column; gap: 8px;}
 #gpHost .gm-masuk table{font-size: 9px; min-width: 1000px;}
 #gpHost .gm-masuk th,#gpHost .gm-masuk td{padding: 3px;}}
-#gpHost .gm-pi .item-row{flex-wrap:wrap}#gpHost .gm-pi .item-row input{min-width:110px}
+#gpHost .gm-pi .item-row{flex-wrap:wrap}#gpHost .gm-pi .item-row input{min-width:110px}#gpHost .gm-pi .item-row select{flex:1;min-width:110px;margin:0;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;background:#fff}
 #gpHost .gm-ret .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-ret .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-ret label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-ret input,#gpHost .gm-ret select,#gpHost .gm-ret textarea{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-ret button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold;border-radius:8px;cursor:pointer}#gpHost .gm-usr .card,#gpHost .gm-klr .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}#gpHost .gm-usr .card-title,#gpHost .gm-klr .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}#gpHost .gm-usr label,#gpHost .gm-klr label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}#gpHost .gm-usr input,#gpHost .gm-usr select,#gpHost .gm-klr input,#gpHost .gm-klr select{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}#gpHost .gm-usr button,#gpHost .gm-klr button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0}#gpHost .gm-ret .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold}
 </style>
 </head>
@@ -4340,8 +4340,8 @@ const NS = GP.mods.pi = {};
                     <input type="text" placeholder="Paper" value="${itemList[i].paper}" onchange="GP.mods.pi.updateItem(${i}, 'paper', this.value)" list="paperSuggest">
                     <input type="text" placeholder="Size" value="${itemList[i].size}" onchange="GP.mods.pi.updateItem(${i}, 'size', this.value)" list="sizeSuggest">
                     <input type="number" placeholder="Qty *" value="${itemList[i].qty}" onchange="GP.mods.pi.updateItem(${i}, 'qty', this.value)">
-                        ${EXT ? `<input type="number" placeholder="GSM" title="GSM kertas" value="${itemList[i].gsm}" onchange="GP.mods.pi.updateItem(${i}, 'gsm', this.value)">
-                        <input type="number" placeholder="Leaves" title="Leaves per bundle" value="${itemList[i].leaves}" onchange="GP.mods.pi.updateItem(${i}, 'leaves', this.value)">
+                        ${EXT ? `${optSel(i, 'gsm', (GP.opts ? GP.opts().gsm : []), 'GSM')}
+                        ${optSel(i, 'leaves', (GP.opts ? GP.opts().leaves : []), 'Leaves')}
                         <input type="text" placeholder="Watermark" title="Watermark (mis. No WM)" value="${itemList[i].wm}" onchange="GP.mods.pi.updateItem(${i}, 'wm', this.value)">
                         <input type="number" placeholder="Qty Bundle" title="Qty PI dalam bundle (untuk Permintaan Kertas)" value="${itemList[i].qtyb}" onchange="GP.mods.pi.updateItem(${i}, 'qtyb', this.value)">` : ''}
                     <button class="btn-remove" onclick="GP.mods.pi.hapusItem(${i})">✖</button>
@@ -4373,7 +4373,40 @@ const NS = GP.mods.pi = {};
         }
     }
     
-    let EXT = true;
+    let EXT = true, origMap = {};
+function optSel(i, field, list, ph) {
+  const cur = String(itemList[i][field] || ''); const l = list.map(String); if (cur && !l.includes(cur)) l.unshift(cur);
+  return `<select data-ss="1" title="${ph}" onchange="GP.mods.pi.updateItem(${i}, '${field}', this.value)"><option value="">${ph}</option>${l.map(v => `<option value="${v}"${v === cur ? ' selected' : ''}>${v}</option>`).join('')}</select>`;
+}
+const cU = x => String(x == null ? '' : x).trim().toUpperCase();
+const cCanon = x => String(x || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+// Item yang sudah diminta di Timbangan: spesifikasi kertas tidak boleh berubah & qty bundle tidak boleh di bawah yang sudah diminta
+async function cekPermintaanKertas(noPi, items) {
+  if (!EXT || !GP.tsb) return '';
+  const ubah = items.filter(it => {
+    const o = it.id && origMap[it.id]; if (!o || !o.gsm) return false;
+    const spec = cU(o.paper) !== cU(it.paper || it.jenis) || cU(o.size) !== cU(it.size) || Number(o.gsm) !== Number(it.gsm) || Number(o.leaves) !== Number(it.leaves) || cU(o.wm) !== cU(it.wm || 'No WM');
+    const turun = parseInt(it.qtyb) < parseInt(o.qtyb || 0);
+    return spec || turun;
+  });
+  if (!ubah.length) return '';
+  const { data: mp } = await GP.tsb.from('master_pi').select('id,no_pi');
+  const orgNo = (mp || []).find(p => cCanon(p.no_pi) === cCanon(noPi)) || (mp || []).find(p => cCanon(p.no_pi) === cCanon(document.getElementById('edit_pi_select').selectedOptions[0] ? document.getElementById('edit_pi_select').selectedOptions[0].textContent.split(' ')[0] : ''));
+  if (!orgNo) return '';
+  const { data: pits } = await GP.tsb.from('pi_item').select('*').eq('pi_id', orgNo.id);
+  for (const it of ubah) {
+    const o = origMap[it.id];
+    const m = (pits || []).find(x => cU(x.jenis_kertas) === cU(o.paper) && cU(x.watermark) === cU(o.wm) && cU(x.size_kertas) === cU(o.size) && Number(x.gsm) === Number(o.gsm) && Number(x.leaves) === Number(o.leaves));
+    if (!m) continue;
+    const { data: pm } = await GP.tsb.from('permintaan').select('qty_minta,status').eq('pi_item_id', m.id);
+    const minta = (pm || []).filter(r => r.status !== 'Dibatalkan').reduce((a, r) => a + Number(r.qty_minta || 0), 0);
+    if (minta <= 0) continue;
+    const spec = cU(o.paper) !== cU(it.paper || it.jenis) || cU(o.size) !== cU(it.size) || Number(o.gsm) !== Number(it.gsm) || Number(o.leaves) !== Number(it.leaves) || cU(o.wm) !== cU(it.wm || 'No WM');
+    if (spec) return `Item ${it.brand} ${it.jenis} (${o.paper} ${o.size}) sudah diminta ${minta} bundle di Timbangan, jadi Paper/Size/GSM/Leaves/Watermark tidak bisa diubah. Hanya Qty yang boleh diubah (atau batalkan permintaannya dulu).`;
+    return `Item ${it.brand} ${it.jenis} sudah diminta ${minta} bundle di Timbangan. Qty Bundle tidak boleh lebih kecil dari ${minta}.`;
+  }
+  return '';
+}
 function extFields(it) { if (!EXT) return {}; return { gsm: parseInt(it.gsm) || null, leaves: parseInt(it.leaves) || null, watermark: (it.wm || 'No WM').trim(), qty_bundle: parseInt(it.qtyb) || null }; }
 function updateItem(index, field, value) {
         itemList[index][field] = value;
@@ -4412,6 +4445,7 @@ function updateItem(index, field, value) {
         }
         const { data: details } = await sb.from('pi_detail').select('*').eq('pi_id', piId).order('id', { ascending: true });
         itemList = details.map(d => ({ id: d.id, brand: d.brand, jenis: d.jenis, paper: d.paper || '', size: d.size || '', qty: d.qty_pi, gsm: d.gsm || '', leaves: d.leaves || '', wm: d.watermark || 'No WM', qtyb: d.qty_bundle || '' }));
+        origMap = {}; details.forEach(d => origMap[d.id] = { paper: d.paper || d.jenis, size: d.size, gsm: d.gsm, leaves: d.leaves, wm: d.watermark || 'No WM', qtyb: d.qty_bundle });
         renderItemForm();
         document.getElementById('msgInput').innerHTML = '<div class="alert alert-success">✅ Data PI dimuat, silakan edit</div>';
     }
@@ -4488,6 +4522,8 @@ function updateItem(index, field, value) {
             showToast('❌ Minimal 1 item dengan Brand, Jenis, dan Qty!', 'error');
             return;
         }
+        const blok = await cekPermintaanKertas(no_pi, validItems);
+        if (blok) { showToast('❌ ' + blok, 'error'); return; }
         const { error: headerError } = await sb.from('pi_header').update({ no_pi, tanggal }).eq('id', editingPiId);
         if (headerError) {
             showToast('❌ ' + headerError.message, 'error');
@@ -4674,8 +4710,8 @@ function updateItem(index, field, value) {
                         <input type="text" placeholder="Paper" value="${itemList[i].paper}" onchange="GP.mods.pi.updateItem(${i}, 'paper', this.value)" list="paperSuggest">
                         <input type="text" placeholder="Size" value="${itemList[i].size}" onchange="GP.mods.pi.updateItem(${i}, 'size', this.value)" list="sizeSuggest">
                         <input type="number" placeholder="Qty *" value="${itemList[i].qty}" onchange="GP.mods.pi.updateItem(${i}, 'qty', this.value)">
-                        ${EXT ? `<input type="number" placeholder="GSM" title="GSM kertas" value="${itemList[i].gsm}" onchange="GP.mods.pi.updateItem(${i}, 'gsm', this.value)">
-                        <input type="number" placeholder="Leaves" title="Leaves per bundle" value="${itemList[i].leaves}" onchange="GP.mods.pi.updateItem(${i}, 'leaves', this.value)">
+                        ${EXT ? `${optSel(i, 'gsm', (GP.opts ? GP.opts().gsm : []), 'GSM')}
+                        ${optSel(i, 'leaves', (GP.opts ? GP.opts().leaves : []), 'Leaves')}
                         <input type="text" placeholder="Watermark" title="Watermark (mis. No WM)" value="${itemList[i].wm}" onchange="GP.mods.pi.updateItem(${i}, 'wm', this.value)">
                         <input type="number" placeholder="Qty Bundle" title="Qty PI dalam bundle (untuk Permintaan Kertas)" value="${itemList[i].qtyb}" onchange="GP.mods.pi.updateItem(${i}, 'qtyb', this.value)">` : ''}
                         <button class="btn-remove" onclick="GP.mods.pi.hapusItem(${i})">✖</button>
@@ -4696,8 +4732,8 @@ function updateItem(index, field, value) {
                         <input type="text" placeholder="Paper" value="${itemList[i].paper}" onchange="GP.mods.pi.updateItem(${i}, 'paper', this.value)" list="paperSuggest2">
                         <input type="text" placeholder="Size" value="${itemList[i].size}" onchange="GP.mods.pi.updateItem(${i}, 'size', this.value)" list="sizeSuggest2">
                         <input type="number" placeholder="Qty *" value="${itemList[i].qty}" onchange="GP.mods.pi.updateItem(${i}, 'qty', this.value)">
-                        ${EXT ? `<input type="number" placeholder="GSM" title="GSM kertas" value="${itemList[i].gsm}" onchange="GP.mods.pi.updateItem(${i}, 'gsm', this.value)">
-                        <input type="number" placeholder="Leaves" title="Leaves per bundle" value="${itemList[i].leaves}" onchange="GP.mods.pi.updateItem(${i}, 'leaves', this.value)">
+                        ${EXT ? `${optSel(i, 'gsm', (GP.opts ? GP.opts().gsm : []), 'GSM')}
+                        ${optSel(i, 'leaves', (GP.opts ? GP.opts().leaves : []), 'Leaves')}
                         <input type="text" placeholder="Watermark" title="Watermark (mis. No WM)" value="${itemList[i].wm}" onchange="GP.mods.pi.updateItem(${i}, 'wm', this.value)">
                         <input type="number" placeholder="Qty Bundle" title="Qty PI dalam bundle (untuk Permintaan Kertas)" value="${itemList[i].qtyb}" onchange="GP.mods.pi.updateItem(${i}, 'qtyb', this.value)">` : ''}
                         <button class="btn-remove" onclick="GP.mods.pi.hapusItem(${i})">✖</button>
@@ -4719,6 +4755,8 @@ NS.loadMasterData = loadMasterData;
 NS.renderItemForm = renderItemForm;
 NS.tambahItem = tambahItem;
 NS.hapusItem = hapusItem;
+NS.optSel = optSel;
+NS.cekPermintaanKertas = cekPermintaanKertas;
 NS.extFields = extFields;
 NS.updateItem = updateItem;
 NS.loadPiList = loadPiList;
@@ -5604,7 +5642,103 @@ function goToQC2(id) { GP.go('qc', { material_id: id, qc: 2 }); }
 function goToDiecut(id) { GP.go('diecut', { material_id: id }); }
 function goToSend(id) { showToast('Menu Kirim Produksi akan ditambahkan di tahap berikutnya.', 'info'); }
 
-async function init(){ await loadHalaman(); }
+// ===== Kertas dari Timbangan (nota serah terima Disepakati) -> Barang Masuk =====
+let tbRows = [], tbDetails = {}, tbCur = null;
+const tbEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tbU = s => String(s == null ? '' : s).trim().toUpperCase();
+const tbCanon = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const tbN = n => Number(n || 0).toLocaleString('id-ID');
+async function loadTimbangan() {
+  const host = document.getElementById('gpMain'); if (!host) return;
+  let card = document.getElementById('tbCard');
+  if (!card) { host.insertAdjacentHTML('afterbegin', '<div class="card" id="tbCard"><div class="card-title"><span>📦 Kertas dari Timbangan (menunggu diterima)</span><button class="btn-export" onclick="GP.mods.masuk.loadTimbangan()" style="width:auto;padding:6px 12px;font-size:12px;">🔄 Refresh</button></div><div id="tbList"></div></div>'); }
+  const el = document.getElementById('tbList');
+  const tsb = GP.tsb;
+  if (!tsb) { el.innerHTML = '<div class="info-text">Data Timbangan tidak tersedia.</div>'; return; }
+  el.innerHTML = '<div class="info-text">⏳ Memuat...</div>';
+  const { data: notas, error } = await tsb.from('serah_terima').select('id,no_dokumen,no_pi,brand,jenis_kertas,watermark,size_kertas,gsm,leaves,total_bundles,status,admin_setuju_at').eq('status', 'Disepakati').order('id', { ascending: false }).limit(200);
+  if (error) { el.innerHTML = '<div style="color:#b91c1c">❌ ' + tbEsc(error.message) + '</div>'; return; }
+  const docs = (notas || []).map(n => n.no_dokumen);
+  let sudah = new Set();
+  if (docs.length) {
+    const { data: mi } = await sb.from('material_inbound').select('surat_jalan').in('surat_jalan', docs);
+    sudah = new Set((mi || []).map(x => x.surat_jalan));
+  }
+  tbRows = (notas || []).filter(n => !sudah.has(n.no_dokumen));
+  if (!tbRows.length) { el.innerHTML = '<div class="info-text">✅ Tidak ada kertas yang menunggu. Nota yang sudah Disepakati akan muncul di sini.</div>'; return; }
+  el.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">No. Nota</th><th>PI / Brand</th><th>Kertas</th><th>Bundle</th><th>Lembar</th><th></th></tr></thead><tbody>' +
+    tbRows.map((n, i) => `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${tbEsc(n.no_dokumen)}</td><td>${tbEsc(n.no_pi)}<br>${tbEsc(n.brand)}</td><td>${tbEsc(n.jenis_kertas)} · ${tbEsc(n.watermark)}<br>${tbEsc(n.size_kertas)} · ${n.gsm}gsm · ${n.leaves}lv</td><td>${tbN(n.total_bundles)}</td><td>${tbN(n.total_bundles * n.leaves)}</td><td><button class="btn-small" onclick="GP.mods.masuk.terimaTimbangan(${i})">📥 Terima</button></td></tr>`).join('') + '</tbody></table></div>';
+}
+async function terimaTimbangan(i) {
+  const n = tbRows[i]; if (!n) return;
+  const { data: hs } = await sb.from('pi_header').select('id,no_pi').eq('is_archived', false);
+  const h = (hs || []).find(x => tbCanon(x.no_pi) === tbCanon(n.no_pi));
+  if (!h) { alert(`❌ No. PI ${n.no_pi} tidak ditemukan di Input PI. Buat/cek PI-nya dulu.`); return; }
+  const { data: dets } = await sb.from('pi_detail').select('*').eq('pi_id', h.id).order('id');
+  if (!dets || !dets.length) { alert('❌ PI ini belum punya item.'); return; }
+  const hasG = dets.some(d => d.gsm != null);
+  const cocok = dets.filter(d => tbU(d.paper || d.jenis) === tbU(n.jenis_kertas) && tbU(d.size) === tbU(n.size_kertas) && (!hasG || (Number(d.gsm) === Number(n.gsm) && Number(d.leaves) === Number(n.leaves))));
+  tbCur = { n, h, dets, pre: cocok.length === 1 ? cocok[0].id : '' };
+  const lembar = n.total_bundles * n.leaves;
+  const old = document.getElementById('tbModal'); if (old) old.remove();
+  document.getElementById('gpHost').insertAdjacentHTML('beforeend', `<div id="tbModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:12px"><div style="background:#fff;border-radius:14px;padding:18px;max-width:460px;width:100%;max-height:92vh;overflow:auto" class="gm-masuk">
+    <h3 style="margin:0 0 6px">📥 Terima dari Timbangan</h3>
+    <div style="font-size:13px;color:#475569;margin-bottom:10px">Nota <b>${tbEsc(n.no_dokumen)}</b> · PI <b>${tbEsc(n.no_pi)}</b><br>${tbEsc(n.jenis_kertas)} · ${tbEsc(n.size_kertas)} · ${n.gsm}gsm · ${n.leaves}lv · ${tbN(n.total_bundles)} bundle</div>
+    <label>Item di Input PI</label><select id="tbItem">${dets.length > 1 || !cocok.length ? '<option value="">-- pilih item --</option>' : ''}${dets.map(d => `<option value="${d.id}"${String(d.id) === String(tbCur.pre) ? ' selected' : ''}>${tbEsc(d.brand)} | ${tbEsc(d.jenis)} | ${tbEsc(d.paper || '')} | ${tbEsc(d.size || '')}</option>`).join('')}</select>
+    <label>Jumlah lembar (sheet) — bundle × leaves</label><input type="number" id="tbSheet" value="${lembar}" min="1">
+    <label>UP per sheet</label><input type="number" id="tbUp" min="1" placeholder="mis. 6">
+    <div id="tbTotal" style="margin:8px 0;font-weight:bold"></div>
+    <label>Tanggal terima</label><input type="date" id="tbTgl" value="${new Date().toISOString().split('T')[0]}">
+    <div id="tbMsg" style="margin-top:8px;font-size:13px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px"><button class="btn-cancel" style="flex:1" onclick="GP.mods.masuk.tutupTerima()">Batal</button><button id="tbSave" style="flex:2" onclick="GP.mods.masuk.simpanTerima()">💾 Simpan ke Barang Masuk</button></div></div></div>`);
+  ['tbSheet', 'tbUp'].forEach(id => document.getElementById(id).oninput = hitungTerima);
+  document.getElementById('tbItem').onchange = isiUp;
+  await isiUp();
+}
+async function isiUp() {
+  const id = document.getElementById('tbItem').value; if (!id) { hitungTerima(); return; }
+  const { data } = await sb.from('material_inbound').select('up_per_sheet').eq('pi_detail_id', parseInt(id)).order('id', { ascending: false }).limit(1);
+  const up = data && data[0] && data[0].up_per_sheet;
+  if (up && up > 0 && !document.getElementById('tbUp').value) document.getElementById('tbUp').value = up;
+  hitungTerima();
+}
+function hitungTerima() {
+  const s = parseInt(document.getElementById('tbSheet').value) || 0, u = parseInt(document.getElementById('tbUp').value) || 0;
+  document.getElementById('tbTotal').textContent = `${tbN(s)} sheet × ${u || '?'} up = ${u ? tbN(s * u) : '—'} pcs`;
+}
+function tutupTerima() { const m = document.getElementById('tbModal'); if (m) m.remove(); tbCur = null; }
+async function simpanTerima() {
+  if (!tbCur) return;
+  const n = tbCur.n, msg = document.getElementById('tbMsg'), btn = document.getElementById('tbSave');
+  const itemId = parseInt(document.getElementById('tbItem').value), sheet = parseInt(document.getElementById('tbSheet').value), up = parseInt(document.getElementById('tbUp').value), tgl = document.getElementById('tbTgl').value;
+  const bad = t => { msg.style.color = '#b91c1c'; msg.textContent = t; };
+  if (!itemId) return bad('Pilih item PI');
+  if (!(sheet > 0)) return bad('Jumlah lembar tidak valid');
+  if (!(up > 0)) return bad('Isi UP per sheet');
+  if (!tgl) return bad('Isi tanggal');
+  const d = tbCur.dets.find(x => x.id === itemId);
+  btn.disabled = true;
+  try {
+    const { data: ada } = await sb.from('material_inbound').select('id').eq('surat_jalan', n.no_dokumen).limit(1);
+    if (ada && ada.length) { bad('Nota ini sudah pernah diterima.'); await loadTimbangan(); return; }
+    const totalPcs = sheet * up;
+    const { data: { user } } = await sb.auth.getUser();
+    const ket = `[📄 ${sheet} Sheet × ${up} Up] Dari Timbangan, nota ${n.no_dokumen} (${n.total_bundles} bundle × ${n.leaves} lv)`;
+    const bm = await sb.from('barang_masuk').insert([{ detail_id: itemId, tanggal: tgl, qty: totalPcs, keterangan: ket, created_by: user.email }]).select();
+    if (bm.error) return bad('❌ ' + bm.error.message);
+    const mi = await sb.from('material_inbound').insert([{ no_pi: tbCur.h.no_pi, no_po: '-', surat_jalan: n.no_dokumen, tanggal_terima: tgl, supplier: 'TIMBANGAN KERTAS', brand: d.brand || '', jenis: d.jenis || '', paper: d.paper || '', size: d.size || '', qty_sheet: sheet, up_per_sheet: up, qty_masuk: sheet, qty_pi: d.qty_pi || 0, status: 'DITERIMA', notes: `Dari nota ${n.no_dokumen}`, created_by: user.email, qty_pi_sheet: sheet, qty_pi_pcs: null, pi_id: tbCur.h.id, pi_detail_id: itemId }]);
+    if (mi.error) {
+      const bid = bm.data && bm.data[0] && bm.data[0].id; if (bid) await sb.from('barang_masuk').delete().eq('id', bid);
+      return bad('❌ Gagal mencatat tracking: ' + mi.error.message + ' (barang masuk dibatalkan)');
+    }
+    await addLog('BARANG MASUK', `${user.email} menerima ${totalPcs} pcs dari Timbangan (nota ${n.no_dokumen}) untuk ${tbCur.h.no_pi} - ${d.brand} - ${d.jenis}`);
+    showToast('Kertas masuk ke Barang Masuk', 'success');
+    tutupTerima();
+    await loadTimbangan(); await loadTracking(); if (typeof onItemChange === 'function') { try { await onItemChange(); } catch (e) {} }
+  } finally { btn.disabled = false; }
+}
+
+async function init(){ await loadHalaman(); await loadTimbangan(); }
 NS.loadPiList = loadPiList;
 NS.toggleBentukMasuk = toggleBentukMasuk;
 NS.hitungTotalPcsMasuk = hitungTotalPcsMasuk;
@@ -5624,6 +5758,12 @@ NS.goToQC = goToQC;
 NS.goToQC2 = goToQC2;
 NS.goToDiecut = goToDiecut;
 NS.goToSend = goToSend;
+NS.loadTimbangan = loadTimbangan;
+NS.terimaTimbangan = terimaTimbangan;
+NS.isiUp = isiUp;
+NS.hitungTerima = hitungTerima;
+NS.tutupTerima = tutupTerima;
+NS.simpanTerima = simpanTerima;
 NS.mount = async function(host){
   host.innerHTML = "<div class=\"gm-masuk\"><div id=\"gpMain\">" + "" + "</div><div id=\"detailModal\" class=\"modal\"><div class=\"modal-content\"><h3 id=\"detailTitle\">\ud83d\udccb Detail Barang Masuk</h3><div id=\"detailContent\"></div><div class=\"modal-footer\"><button class=\"btn-cancel\" onclick=\"GP.mods.masuk.closeModal('detailModal')\">Tutup</button></div></div></div></div>";
   
@@ -5869,6 +6009,90 @@ NS.hapus = async function(id){
 
 </script>
 <script>
+// ===== Dropdown dengan pencarian cepat (otomatis untuk <select> berisi banyak pilihan) =====
+(function () {
+  var MIN = 8, pop = null, openedAt = 0, curSel = null;
+  var css = document.createElement('style');
+  css.textContent = '#ssPop{position:fixed;inset:0;background:rgba(15,23,42,.55);z-index:5000;display:flex;align-items:flex-start;justify-content:center;padding:6vh 10px 10px}' +
+    '#ssPop .ssBox{background:#fff;border-radius:16px;width:min(520px,100%);max-height:84vh;display:flex;flex-direction:column;box-shadow:0 10px 40px rgba(0,0,0,.35);overflow:hidden;font-family:Arial,sans-serif}' +
+    '#ssPop .ssIn{all:unset;box-sizing:border-box;margin:12px 12px 4px;padding:12px 14px;border:2px solid #3b82f6;border-radius:12px;font-size:16px;color:#0f172a;background:#f8fafc}' +
+    '#ssPop .ssCount{padding:2px 16px 6px;font-size:12px;color:#64748b}' +
+    '#ssPop .ssList{overflow-y:auto;padding:0 8px 10px;-webkit-overflow-scrolling:touch}' +
+    '#ssPop .ssIt{padding:12px 12px;border-radius:10px;font-size:15px;color:#1e293b;cursor:pointer;line-height:1.3}' +
+    '#ssPop .ssIt.cur{background:#dbeafe;font-weight:bold}' +
+    '#ssPop .ssIt.hl{background:#2563eb;color:#fff}' +
+    '#ssPop .ssIt.dis{color:#94a3b8}' +
+    '#ssPop .ssNone{padding:18px;text-align:center;color:#64748b;font-size:14px}';
+  document.head.appendChild(css);
+
+  function close() { if (pop) { pop.remove(); pop = null; } curSel = null; }
+  function qualifies(s) {
+    if (!s || s.tagName !== 'SELECT' || s.disabled || s.multiple || s.size > 1) return false;
+    if (s.closest && s.closest('#ssPop')) return false;
+    return s.dataset.ss === '1' || s.options.length >= MIN;
+  }
+  function open(sel) {
+    close(); curSel = sel; openedAt = Date.now();
+    var opts = Array.prototype.map.call(sel.options, function (o, i) { return { i: i, t: (o.textContent || '').trim(), v: o.value, dis: o.disabled, cur: i === sel.selectedIndex }; });
+    pop = document.createElement('div'); pop.id = 'ssPop';
+    pop.innerHTML = '<div class="ssBox"><input class="ssIn" placeholder="🔍 Ketik untuk mencari..." autocomplete="off" autocapitalize="off" spellcheck="false"><div class="ssCount"></div><div class="ssList"></div></div>';
+    document.body.appendChild(pop);
+    var inp = pop.querySelector('.ssIn'), list = pop.querySelector('.ssList'), cnt = pop.querySelector('.ssCount');
+    var shown = [], hl = 0;
+    function render() {
+      var terms = inp.value.toLowerCase().split(/\s+/).filter(Boolean);
+      shown = opts.filter(function (o) { if (terms.length && o.v === '') return false; var t = o.t.toLowerCase(); return terms.every(function (w) { return t.indexOf(w) !== -1; }); });
+      if (hl >= shown.length) hl = Math.max(0, shown.length - 1);
+      cnt.textContent = shown.length + ' dari ' + opts.length + ' pilihan';
+      list.innerHTML = shown.length ? '' : '<div class="ssNone">Tidak ada yang cocok</div>';
+      shown.forEach(function (o, k) {
+        var d = document.createElement('div');
+        d.className = 'ssIt' + (o.cur ? ' cur' : '') + (k === hl ? ' hl' : '') + (o.dis ? ' dis' : '');
+        d.textContent = o.t || '(kosong)';
+        d.onmousedown = function (e) { e.preventDefault(); };
+        d.onclick = function () { pick(o); };
+        list.appendChild(d);
+      });
+      var h = list.querySelector('.hl'); if (h && h.scrollIntoView) h.scrollIntoView({ block: 'nearest' });
+    }
+    function pick(o) {
+      if (o.dis) return;
+      var s = sel; close();
+      s.selectedIndex = o.i;
+      s.dispatchEvent(new Event('input', { bubbles: true }));
+      s.dispatchEvent(new Event('change', { bubbles: true }));
+      try { s.focus(); } catch (e) {}
+    }
+    inp.oninput = function () { hl = 0; render(); };
+    inp.onkeydown = function (e) {
+      if (e.key === 'Escape') { close(); e.preventDefault(); }
+      else if (e.key === 'ArrowDown') { hl = Math.min(shown.length - 1, hl + 1); render(); e.preventDefault(); }
+      else if (e.key === 'ArrowUp') { hl = Math.max(0, hl - 1); render(); e.preventDefault(); }
+      else if (e.key === 'Enter') { if (shown[hl]) pick(shown[hl]); e.preventDefault(); }
+    };
+    pop.addEventListener('mousedown', function (e) { if (e.target === pop && Date.now() - openedAt > 300) close(); });
+    pop.addEventListener('touchstart', function (e) { if (e.target === pop && Date.now() - openedAt > 300) close(); }, { passive: true });
+    render();
+    // saat dibuka, tampilkan pilihan terpilih dan fokus ke kotak cari
+    var cur = list.querySelector('.cur'); if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'center' });
+    setTimeout(function () { inp.focus(); }, 30);
+  }
+  function intercept(e) {
+    var s = e.target && e.target.closest ? e.target.closest('select') : null;
+    if (!qualifies(s)) return;
+    e.preventDefault(); e.stopPropagation();
+    if (!pop) open(s);
+  }
+  document.addEventListener('mousedown', intercept, true);
+  document.addEventListener('click', function (e) { var s = e.target && e.target.closest ? e.target.closest('select') : null; if (qualifies(s)) { e.preventDefault(); e.stopPropagation(); if (!pop && Date.now() - openedAt > 400) open(s); } }, true);
+  document.addEventListener('keydown', function (e) {
+    var s = e.target; if (!qualifies(s) || pop) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); open(s); }
+  }, true);
+})();
+
+</script>
+<script>
 (function() {
     // ========== KONEKSI SUPABASE ==========
     const SUPABASE_URL = 'https://dggspzjibisapdaowkkj.supabase.co';
@@ -6020,6 +6244,8 @@ NS.hapus = async function(id){
     window.GP.toast = (m, t) => showToast({ judul: (t === 'error' ? '⚠️ ' : t === 'success' ? '✅ ' : '') + String(m), isi: '' });
     window.GP.log = (a, d) => catatLog(a, d);
     window.GP.go = (page, params) => showPage('gp:' + page, params);
+    window.GP.tsb = supabase;
+    window.GP.opts = () => ({ gsm: allGsm(), leaves: allLeaves() });
 
     // ========== LOGIN ==========
     async function initLogin() {
