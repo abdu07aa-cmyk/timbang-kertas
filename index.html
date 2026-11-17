@@ -6544,10 +6544,12 @@ NS.hapus = async function(id){
         if (beratBersih <= 0) { alert("Berat bersih negatif! Periksa berat timbang dan jenis box."); return; }
 
         const size = r.size_kertas, gsm = r.gsm, leaves = r.leaves, jenis = r.jenis_kertas;
-        const bb = beratBundleKG(size, gsm, leaves, jenis);
+        let bb = beratBundleKG(size, gsm, leaves, jenis);
         if (!bb) {
-            alert(`Berat bundle belum terdaftar!\nSize: ${size} | GSM: ${gsm} | Leaves: ${leaves} | Jenis: ${jenis}\n\nTambahkan di menu Master > Spesifikasi / Berat Bundle Tambahan.`);
-            return;
+            const ok = await isiBeratInline({ size_kertas: size, gsm, leaves, jenis_kertas: jenis });
+            if (ok === null) return;
+            bb = beratBundleKG(size, gsm, leaves, jenis);
+            if (!bb) { alert('Berat per bundle belum diisi, jadi box belum bisa dihitung.'); return; }
         }
         const bundlesDesimal = beratBersih / bb;
         const bundlesBulat = Math.ceil(Math.round(bundlesDesimal * 1e6) / 1e6);
