@@ -812,6 +812,7 @@ body.sbOn #sidebar{display:flex;}
                 <label>⚖️ Berat TIMBANG 1 BOX (kg)</label>
                 <input type="number" id="berat" step="0.01" placeholder="Contoh: 7.50" inputmode="decimal">
                 <button id="hitungBtn">✅ HITUNG & SIMPAN BOX</button>
+                <button id="kalibBtn" type="button" style="background:#0ea5e9">🎯 Kalibrasi berat bundle (cocokkan dengan hitung manual)</button>
                 <button id="goNotaBtn" style="display:none;background:#166534">🧾 Selesai menimbang → Buat nota</button>
             </div>
             <div id="statusMsg" class="status"></div>
@@ -6668,6 +6669,31 @@ NS.hapus = async function(id){
         }
     }
     let busyHitung = false;
+    $('kalibBtn').onclick = async () => {
+        if (!requireRole('admin')) return;
+        const cepat = $('permintaanTerkait').value === 'CEPAT';
+        const pmId = cepat ? null : Number($('permintaanTerkait').value);
+        const r = cepat ? { jenis_kertas: $('qJenis').value, size_kertas: $('qSize').value, gsm: $('qGsm').value, leaves: $('qLeaves').value } : permintaanTimbang.find(d => d.id === pmId);
+        if (!r) { alert('Pilih dulu permintaan (atau Timbang cepat) yang kertasnya mau dikalibrasi.'); return; }
+        const tim = parseFloat($('berat').value);
+        if (isNaN(tim) || tim <= 0) { alert('Isi dulu "Berat TIMBANG 1 BOX (kg)" dengan hasil timbang box yang sudah dihitung manual.'); return; }
+        const bersih = tim - beratBoxMap[$('box').value] - (parseInt($('layer').value) || 0) * BERAT_LAYER_KG;
+        if (bersih <= 0) { alert('Berat bersih negatif. Periksa berat timbang, jenis box, dan layer.'); return; }
+        const s = prompt(`KALIBRASI untuk ${r.jenis_kertas} · ${r.size_kertas} · ${r.gsm}gsm · ${r.leaves}lv\n\nBerat timbang ${tim} kg → berat bersih ${bersih.toFixed(3)} kg.\nBerapa JUMLAH BUNDLE hasil hitung manual di box ini?`);
+        if (s === null) return;
+        const n = parseInt(s); if (!(n > 0)) { alert('Jumlah tidak valid'); return; }
+        const g = Math.round(bersih / n * 1e6) / 1e3;
+        const lama = beratBundleKG(r.size_kertas, r.gsm, r.leaves, r.jenis_kertas);
+        const pakai = lama ? Math.round(bersih / lama / 1e0) : null;
+        if (!confirm(`Berat 1 bundle hasil kalibrasi: ${g} gram\n(sekarang di aplikasi: ${lama ? (lama * 1000).toFixed(2) + ' gram → box ini terhitung ' + Math.ceil(bersih / lama) + ' bundle' : 'belum ada'}).\n\nSimpan ${g} gram sebagai berat standar untuk kertas ini? Box yang sudah tersimpan tidak berubah; hanya penimbangan berikutnya.`)) return;
+        const rec = { size_kertas: r.size_kertas, gsm: Number(r.gsm), leaves: Number(r.leaves), jenis_kertas: r.jenis_kertas, gram_per_bundle: g, dibuat_oleh: user.nama };
+        const ada = customBerat.find(x => x.size_kertas === rec.size_kertas && x.gsm == rec.gsm && x.leaves == rec.leaves && x.jenis_kertas === rec.jenis_kertas);
+        const { error } = ada ? await supabase.from('berat_bundle_custom').update({ gram_per_bundle: g, dibuat_oleh: user.nama }).eq('id', ada.id) : await supabase.from('berat_bundle_custom').insert([rec]);
+        if (error) { alert('❌ Gagal menyimpan: ' + error.message); return; }
+        catatLog('KALIBRASI_BERAT', `${rec.size_kertas} ${rec.gsm}gsm ${rec.leaves}lv ${rec.jenis_kertas}: ${lama ? (lama * 1000).toFixed(2) : '-'} -> ${g} gram (hitung manual ${n})`);
+        await loadMasterData();
+        alert(`✅ Tersimpan: ${g} gram per bundle. Timbang ulang box yang sama untuk mengecek: harusnya ${n} bundle.`);
+    };
     $('hitungBtn').onclick = async () => {
         if (busyHitung) return;
         busyHitung = true; $('hitungBtn').disabled = true;
