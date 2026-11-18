@@ -4251,7 +4251,12 @@ const NS = GP.mods.perm = {};
         const qty = parseInt(s);
         if (!qty || qty <= 0) { alert('Jumlah tidak valid!'); return; }
         if (qty > stok && !confirm(`Stok gudang hanya ${fmt(stok)}. Tetap serahkan ${fmt(qty)}? (stok akan minus)`)) return;
-        if (qty !== r.approved_qty && !confirm(`Jumlah (${fmt(qty)}) berbeda dari yang disetujui (${fmt(r.approved_qty)}). Lanjutkan?`)) return;
+        const sisaP = (r.approved_qty || 0) - qty;
+        let partial = false;
+        if (sisaP > 0) {
+            if (confirm(`Diserahkan ${fmt(qty)} dari ${fmt(r.approved_qty)} yang disetujui.\n\nOK = KIRIM SEBAGIAN (PARTIAL): sisa ${fmt(sisaP)} tetap menunggu dan dikirim di pengiriman berikutnya.\nBatal = pilihan lain.`)) partial = true;
+            else if (!confirm(`Tutup permintaan dengan ${fmt(qty)} saja? Sisa ${fmt(sisaP)} dianggap tidak dikirim.`)) return;
+        } else if (qty !== r.approved_qty && !confirm(`Jumlah (${fmt(qty)}) berbeda dari yang disetujui (${fmt(r.approved_qty)}). Lanjutkan?`)) return;
         const { data: { user } } = await sb.auth.getUser();
         const today = new Date().toISOString().split('T')[0];
         const ins = await sb.from('barang_keluar').insert([{
@@ -4269,60 +4274,91 @@ const NS = GP.mods.perm = {};
             await loadDaftarPermintaan();
             return;
         }
-        addLog('PROSES PERMINTAAN', `${user.email} menyerahkan ${qty} untuk permintaan #${id} (${r.brand} - ${r.jenis})`);
+        if (partial) {
+            const baru = { pi_id: r.pi_id, detail_id: r.detail_id, no_pi: r.no_pi, brand: r.brand, jenis: r.jenis, qty_diminta: sisaP, approved_qty: sisaP, tanggal_dibutuhkan: r.tanggal_dibutuhkan,
+                catatan: (r.catatan ? r.catatan + ' · ' : '') + `Sisa pengiriman partial dari #${r.id}`, status: 'DISETUJUI', requested_by: r.requested_by, batch_id: r.batch_id, approved_by: r.approved_by, approved_at: r.approved_at, parent_id: r.id };
+            let i2 = await sb.from('permintaan_produksi').insert([baru]);
+            if (i2.error && /parent_id/.test(i2.error.message || '')) { delete baru.parent_id; i2 = await sb.from('permintaan_produksi').insert([baru]); }
+            if (i2.error) alert('⚠️ Pengiriman ' + fmt(qty) + ' tercatat, tetapi sisa ' + fmt(sisaP) + ' gagal dibuat otomatis: ' + i2.error.message + '\nBuat permintaan sisa secara manual.');
+        }
+        addLog('PROSES PERMINTAAN', `${user.email} menyerahkan ${qty}${partial ? ' (PARTIAL, sisa ' + sisaP + ')' : ''} untuk permintaan #${id} (${r.brand} - ${r.jenis})`);
         await loadDaftarPermintaan();
     }
 
-    // ===== Bukti serah terima ke Produksi + konfirmasi Terima =====
+    // ===== Bukti serah terima ke Produksi (1 bukti = 1 PI, banyak item) + konfirmasi Terima + pengiriman partial =====
     let retMap = {};
-    const bstNo = r => 'BST-' + String(r.id).padStart(5, '0');
+    const hariKey = iso => { const d = new Date(iso); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); };
+    function grupBukti(r) {
+        const k = hariKey(r.processed_at);
+        return allRequests.filter(x => x.status === 'SELESAI' && x.no_pi === r.no_pi && x.requested_by === r.requested_by && x.processed_at && hariKey(x.processed_at) === k).sort((a, b) => a.id - b.id);
+    }
+    const bstNo = r => { const g = grupBukti(r); return 'BST-' + hariKey(r.processed_at) + '-' + String(g.length ? g[0].id : r.id).padStart(4, '0'); };
+    const anak = r => allRequests.filter(x => x.id !== r.id && x.status !== 'DIBATALKAN' && x.status !== 'DITOLAK' && (x.parent_id === r.id || (x.catatan || '').includes('partial dari #' + r.id + '')));
+    const sisaPartial = r => anak(r).reduce((a, x) => a + (x.approved_qty || x.qty_diminta || 0), 0);
     function selesaiAksi(r) {
         const own = r.requested_by === currentUserEmail;
+        const g = grupBukti(r);
         const ret = retMap[r.id];
         const retTxt = ret ? `<div class="sub" style="color:#b45309;">↩ Return: ${ret.NG ? 'NG ' + fmt(ret.NG) : ''}${ret.NG && ret.KURANG ? ' · ' : ''}${ret.KURANG ? 'Kurang ' + fmt(ret.KURANG) : ''}</div>` : '';
+        const sp = sisaPartial(r);
+        const partTxt = sp > 0 ? `<div class="sub" style="color:#1d4ed8;">📦 Partial — sisa ${fmt(sp)} menyusul</div>` : '';
         const trm = r.diterima_at
             ? `<div class="sub" style="color:#166534;">✅ Diterima ${esc(namaPendek(r.diterima_oleh))} · ${fmtWaktu(r.diterima_at)}</div>`
             : `<div class="sub" style="color:#b45309;">⏳ Belum dikonfirmasi penerima</div>`;
-        const btnTerima = (!r.diterima_at && (own || isAdminUser)) ? `<button class="btn-small btn-proses" onclick="GP.mods.perm.terimaPermintaan(${r.id})">✅ Terima barang</button>` : '';
+        const belum = g.filter(x => !x.diterima_at).length;
+        const btnTerima = (!r.diterima_at && (own || isAdminUser)) ? `<button class="btn-small btn-proses" onclick="GP.mods.perm.terimaPermintaan(${r.id})">✅ Terima${g.length > 1 ? ' semua (' + belum + ' item)' : ' barang'}</button>` : '';
         return `<div style="white-space:normal;">
-            <div class="sub">${bstNo(r)} · diserahkan ${fmtWaktu(r.processed_at)}${r.processed_by ? ' oleh ' + esc(namaPendek(r.processed_by)) : ''}</div>
-            ${trm}${retTxt}
-            <div style="margin-top:4px;white-space:nowrap;">${btnTerima} <button class="btn-small btn-edit" onclick="GP.mods.perm.cetakBukti(${r.id})">🖨️ Bukti</button></div></div>`;
+            <div class="sub">${bstNo(r)}${g.length > 1 ? ' · ' + g.length + ' item' : ''} · diserahkan ${fmtWaktu(r.processed_at)}${r.processed_by ? ' oleh ' + esc(namaPendek(r.processed_by)) : ''}</div>
+            ${trm}${partTxt}${retTxt}
+            <div style="margin-top:4px;white-space:nowrap;">${btnTerima} <button class="btn-small btn-edit" onclick="GP.mods.perm.cetakBukti(${r.id})">🖨️ Bukti${g.length > 1 ? ' (' + g.length + ' item)' : ''}</button></div></div>`;
     }
     async function terimaPermintaan(id) {
         const r = allRequests.find(x => x.id === id); if (!r) return;
-        if (!confirm(`Konfirmasi: kamu SUDAH MENERIMA ${fmt(r.qty_diberikan)} ${r.brand} - ${r.jenis} (PI ${r.no_pi})?\n\nHitung dulu barangnya. Kalau ada yang NG atau kurang, ajukan di menu Return Produksi setelah ini.`)) return;
-        const { error } = await sb.rpc('terima_permintaan_produksi', { p_id: id });
-        if (error) { alert('❌ ' + error.message + '\n\nKalau pesannya "function ... not found", jalankan dulu file supabase_gudang_serah_produksi.sql di Supabase Gudang Pro.'); return; }
-        addLog('TERIMA BARANG PRODUKSI', `${currentUserEmail} menerima ${r.qty_diberikan} ${r.brand} - ${r.jenis} (${bstNo(r)})`);
+        const g = grupBukti(r).filter(x => !x.diterima_at);
+        const daftar = g.map(x => `• ${x.jenis}: ${fmt(x.qty_diberikan)}`).join('\n');
+        if (!confirm(`Konfirmasi: kamu SUDAH MENERIMA barang berikut (PI ${r.no_pi})?\n\n${daftar}\n\nHitung dulu barangnya. Kalau ada yang NG atau kurang, ajukan di menu Return Produksi setelah ini.`)) return;
+        let gagal = '';
+        for (const x of g) {
+            const { error } = await sb.rpc('terima_permintaan_produksi', { p_id: x.id });
+            if (error) { gagal = error.message; break; }
+        }
+        if (gagal) { alert('❌ ' + gagal + '\n\nKalau pesannya "function ... not found", jalankan dulu file supabase_gudang_serah_produksi.sql di Supabase Gudang Pro.'); await loadDaftarPermintaan(); return; }
+        addLog('TERIMA BARANG PRODUKSI', `${currentUserEmail} menerima ${g.length} item PI ${r.no_pi} (${bstNo(r)})`);
         showToast('Penerimaan barang tercatat', 'success');
         await loadDaftarPermintaan();
     }
     function cetakBukti(id) {
         const r = allRequests.find(x => x.id === id); if (!r) return;
-        const ret = retMap[r.id] || {};
+        const g = grupBukti(r);
+        const brands = [...new Set(g.map(x => x.brand).filter(Boolean))].join(', ');
+        const diterimaOleh = (g.find(x => x.diterima_oleh) || {}).diterima_oleh, diterimaAt = (g.find(x => x.diterima_at) || {}).diterima_at;
+        const semuaTerima = g.every(x => x.diterima_at);
+        const total = g.reduce((a, x) => a + (x.qty_diberikan || 0), 0);
+        const baris = g.map((x, i) => {
+            const sp = sisaPartial(x), rt = retMap[x.id] || {};
+            const ket = [x.qty_diberikan !== x.qty_diminta ? (sp > 0 ? 'PARTIAL, sisa ' + fmt(sp) + ' menyusul' : 'berbeda dari permintaan') : 'sesuai', rt.NG ? 'NG ' + fmt(rt.NG) : '', rt.KURANG ? 'kurang ' + fmt(rt.KURANG) : ''].filter(Boolean).join(' · ');
+            return `<tr><td>${i + 1}</td><td style="text-align:left">${esc(x.jenis)}</td><td>${fmt(x.qty_diminta)}</td><td>${fmt(x.approved_qty)}</td><td><b>${fmt(x.qty_diberikan)}</b></td><td style="text-align:left;font-size:9px">${esc(ket)}</td><td class="isi"></td><td class="isi"></td></tr>`;
+        }).join('');
+        const kecil = g.length > 7 ? ' style="font-size:9px"' : '';
         const hal = (label, warna) => `<div class="hal"><div class="hd"><div><b class="firma">THE ROLLING PAPER COMPANY</b><br><span class="jdl">BUKTI SERAH TERIMA BARANG KE PRODUKSI</span></div><div class="lbl" style="color:${warna};border-color:${warna};">${label}</div></div>
             <div class="nomor">No. ${bstNo(r)} &nbsp;|&nbsp; ${esc(fmtWaktu(r.processed_at))}</div>
-            <table class="inf"><tr><td>PI</td><td><b>${esc(r.no_pi)}</b></td><td>Brand</td><td><b>${esc(r.brand)}</b></td></tr>
-            <tr><td>Barang</td><td colspan="3"><b>${esc(r.jenis)}</b></td></tr>
-            <tr><td>Diminta</td><td>${fmt(r.qty_diminta)}</td><td>Disetujui</td><td>${fmt(r.approved_qty)}</td></tr>
-            <tr class="hs"><td>DISERAHKAN</td><td colspan="3"><b style="font-size:16px;">${fmt(r.qty_diberikan)}</b> ${r.qty_diberikan !== r.qty_diminta ? '<span style="color:#b45309">(berbeda dari permintaan ' + fmt(r.qty_diminta) + ')</span>' : '(sesuai permintaan)'}</td></tr>
-            ${r.catatan ? `<tr><td>Catatan</td><td colspan="3">${esc(r.catatan)}</td></tr>` : ''}</table>
-            <div class="kond">Cek kondisi &amp; hitung saat serah terima. Jika ada <b>NG</b> atau <b>kekurangan</b>, ajukan di aplikasi menu <b>Return Produksi</b> dengan menyebut <b>${bstNo(r)}</b>.<br>
-            Jumlah diterima: ........................ &nbsp; NG: ........................ &nbsp; Kurang: ........................</div>
-            <div class="ttd"><div class="tb"><div>Diserahkan (Gudang)</div><div style="height:46px"></div><div class="tl"></div><b>${esc(namaPendek(r.processed_by))}</b></div>
-            <div class="tb"><div>Diterima (Leader Produksi)</div><div style="height:46px"></div><div class="tl"></div><b>${esc(namaPendek(r.diterima_oleh || r.requested_by))}</b>${r.diterima_at ? `<div style="font-size:9px">Konfirmasi di aplikasi ${esc(fmtWaktu(r.diterima_at))}</div>` : ''}</div></div>
-            <div class="ft">Dicetak ${new Date().toLocaleString('id-ID')}${ret.NG || ret.KURANG ? ' · Return tercatat: NG ' + fmt(ret.NG || 0) + ', kurang ' + fmt(ret.KURANG || 0) : ''}</div></div>`;
+            <div class="info"><b>PI:</b> ${esc(r.no_pi)} &nbsp;&nbsp; <b>Brand:</b> ${esc(brands)}</div>
+            <table class="items"${kecil}><thead><tr><th>No</th><th>Barang / Jenis</th><th>Diminta</th><th>Disetujui</th><th>DISERAHKAN</th><th>Keterangan</th><th>Diterima</th><th>NG/Kurang</th></tr></thead><tbody>${baris}</tbody>
+            <tfoot><tr><td colspan="4" style="text-align:right"><b>Total diserahkan</b></td><td><b>${fmt(total)}</b></td><td colspan="3"></td></tr></tfoot></table>
+            <div class="kond">Hitung &amp; cek kondisi saat serah terima, isi kolom <b>Diterima</b> dan <b>NG/Kurang</b>. Jika ada NG atau kekurangan, ajukan di aplikasi menu <b>Return Produksi</b> dengan menyebut <b>${bstNo(r)}</b>.</div>
+            <div class="ttd"><div class="tb"><div>Diserahkan (Gudang)</div><div style="height:42px"></div><div class="tl"></div><b>${esc(namaPendek(r.processed_by))}</b></div>
+            <div class="tb"><div>Diterima (Leader Produksi)</div><div style="height:42px"></div><div class="tl"></div><b>${esc(namaPendek(diterimaOleh || r.requested_by))}</b>${semuaTerima && diterimaAt ? `<div style="font-size:9px">Konfirmasi di aplikasi ${esc(fmtWaktu(diterimaAt))}</div>` : ''}</div></div>
+            <div class="ft">Dicetak ${new Date().toLocaleString('id-ID')}</div></div>`;
         const css = `@page{size:A4 portrait;margin:7mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:11px;color:#000}
-            .lembar{width:196mm;height:283mm;display:flex;flex-direction:column}.hal{flex:1;padding:4mm 2mm;overflow:hidden}.hal+.hal{border-top:1.5px dashed #888}
+            .lembar{width:100%;max-width:196mm;height:283mm;display:flex;flex-direction:column}.hal{flex:1;padding:4mm 2mm;overflow:hidden}.hal+.hal{border-top:1.5px dashed #888}
             .hd{display:flex;justify-content:space-between;border-bottom:2px solid #1e3a8a;padding-bottom:3px}.firma{font-size:14px;color:#1e3a8a;letter-spacing:1px}.jdl{font-size:11px;font-weight:bold}
             .lbl{font-weight:bold;border:2px solid;padding:2px 8px;border-radius:5px;font-size:10px;height:fit-content}.nomor{background:#f1f5f9;text-align:center;font-weight:bold;padding:2px;margin:4px 0;font-size:10px}
-            table.inf{width:100%;border-collapse:collapse;margin:4px 0}table.inf td{border:1px solid #999;padding:3px 6px}table.inf td:nth-child(odd){background:#f8fafc;width:18%}.hs td{background:#fef9c3!important}
-            .kond{border:1px dashed #666;padding:4px 6px;margin:6px 0;line-height:1.8;font-size:10px}.ttd{display:flex;justify-content:space-around;text-align:center;font-size:10px;margin-top:4px}.tb{width:44%}.tl{border-top:1px solid #000;margin-bottom:2px}.ft{margin-top:6px;text-align:center;font-size:8px;color:#555}`;
+            .info{border:1px solid #999;padding:3px 6px;margin-bottom:4px}table.items{width:100%;border-collapse:collapse}table.items th,table.items td{border:1px solid #999;padding:2px 4px;text-align:center}table.items th{background:#1e3a8a;color:#fff;font-size:9px}table.items td.isi{width:15%}table.items tfoot td{background:#fef9c3}
+            .kond{border:1px dashed #666;padding:3px 6px;margin:5px 0;line-height:1.5;font-size:9.5px}.ttd{display:flex;justify-content:space-around;text-align:center;font-size:10px;margin-top:3px}.tb{width:44%}.tl{border-top:1px solid #000;margin-bottom:2px}.ft{margin-top:4px;text-align:center;font-size:8px;color:#555}`;
         const w = window.open('', '_blank'); if (!w) { alert('Pop-up diblokir browser. Izinkan pop-up lalu coba lagi.'); return; }
         w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${bstNo(r)}</title><style>${css}</style></head><body><div class="lembar">${hal('ASLI - arsip Gudang', '#1e3a8a')}${hal('SALINAN - Leader Produksi', '#166534')}</div></body></html>`);
         w.document.close(); setTimeout(() => w.print(), 300);
-        addLog('CETAK BUKTI PRODUKSI', `${bstNo(r)} oleh ${currentUserEmail}`);
+        addLog('CETAK BUKTI PRODUKSI', `${bstNo(r)} (${g.length} item) oleh ${currentUserEmail}`);
     }
 
     function hapusEditing() { return hapusPermintaan(editingId); }
@@ -4363,6 +4399,7 @@ NS.tutupEdit = tutupEdit;
 NS.simpanEdit = simpanEdit;
 NS.loadHalaman = loadHalaman;
 NS.prosesPermintaan = prosesPermintaan;
+NS.grupBukti = grupBukti;
 NS.selesaiAksi = selesaiAksi;
 NS.terimaPermintaan = terimaPermintaan;
 NS.cetakBukti = cetakBukti;
@@ -5855,13 +5892,15 @@ NS.mount = async function(host){
   host.querySelector('#retSave').onclick = save; await loadMine();
   await load();
 };
+const hk = iso => { const d = new Date(iso); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0'); };
+function bstLabel(r){ const g = mine.filter(x => x.no_pi === r.no_pi && x.requested_by === r.requested_by && x.processed_at && hk(x.processed_at) === hk(r.processed_at)); const mn = Math.min(...g.map(x => x.id), r.id); return 'BST-' + hk(r.processed_at) + '-' + String(mn).padStart(4,'0'); }
 async function loadMine(){
-  let mq = sb.from('permintaan_produksi').select('id,no_pi,brand,jenis,qty_diberikan,processed_at');
+  let mq = sb.from('permintaan_produksi').select('id,no_pi,brand,jenis,qty_diberikan,processed_at,requested_by');
   if (!GP.me.admin) mq = mq.eq('requested_by', GP.me.email);
   const { data } = await mq.eq('status','SELESAI').order('processed_at',{ascending:false}).limit(100);
   mine = data || [];
   const el = document.getElementById('retPerm');
-  el.innerHTML = '<option value="">-- Pilih --</option>' + mine.map(r => `<option value="${r.id}">BST-${String(r.id).padStart(5,'0')} · ${esc(r.no_pi)} - ${esc(r.brand)} ${esc(r.jenis)} (diserahkan ${fmt(r.qty_diberikan)})</option>`).join('');
+  el.innerHTML = '<option value="">-- Pilih --</option>' + mine.map(r => `<option value="${r.id}">${bstLabel(r)} · ${esc(r.no_pi)} - ${esc(r.brand)} ${esc(r.jenis)} (diserahkan ${fmt(r.qty_diberikan)})</option>`).join('');
 }
 async function load(){
   let q = sb.from('return_produksi').select('*').order('created_at',{ascending:false}).limit(200);
