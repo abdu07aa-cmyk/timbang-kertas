@@ -5748,8 +5748,8 @@ async function loadTimbangan() {
   }
   tbRows = (notas || []).filter(n => !sudah.has(n.no_dokumen));
   if (!tbRows.length) { el.innerHTML = '<div class="info-text">✅ Tidak ada kertas yang menunggu. Nota yang sudah Disepakati akan muncul di sini.</div>'; return; }
-  el.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">No. Nota</th><th>PI / Brand</th><th>Kertas</th><th>Bundle</th><th>Lembar</th><th></th></tr></thead><tbody>' +
-    tbRows.map((n, i) => `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${tbEsc(n.no_dokumen)}</td><td>${tbEsc(n.no_pi)}<br>${tbEsc(n.brand)}</td><td>${tbEsc(n.jenis_kertas)} · ${tbEsc(n.watermark)}<br>${tbEsc(n.size_kertas)} · ${n.gsm}gsm · ${n.leaves}lv</td><td>${tbN(n.total_bundles)}</td><td>${tbN(n.total_bundles * n.leaves)}</td><td><button class="btn-small" onclick="GP.mods.masuk.terimaTimbangan(${i})">📥 Terima</button></td></tr>`).join('') + '</tbody></table></div>';
+  el.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">No. Nota</th><th>PI / Brand</th><th>Kertas</th><th>Bundle</th><th></th></tr></thead><tbody>' +
+    tbRows.map((n, i) => `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${tbEsc(n.no_dokumen)}</td><td>${tbEsc(n.no_pi)}<br>${tbEsc(n.brand)}</td><td>${tbEsc(n.jenis_kertas)} · ${tbEsc(n.watermark)}<br>${tbEsc(n.size_kertas)} · ${n.gsm}gsm · ${n.leaves}lv</td><td><b>${tbN(n.total_bundles)}</b></td><td><button class="btn-small" onclick="GP.mods.masuk.terimaTimbangan(${i})">📥 Terima</button></td></tr>`).join('') + '</tbody></table></div>';
 }
 async function terimaTimbangan(i) {
   const n = tbRows[i]; if (!n) return;
@@ -5760,44 +5760,27 @@ async function terimaTimbangan(i) {
   const { data: dets } = await sb.from('pi_detail').select('*').eq('pi_id', h.id).order('id');
   if (!dets || !dets.length) { alert('❌ PI ini belum punya item.'); return; }
   const hasG = dets.some(d => d.gsm != null);
-  const cocok = dets.filter(d => tbU(d.paper || d.jenis) === tbU(n.jenis_kertas) && tbU(GP.sizeNama ? GP.sizeNama(d.size) : d.size) === tbU(n.size_kertas) && (!hasG || (Number(d.gsm) === Number(n.gsm) && Number(d.leaves) === Number(n.leaves))));
-  tbCur = { n, h, dets, pre: cocok.length === 1 ? cocok[0].id : '' };
-  const lembar = n.total_bundles * n.leaves;
+  const cocok = dets.filter(d => (tbU(d.paper || d.jenis) === tbU(n.jenis_kertas) || tbU(GP.kertasNama ? GP.kertasNama(d.paper, d.jenis) : '') === tbU(n.jenis_kertas)) && tbU(GP.sizeNama ? GP.sizeNama(d.size) : d.size) === tbU(n.size_kertas) && (!hasG || (Number(d.gsm) === Number(n.gsm) && Number(d.leaves) === Number(n.leaves))));
+  tbCur = { n, h, dets, pre: cocok.length === 1 ? cocok[0].id : (dets.length === 1 ? dets[0].id : '') };
   const old = document.getElementById('tbModal'); if (old) old.remove();
   document.getElementById('gpHost').insertAdjacentHTML('beforeend', `<div id="tbModal" style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:3000;display:flex;align-items:center;justify-content:center;padding:12px"><div style="background:#fff;border-radius:14px;padding:18px;max-width:460px;width:100%;max-height:92vh;overflow:auto" class="gm-masuk">
     <h3 style="margin:0 0 6px">📥 Terima dari Timbangan</h3>
     <div style="font-size:13px;color:#475569;margin-bottom:10px">Nota <b>${tbEsc(n.no_dokumen)}</b> · PI <b>${tbEsc(n.no_pi)}</b><br>${tbEsc(n.jenis_kertas)} · ${tbEsc(n.size_kertas)} · ${n.gsm}gsm · ${n.leaves}lv · ${tbN(n.total_bundles)} bundle</div>
-    <label>Item di Input PI</label><select id="tbItem">${dets.length > 1 || !cocok.length ? '<option value="">-- pilih item --</option>' : ''}${dets.map(d => `<option value="${d.id}"${String(d.id) === String(tbCur.pre) ? ' selected' : ''}>${tbEsc(d.brand)} | ${tbEsc(d.jenis)} | ${tbEsc(d.paper || '')} | ${tbEsc(d.size || '')}</option>`).join('')}</select>
-    <label>Jumlah lembar (sheet) — bundle × leaves</label><input type="number" id="tbSheet" value="${lembar}" min="1">
-    <label>UP per sheet</label><input type="number" id="tbUp" min="1" placeholder="mis. 6">
-    <div id="tbTotal" style="margin:8px 0;font-weight:bold"></div>
+    <div id="tbItemWrap"><label>Item di Input PI</label><select id="tbItem">${!tbCur.pre ? '<option value="">-- pilih item --</option>' : ''}${dets.map(d => `<option value="${d.id}"${String(d.id) === String(tbCur.pre) ? ' selected' : ''}>${tbEsc(d.brand)} | ${tbEsc(d.jenis)} | ${tbEsc(d.paper || '')} | ${tbEsc(d.size || '')}</option>`).join('')}</select></div>
+    <label>Jumlah bundle diterima</label><input type="number" id="tbBundle" value="${n.total_bundles}" min="1">
     <label>Tanggal terima</label><input type="date" id="tbTgl" value="${new Date().toISOString().split('T')[0]}">
     <div id="tbMsg" style="margin-top:8px;font-size:13px"></div>
     <div style="display:flex;gap:8px;margin-top:12px"><button class="btn-cancel" style="flex:1" onclick="GP.mods.masuk.tutupTerima()">Batal</button><button id="tbSave" style="flex:2" onclick="GP.mods.masuk.simpanTerima()">💾 Simpan ke Barang Masuk</button></div></div></div>`);
-  ['tbSheet', 'tbUp'].forEach(id => document.getElementById(id).oninput = hitungTerima);
-  document.getElementById('tbItem').onchange = isiUp;
-  await isiUp();
-}
-async function isiUp() {
-  const id = document.getElementById('tbItem').value; if (!id) { hitungTerima(); return; }
-  const { data } = await sb.from('material_inbound').select('up_per_sheet').eq('pi_detail_id', parseInt(id)).order('id', { ascending: false }).limit(1);
-  const up = data && data[0] && data[0].up_per_sheet;
-  if (up && up > 0 && !document.getElementById('tbUp').value) document.getElementById('tbUp').value = up;
-  hitungTerima();
-}
-function hitungTerima() {
-  const s = parseInt(document.getElementById('tbSheet').value) || 0, u = parseInt(document.getElementById('tbUp').value) || 0;
-  document.getElementById('tbTotal').textContent = `${tbN(s)} sheet × ${u || '?'} up = ${u ? tbN(s * u) : '—'} pcs`;
+  if (tbCur.pre) document.getElementById('tbItemWrap').style.display = 'none';
 }
 function tutupTerima() { const m = document.getElementById('tbModal'); if (m) m.remove(); tbCur = null; }
 async function simpanTerima() {
   if (!tbCur) return;
   const n = tbCur.n, msg = document.getElementById('tbMsg'), btn = document.getElementById('tbSave');
-  const itemId = parseInt(document.getElementById('tbItem').value), sheet = parseInt(document.getElementById('tbSheet').value), up = parseInt(document.getElementById('tbUp').value), tgl = document.getElementById('tbTgl').value;
+  const itemId = parseInt(document.getElementById('tbItem').value), sheet = parseInt(document.getElementById('tbBundle').value), up = 1, tgl = document.getElementById('tbTgl').value;
   const bad = t => { msg.style.color = '#b91c1c'; msg.textContent = t; };
   if (!itemId) return bad('Pilih item PI');
-  if (!(sheet > 0)) return bad('Jumlah lembar tidak valid');
-  if (!(up > 0)) return bad('Isi UP per sheet');
+  if (!(sheet > 0)) return bad('Jumlah bundle tidak valid');
   if (!tgl) return bad('Isi tanggal');
   const d = tbCur.dets.find(x => x.id === itemId);
   btn.disabled = true;
@@ -5806,7 +5789,7 @@ async function simpanTerima() {
     if (ada && ada.length) { bad('Nota ini sudah pernah diterima.'); await loadTimbangan(); return; }
     const totalPcs = sheet * up;
     const { data: { user } } = await sb.auth.getUser();
-    const ket = `[📄 ${sheet} Sheet × ${up} Up] Dari Timbangan, nota ${n.no_dokumen} (${n.total_bundles} bundle × ${n.leaves} lv)`;
+    const ket = `[📦 ${sheet} bundle] Dari Timbangan, nota ${n.no_dokumen} (${n.leaves} lv)`;
     const bm = await sb.from('barang_masuk').insert([{ detail_id: itemId, tanggal: tgl, qty: totalPcs, keterangan: ket, created_by: user.email }]).select();
     if (bm.error) return bad('❌ ' + bm.error.message);
     const mi = await sb.from('material_inbound').insert([{ no_pi: tbCur.h.no_pi, no_po: '-', surat_jalan: n.no_dokumen, tanggal_terima: tgl, supplier: 'TIMBANGAN KERTAS', brand: d.brand || '', jenis: d.jenis || '', paper: d.paper || '', size: d.size || '', qty_sheet: sheet, up_per_sheet: up, qty_masuk: sheet, qty_pi: d.qty_pi || 0, status: 'DITERIMA', notes: `Dari nota ${n.no_dokumen}`, created_by: user.email, qty_pi_sheet: sheet, qty_pi_pcs: null, pi_id: tbCur.h.id, pi_detail_id: itemId }]);
@@ -5843,8 +5826,6 @@ NS.goToDiecut = goToDiecut;
 NS.goToSend = goToSend;
 NS.loadTimbangan = loadTimbangan;
 NS.terimaTimbangan = terimaTimbangan;
-NS.isiUp = isiUp;
-NS.hitungTerima = hitungTerima;
 NS.tutupTerima = tutupTerima;
 NS.simpanTerima = simpanTerima;
 NS.mount = async function(host){
