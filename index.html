@@ -5728,7 +5728,7 @@ function goToSend(id) { showToast('Menu Kirim Produksi akan ditambahkan di tahap
 let tbRows = [], tbDetails = {}, tbCur = null;
 const tbEsc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const tbU = s => String(s == null ? '' : s).trim().toUpperCase();
-const tbCanon = s => String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const tbCanon = s => String(s || '').replace(/\([^)]*\)/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 const tbN = n => Number(n || 0).toLocaleString('id-ID');
 async function loadTimbangan() {
   const host = document.getElementById('gpMain'); if (!host) return;
@@ -5754,7 +5754,8 @@ async function loadTimbangan() {
 async function terimaTimbangan(i) {
   const n = tbRows[i]; if (!n) return;
   const { data: hs } = await sb.from('pi_header').select('id,no_pi').eq('is_archived', false);
-  const h = (hs || []).find(x => tbCanon(x.no_pi) === tbCanon(n.no_pi));
+  const cands = (hs || []).filter(x => tbCanon(x.no_pi) === tbCanon(n.no_pi));
+  const h = cands.find(x => String(x.no_pi).toUpperCase().includes(String(n.brand || '').toUpperCase())) || cands[0];
   if (!h) { alert(`❌ No. PI ${n.no_pi} tidak ditemukan di Input PI. Buat/cek PI-nya dulu.`); return; }
   const { data: dets } = await sb.from('pi_detail').select('*').eq('pi_id', h.id).order('id');
   if (!dets || !dets.length) { alert('❌ PI ini belum punya item.'); return; }
@@ -6261,7 +6262,7 @@ NS.hapus = async function(id){
     function formatDateForInput(d) { if (!d) return ""; const p = d.split('/'); return p.length === 3 ? `${p[2]}-${p[0]}-${p[1]}` : d; }
     function formatTanggalIndonesia(d) { return d || ""; }
     function normPI(v) { return (v || '').trim().toUpperCase(); }
-    function canon(v) { return (v || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
+    function canon(v) { return (v || '').replace(/\([^)]*\)/g, '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
     function findPI(v) { const n = normPI(v); return piList.find(p => p.no_pi.toUpperCase() === n); }
     function specKey(s, g, l, j, w) { return `${s}|${g}|${l}|${j}|${w}`; }
     async function catatLog(aksi, detail) {
@@ -7179,7 +7180,7 @@ NS.hapus = async function(id){
             }
         }
         if (!m) {
-            const { error } = await supabase.rpc('simpan_pi_item', { p_no: normPI(h.no_pi), p_brand: U(g.brand), p_tgl: h.tanggal, p_jenis: gKertas(g), p_wm: g.watermark || 'No WM', p_size: g.size, p_gsm: g.gsm, p_leaves: g.leaves, p_qty: g.qty_bundle, p_oleh: user.nama });
+            const { error } = await supabase.rpc('simpan_pi_item', { p_no: normPI(String(h.no_pi).replace(/\s*\([^)]*\)\s*/g, ' ').trim()), p_brand: U(g.brand), p_tgl: h.tanggal, p_jenis: gKertas(g), p_wm: g.watermark || 'No WM', p_size: g.size, p_gsm: g.gsm, p_leaves: g.leaves, p_qty: g.qty_bundle, p_oleh: user.nama });
             if (error && error.code !== '23505') { alert('❌ Gagal menyinkronkan PI ke Timbangan: ' + error.message); return null; }
             await loadMasterData(); m = mirrorItem(g);
             if (!m) { alert('❌ Item PI belum tersinkron ke Timbangan. Coba lagi.'); return null; }
