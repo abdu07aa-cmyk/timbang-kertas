@@ -878,6 +878,16 @@ body.sbOn #sidebar{display:flex;}
             <select id="pmItem"><option value="">— pilih PI dulu —</option></select>
             <div id="pmItemInfo" class="hint"></div>
             <div id="pmDupWarn" class="warnbox" style="display:none"></div>
+            <div id="pmTambahWrap" style="display:none;margin-top:10px;padding:10px;border:1.5px dashed #f59e0b;border-radius:10px;background:#fffbeb;">
+                <label style="display:flex;gap:8px;align-items:center;margin:0;"><input type="checkbox" id="pmTambah" style="width:auto;margin:0;"> ➕ <b>Permintaan TAMBAHAN</b> — ganti NG / kekurangan (boleh melebihi kuota PI)</label>
+                <div id="pmTambahBox" style="display:none;margin-top:8px;">
+                    <label>Alasan tambahan</label>
+                    <select id="pmTambahAlasan"><option value="NG / rejek">NG / rejek</option><option value="Kekurangan jumlah">Kekurangan jumlah</option><option value="Lainnya">Lainnya</option></select>
+                    <label>Terkait pengajuan Return Produksi (opsional)</label>
+                    <select id="pmTambahRet"><option value="">— tidak terkait —</option></select>
+                    <div class="hint">Kuota PI di Timbangan otomatis dinaikkan sebesar tambahan. Qty di menu Input PI tidak berubah.</div>
+                </div>
+            </div>
             <label>📦 Qty diminta (bundles)</label>
             <input type="number" id="pmQty" step="1" min="1" placeholder="Contoh: 500">
             <label>📝 Catatan (opsional)</label>
@@ -3773,6 +3783,12 @@ const NS = GP.mods.perm = {};
             return;
         }
         allRequests = data || [];
+        retMap = {};
+        try {
+            const sid = allRequests.filter(r => r.status === 'SELESAI').map(r => r.id);
+            if (sid.length) { const rr = await sb.from('return_produksi').select('permintaan_id,tipe,qty,status').in('permintaan_id', sid);
+                (rr.data || []).filter(x => x.status !== 'DITOLAK').forEach(x => { const o = retMap[x.permintaan_id] || (retMap[x.permintaan_id] = {}); o[x.tipe] = (o[x.tipe] || 0) + (x.qty || 0); }); }
+        } catch (e) { }
 
         // Admin: hitung stok gudang untuk item yang masih aktif
         stokMap = {};
@@ -3866,7 +3882,7 @@ const NS = GP.mods.perm = {};
                 </div>`;
             }
             return `<div style="white-space:nowrap;">
-                <span class="sub">Diproses ${fmtWaktu(r.processed_at)}${r.processed_by ? ' oleh ' + esc(namaPendek(r.processed_by)) : ''}</span>
+                ${selesaiAksi(r)}
                 <button class="btn-small btn-hapus" title="Hapus permanen" onclick="GP.mods.perm.hapusPermintaan(${r.id})">🗑️</button>
             </div>`;
         }
@@ -3879,7 +3895,7 @@ const NS = GP.mods.perm = {};
         }
         if (r.status === 'PENDING') return '<span class="sub">Menunggu persetujuan gudang</span>';
         if (r.status === 'DISETUJUI') return '<span class="sub">Disetujui, menunggu diproses gudang</span>';
-        if (r.status === 'SELESAI') return `<span class="sub">Sudah diserahkan ${fmtWaktu(r.processed_at)}</span>`;
+        if (r.status === 'SELESAI') return selesaiAksi(r);
         return '<span class="sub">-</span>';
     }
 
@@ -4256,6 +4272,58 @@ const NS = GP.mods.perm = {};
         await loadDaftarPermintaan();
     }
 
+    // ===== Bukti serah terima ke Produksi + konfirmasi Terima =====
+    let retMap = {};
+    const bstNo = r => 'BST-' + String(r.id).padStart(5, '0');
+    function selesaiAksi(r) {
+        const own = r.requested_by === currentUserEmail;
+        const ret = retMap[r.id];
+        const retTxt = ret ? `<div class="sub" style="color:#b45309;">↩ Return: ${ret.NG ? 'NG ' + fmt(ret.NG) : ''}${ret.NG && ret.KURANG ? ' · ' : ''}${ret.KURANG ? 'Kurang ' + fmt(ret.KURANG) : ''}</div>` : '';
+        const trm = r.diterima_at
+            ? `<div class="sub" style="color:#166534;">✅ Diterima ${esc(namaPendek(r.diterima_oleh))} · ${fmtWaktu(r.diterima_at)}</div>`
+            : `<div class="sub" style="color:#b45309;">⏳ Belum dikonfirmasi penerima</div>`;
+        const btnTerima = (!r.diterima_at && (own || isAdminUser)) ? `<button class="btn-small btn-proses" onclick="GP.mods.perm.terimaPermintaan(${r.id})">✅ Terima barang</button>` : '';
+        return `<div style="white-space:normal;">
+            <div class="sub">${bstNo(r)} · diserahkan ${fmtWaktu(r.processed_at)}${r.processed_by ? ' oleh ' + esc(namaPendek(r.processed_by)) : ''}</div>
+            ${trm}${retTxt}
+            <div style="margin-top:4px;white-space:nowrap;">${btnTerima} <button class="btn-small btn-edit" onclick="GP.mods.perm.cetakBukti(${r.id})">🖨️ Bukti</button></div></div>`;
+    }
+    async function terimaPermintaan(id) {
+        const r = allRequests.find(x => x.id === id); if (!r) return;
+        if (!confirm(`Konfirmasi: kamu SUDAH MENERIMA ${fmt(r.qty_diberikan)} ${r.brand} - ${r.jenis} (PI ${r.no_pi})?\n\nHitung dulu barangnya. Kalau ada yang NG atau kurang, ajukan di menu Return Produksi setelah ini.`)) return;
+        const { error } = await sb.rpc('terima_permintaan_produksi', { p_id: id });
+        if (error) { alert('❌ ' + error.message + '\n\nKalau pesannya "function ... not found", jalankan dulu file supabase_gudang_serah_produksi.sql di Supabase Gudang Pro.'); return; }
+        addLog('TERIMA BARANG PRODUKSI', `${currentUserEmail} menerima ${r.qty_diberikan} ${r.brand} - ${r.jenis} (${bstNo(r)})`);
+        showToast('Penerimaan barang tercatat', 'success');
+        await loadDaftarPermintaan();
+    }
+    function cetakBukti(id) {
+        const r = allRequests.find(x => x.id === id); if (!r) return;
+        const ret = retMap[r.id] || {};
+        const hal = (label, warna) => `<div class="hal"><div class="hd"><div><b class="firma">THE ROLLING PAPER COMPANY</b><br><span class="jdl">BUKTI SERAH TERIMA BARANG KE PRODUKSI</span></div><div class="lbl" style="color:${warna};border-color:${warna};">${label}</div></div>
+            <div class="nomor">No. ${bstNo(r)} &nbsp;|&nbsp; ${esc(fmtWaktu(r.processed_at))}</div>
+            <table class="inf"><tr><td>PI</td><td><b>${esc(r.no_pi)}</b></td><td>Brand</td><td><b>${esc(r.brand)}</b></td></tr>
+            <tr><td>Barang</td><td colspan="3"><b>${esc(r.jenis)}</b></td></tr>
+            <tr><td>Diminta</td><td>${fmt(r.qty_diminta)}</td><td>Disetujui</td><td>${fmt(r.approved_qty)}</td></tr>
+            <tr class="hs"><td>DISERAHKAN</td><td colspan="3"><b style="font-size:16px;">${fmt(r.qty_diberikan)}</b> ${r.qty_diberikan !== r.qty_diminta ? '<span style="color:#b45309">(berbeda dari permintaan ' + fmt(r.qty_diminta) + ')</span>' : '(sesuai permintaan)'}</td></tr>
+            ${r.catatan ? `<tr><td>Catatan</td><td colspan="3">${esc(r.catatan)}</td></tr>` : ''}</table>
+            <div class="kond">Cek kondisi &amp; hitung saat serah terima. Jika ada <b>NG</b> atau <b>kekurangan</b>, ajukan di aplikasi menu <b>Return Produksi</b> dengan menyebut <b>${bstNo(r)}</b>.<br>
+            Jumlah diterima: ........................ &nbsp; NG: ........................ &nbsp; Kurang: ........................</div>
+            <div class="ttd"><div class="tb"><div>Diserahkan (Gudang)</div><div style="height:46px"></div><div class="tl"></div><b>${esc(namaPendek(r.processed_by))}</b></div>
+            <div class="tb"><div>Diterima (Leader Produksi)</div><div style="height:46px"></div><div class="tl"></div><b>${esc(namaPendek(r.diterima_oleh || r.requested_by))}</b>${r.diterima_at ? `<div style="font-size:9px">Konfirmasi di aplikasi ${esc(fmtWaktu(r.diterima_at))}</div>` : ''}</div></div>
+            <div class="ft">Dicetak ${new Date().toLocaleString('id-ID')}${ret.NG || ret.KURANG ? ' · Return tercatat: NG ' + fmt(ret.NG || 0) + ', kurang ' + fmt(ret.KURANG || 0) : ''}</div></div>`;
+        const css = `@page{size:A4 portrait;margin:7mm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;font-size:11px;color:#000}
+            .lembar{width:196mm;height:283mm;display:flex;flex-direction:column}.hal{flex:1;padding:4mm 2mm;overflow:hidden}.hal+.hal{border-top:1.5px dashed #888}
+            .hd{display:flex;justify-content:space-between;border-bottom:2px solid #1e3a8a;padding-bottom:3px}.firma{font-size:14px;color:#1e3a8a;letter-spacing:1px}.jdl{font-size:11px;font-weight:bold}
+            .lbl{font-weight:bold;border:2px solid;padding:2px 8px;border-radius:5px;font-size:10px;height:fit-content}.nomor{background:#f1f5f9;text-align:center;font-weight:bold;padding:2px;margin:4px 0;font-size:10px}
+            table.inf{width:100%;border-collapse:collapse;margin:4px 0}table.inf td{border:1px solid #999;padding:3px 6px}table.inf td:nth-child(odd){background:#f8fafc;width:18%}.hs td{background:#fef9c3!important}
+            .kond{border:1px dashed #666;padding:4px 6px;margin:6px 0;line-height:1.8;font-size:10px}.ttd{display:flex;justify-content:space-around;text-align:center;font-size:10px;margin-top:4px}.tb{width:44%}.tl{border-top:1px solid #000;margin-bottom:2px}.ft{margin-top:6px;text-align:center;font-size:8px;color:#555}`;
+        const w = window.open('', '_blank'); if (!w) { alert('Pop-up diblokir browser. Izinkan pop-up lalu coba lagi.'); return; }
+        w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${bstNo(r)}</title><style>${css}</style></head><body><div class="lembar">${hal('ASLI - arsip Gudang', '#1e3a8a')}${hal('SALINAN - Leader Produksi', '#166534')}</div></body></html>`);
+        w.document.close(); setTimeout(() => w.print(), 300);
+        addLog('CETAK BUKTI PRODUKSI', `${bstNo(r)} oleh ${currentUserEmail}`);
+    }
+
     function hapusEditing() { return hapusPermintaan(editingId); }
 
 async function init(){
@@ -4294,6 +4362,9 @@ NS.tutupEdit = tutupEdit;
 NS.simpanEdit = simpanEdit;
 NS.loadHalaman = loadHalaman;
 NS.prosesPermintaan = prosesPermintaan;
+NS.selesaiAksi = selesaiAksi;
+NS.terimaPermintaan = terimaPermintaan;
+NS.cetakBukti = cetakBukti;
 NS.hapusEditing = hapusEditing;
 NS.mount = async function(host){
   host.innerHTML = "<div class=\"gm-perm\"><div id=\"gpMain\">" + "" + "</div>\n<div id=\"editModal\" class=\"modal\">\n    <div class=\"modal-content\">\n        <h3>\u270f\ufe0f Edit Permintaan</h3>\n        <div id=\"editInfo\" class=\"info-text\"></div>\n        <div id=\"editMsg\" style=\"margin-top:8px;\"></div>\n\n        <label id=\"editQtyLabel\" style=\"font-size:13px;display:block;margin-top:8px;\">Jumlah diminta</label>\n        <input type=\"number\" id=\"editQty\" min=\"1\">\n        <div id=\"editBatas\" class=\"info-text\"></div>\n\n        <label style=\"font-size:13px;display:block;margin-top:8px;\">Tanggal dibutuhkan</label>\n        <input type=\"date\" id=\"editTanggal\">\n\n        <label style=\"font-size:13px;display:block;margin-top:8px;\">Catatan</label>\n        <textarea id=\"editCatatan\" placeholder=\"Catatan (opsional)\"></textarea>\n\n        <div class=\"modal-footer\">\n            <button type=\"button\" id=\"btnHapusEdit\" class=\"btn-hapus-modal\" onclick=\"GP.mods.perm.hapusEditing()\">\ud83d\uddd1\ufe0f Hapus</button>\n            <button type=\"button\" class=\"btn-batal-modal\" onclick=\"GP.mods.perm.tutupEdit()\">Batal</button>\n            <button type=\"button\" onclick=\"GP.mods.perm.simpanEdit()\">\ud83d\udcbe Simpan Perubahan</button>\n        </div>\n    </div>\n</div>\n\n</div>";
@@ -5807,7 +5878,7 @@ async function loadMine(){
   const { data } = await mq.eq('status','SELESAI').order('processed_at',{ascending:false}).limit(100);
   mine = data || [];
   const el = document.getElementById('retPerm');
-  el.innerHTML = '<option value="">-- Pilih --</option>' + mine.map(r => `<option value="${r.id}">${esc(r.no_pi)} - ${esc(r.brand)} ${esc(r.jenis)} (diterima ${fmt(r.qty_diberikan)})</option>`).join('');
+  el.innerHTML = '<option value="">-- Pilih --</option>' + mine.map(r => `<option value="${r.id}">BST-${String(r.id).padStart(5,'0')} · ${esc(r.no_pi)} - ${esc(r.brand)} ${esc(r.jenis)} (diserahkan ${fmt(r.qty_diberikan)})</option>`).join('');
 }
 async function load(){
   let q = sb.from('return_produksi').select('*').order('created_at',{ascending:false}).limit(200);
@@ -7014,11 +7085,12 @@ NS.hapus = async function(id){
         const h = gpPi.find(p => p.id === d.pi_id); const p = h && piList.find(x => canon(x.no_pi) === canon(h.no_pi)); if (!p) return null;
         return piItems.find(i => i.pi_id === p.id && U(i.jenis_kertas) === U(gKertas(d)) && U(i.watermark) === U(d.watermark || 'No WM') && U(i.size_kertas) === U(d.size) && Number(i.gsm) === Number(d.gsm) && Number(i.leaves) === Number(d.leaves));
     }
-    function gpBuka(d) { const m = mirrorItem(d); return !m || itemBuka(m); }
+    function gpBuka(d) { if (tambahOn()) return true; const m = mirrorItem(d); return !m || itemBuka(m); }
     function gpLabel(d) { const m = mirrorItem(d), dm = m ? (piStatus[m.id] || 0) : 0; return `${d.brand} · ${d.jenis}${d.paper && U(d.paper) !== U(d.jenis) ? ' (' + d.paper + ')' : ''} · ${d.size} · ${d.gsm}gsm ${d.leaves}lv · ${d.watermark || 'No WM'} · sisa ${d.qty_bundle - dm} dari ${d.qty_bundle}`; }
     function fillPmPiG() {
         const el = $('pmPi'); if (!el) return;
         const prev = el.value; el.dataset.ss = '1';
+        if ($('pmTambahWrap')) $('pmTambahWrap').style.display = 'block';
         $('pmItem').style.display = 'none'; if ($('pmItem').previousElementSibling) $('pmItem').previousElementSibling.style.display = 'none';
         if (el.previousElementSibling) el.previousElementSibling.textContent = '📄 Pilih PI & item kertas (ketik untuk mencari)';
         const ds = gpItems.filter(d => gpBuka(d)).sort((a, b) => (a.pi_id - b.pi_id) || (a.id - b.id));
@@ -7039,10 +7111,17 @@ NS.hapus = async function(id){
     function onPmItemChangeG(keepQty) {
         const d = gpItems.find(x => String(x.id) === $('pmItem').value), el = $('pmItemInfo'), w = $('pmDupWarn');
         if (!d) { el.className = 'hint'; el.textContent = ''; w.style.display = 'none'; return; }
-        const m = mirrorItem(d), dm = m ? (piStatus[m.id] || 0) : 0, sisa = d.qty_bundle - dm;
+        const m = mirrorItem(d), dm = m ? (piStatus[m.id] || 0) : 0, sisa = (m ? Math.max(Number(m.qty_pi), d.qty_bundle) : d.qty_bundle) - dm;
         el.className = 'hint ' + (sisa <= 0 ? 'bad' : 'ok');
-        el.textContent = `Qty PI ${d.qty_bundle} | sudah diminta ${dm} | sisa ${sisa} bundle`;
-        if (keepQty !== true) $('pmQty').value = sisa > 0 ? sisa : '';
+        if (tambahOn()) {
+            el.className = 'hint';
+            el.textContent = `Qty PI ${d.qty_bundle} | sudah diminta ${dm} | ➕ Tambahan: isi jumlah bundle yang kurang/NG`;
+            if (keepQty !== true) $('pmQty').value = '';
+            muatReturTambah(d);
+        } else {
+            el.textContent = `Qty PI ${d.qty_bundle} | sudah diminta ${dm} | sisa ${sisa} bundle`;
+            if (keepQty !== true) $('pmQty').value = sisa > 0 ? sisa : '';
+        }
         const akt = m ? pmData.filter(r => r.pi_item_id === m.id && AKTIF.includes(r.status)) : [];
         if (akt.length) {
             w.style.display = 'block';
@@ -7078,13 +7157,29 @@ NS.hapus = async function(id){
             if (error && error.code !== '23505') { alert('❌ Gagal menyinkronkan PI ke Timbangan: ' + error.message); return null; }
             await loadMasterData(); m = mirrorItem(g);
             if (!m) { alert('❌ Item PI belum tersinkron ke Timbangan. Coba lagi.'); return null; }
-        } else if (Number(m.qty_pi) !== Number(g.qty_bundle)) {
+        } else if (Number(m.qty_pi) < Number(g.qty_bundle) || (Number(m.qty_pi) > Number(g.qty_bundle) && (piStatus[m.id] || 0) <= Number(g.qty_bundle))) {
             const ok = await rpc('edit_pi_item', { p_id: m.id, p_jenis: m.jenis_kertas, p_wm: m.watermark, p_size: m.size_kertas, p_gsm: m.gsm, p_leaves: m.leaves, p_qty: g.qty_bundle, p_oleh: user.nama });
             if (!ok) return null;
             await loadMasterData(); m = mirrorItem(g);
         }
         return m;
     }
+    const tambahOn = () => !!(user && user.gp && $('pmTambah') && $('pmTambah').checked);
+    async function muatReturTambah(d) {
+        const el = $('pmTambahRet'); if (!el) return;
+        const h = gpPi.find(x => x.id === d.pi_id); const prev = el.value;
+        if (!h || !window.sbG) return;
+        const { data } = await window.sbG.from('return_produksi').select('id,tipe,qty,status').eq('no_pi', h.no_pi).neq('status', 'DITOLAK').order('id', { ascending: false }).limit(30);
+        el.innerHTML = '<option value="">— tidak terkait —</option>' + (data || []).map(r => `<option value="${r.id}">Return #${r.id} · ${esc(r.tipe)} ${r.qty} · ${esc(r.status)}</option>`).join('');
+        if ([...el.options].some(o => o.value === prev)) el.value = prev;
+    }
+    function catatanKirim() {
+        const n = $('pmCatatan').value.trim();
+        if (!tambahOn()) return n || null;
+        const rt = $('pmTambahRet').value;
+        return `[TAMBAHAN: ${$('pmTambahAlasan').value}${rt ? ' · Return #' + rt : ''}]` + (n ? ' ' + n : '');
+    }
+    if ($('pmTambah')) $('pmTambah').addEventListener('change', () => { $('pmTambahBox').style.display = $('pmTambah').checked ? 'block' : 'none'; fillPmPiG(); onPmItemChangeG(); });
     function itemOpsiLabel(i) { const dm = piStatus[i.id] || 0; return `${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv · sisa ${i.qty_pi - dm} dari ${i.qty_pi}`; }
     function fillPmPi() {
         if (user && user.gp) return fillPmPiG();
@@ -7144,7 +7239,15 @@ NS.hapus = async function(id){
         const qty = parseInt($('pmQty').value);
         if (!(qty > 0)) { alert('Qty harus lebih dari 0'); return; }
         const sisa = i.qty_pi - (piStatus[i.id] || 0);
-        if (qty > sisa) { alert(`❌ Qty ${qty} melebihi sisa PI (${sisa} bundle). Kurangi qty.`); return; }
+        if (tambahOn()) {
+            if (qty > sisa) {
+                const naik = qty - Math.max(sisa, 0);
+                if (!confirm(`➕ PERMINTAAN TAMBAHAN (${$('pmTambahAlasan').value})\n${qty} bundle melebihi sisa kuota PI (${Math.max(sisa, 0)}).\nKuota PI di Timbangan akan dinaikkan ${naik} bundle (Qty di Input PI tidak berubah).\nLanjutkan?`)) return;
+                if (piTutup[i.id] && !(await rpc('buka_pi_item', { p_id: i.id, p_oleh: user.nama }))) return;
+                if (!(await rpc('edit_pi_item', { p_id: i.id, p_jenis: i.jenis_kertas, p_wm: i.watermark, p_size: i.size_kertas, p_gsm: i.gsm, p_leaves: i.leaves, p_qty: Number(i.qty_pi) + naik, p_oleh: user.nama }))) return;
+                await loadMasterData(); const i2 = piItems.find(x => x.id === i.id); if (i2) i = i2;
+            } else if (piTutup[i.id] && !(await rpc('buka_pi_item', { p_id: i.id, p_oleh: user.nama }))) return;
+        } else if (qty > sisa) { alert(`❌ Qty ${qty} melebihi sisa PI (${sisa} bundle). Kurangi qty. (Kalau ini untuk mengganti NG / kekurangan, centang "Permintaan TAMBAHAN".)`); return; }
         if (!beratBundleKG(i.size_kertas, i.gsm, i.leaves, i.jenis_kertas)) {
             if (user.gp) { if (await isiBeratInline(i) === null) return; }
             else if (!confirm('⚠️ Berat bundle untuk spesifikasi ini belum terdaftar, jadi nanti belum bisa ditimbang.\nTetap kirim permintaan?')) return;
@@ -7154,9 +7257,9 @@ NS.hapus = async function(id){
         if (!confirm(`Kirim permintaan?\nPI ${p.no_pi} (${p.brand})\n${i.jenis_kertas} · ${i.watermark} · ${i.size_kertas} · ${i.gsm}gsm · ${i.leaves}lv\nQty: ${qty} bundle`)) return;
         busyKirim = true; $('pmKirimBtn').disabled = true;
         try {
-            const ok = await rpc('buat_permintaan', { p_pi_item_id: i.id, p_qty: qty, p_catatan: $('pmCatatan').value.trim() || null, p_oleh: user.nama });
+            const ok = await rpc('buat_permintaan', { p_pi_item_id: i.id, p_qty: qty, p_catatan: catatanKirim(), p_oleh: user.nama });
             if (!ok) { await loadPermintaan(); return; }
-            $('pmQty').value = ''; $('pmCatatan').value = ''; gpAt = 0;
+            $('pmQty').value = ''; $('pmCatatan').value = ''; gpAt = 0; if ($('pmTambah')) { $('pmTambah').checked = false; $('pmTambahBox').style.display = 'none'; }
             await loadMasterData(); await loadPermintaan();
             alert('✅ Permintaan terkirim. Leader Mesin akan mendapat notifikasi.');
         } finally { busyKirim = false; $('pmKirimBtn').disabled = false; }
