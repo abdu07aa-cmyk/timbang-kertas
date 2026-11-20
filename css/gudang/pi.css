@@ -1,0 +1,41 @@
+/* Gaya modul Gudang: pi */
+#gpHost .gm-pi .card{background: white; border-radius: 12px; padding: 18px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+#gpHost .gm-pi .card-title{font-size: 16px; font-weight: 600; margin-bottom: 15px; color: #1e293b; display: flex; align-items: center; gap: 8px;}
+#gpHost .gm-pi input,#gpHost .gm-pi button,#gpHost .gm-pi select{width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;}
+#gpHost .gm-pi button{background: #3b82f6; color: white; border: none; cursor: pointer;}
+#gpHost .gm-pi button:active{transform: scale(0.98);}
+#gpHost .gm-pi .btn-add{background: #10b981; margin-top: 10px;}
+#gpHost .gm-pi .btn-remove{background: #ef4444; width: auto; padding: 5px 10px; margin: 0;}
+#gpHost .gm-pi .btn-edit{background: #f59e0b; width: auto; padding: 5px 10px; margin: 0;}
+#gpHost .gm-pi .btn-danger{background: #dc2626;}
+#gpHost .gm-pi .alert{padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 13px;}
+#gpHost .gm-pi .alert-success{background: #d1fae5; color: #065f46;}
+#gpHost .gm-pi .alert-error{background: #fee2e2; color: #991b1b;}
+#gpHost .gm-pi .alert-warning{background: #fed7aa; color: #9a3412;}
+#gpHost .gm-pi .info-text{font-size: 12px; color: #64748b; margin-top: 5px;}
+#gpHost .gm-pi .item-row{display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            align-items: center;
+            flex-wrap: wrap;}
+#gpHost .gm-pi .item-row input{flex: 1; margin: 0;}
+#gpHost .gm-pi .item-row .btn-remove{flex: 0;}
+#gpHost .gm-pi .table-wrapper{overflow-x: auto;}
+#gpHost .gm-pi table{width: 100%; border-collapse: collapse;}
+#gpHost .gm-pi th,#gpHost .gm-pi td{padding: 10px 8px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 12px;}
+#gpHost .gm-pi th{background: #f8fafc; color: #64748b; font-weight: 500;}
+#gpHost .gm-pi .mode-switch{display: flex;
+            gap: 10px;
+            margin-bottom: 15px;}
+#gpHost .gm-pi .mode-btn{flex: 1;
+            text-align: center;
+            padding: 8px;
+            background: #e2e8f0;
+            color: #1e293b;
+            border-radius: 8px;
+            cursor: pointer;}
+#gpHost .gm-pi .mode-btn.active{background: #3b82f6;
+            color: white;}
+#gpHost .gm-pi .item-row{flex-wrap:wrap}
+#gpHost .gm-pi .item-row input{min-width:110px}
+#gpHost .gm-pi .item-row select{flex:1;min-width:110px;margin:0;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;background:#fff}

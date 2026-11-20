@@ -1,0 +1,7 @@
+/* Gaya modul Gudang: ret */
+#gpHost .gm-ret .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+#gpHost .gm-ret .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}
+#gpHost .gm-ret label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}
+#gpHost .gm-ret input,#gpHost .gm-ret select,#gpHost .gm-ret textarea{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
+#gpHost .gm-ret button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}
+#gpHost .gm-ret .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold}

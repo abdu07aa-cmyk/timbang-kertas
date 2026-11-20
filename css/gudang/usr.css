@@ -1,0 +1,8 @@
+/* Gaya modul Gudang: usr */
+#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0;padding:10px 16px;font-weight:bold;border-radius:8px;cursor:pointer}
+#gpHost .gm-usr .card,#gpHost .gm-klr .card{background:#fff;border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+#gpHost .gm-usr .card-title,#gpHost .gm-klr .card-title{font-weight:bold;font-size:16px;margin-bottom:10px}
+#gpHost .gm-usr label,#gpHost .gm-klr label{display:block;font-weight:600;margin:10px 0 4px;font-size:13px}
+#gpHost .gm-usr input,#gpHost .gm-usr select,#gpHost .gm-klr input,#gpHost .gm-klr select{width:100%;padding:9px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px}
+#gpHost .gm-usr button,#gpHost .gm-klr button{padding:6px 10px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;cursor:pointer}
+#gpHost .gm-usr .btn-primary,#gpHost .gm-klr .btn-primary{background:#2563eb;color:#fff;border:0}

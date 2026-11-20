@@ -1,0 +1,31 @@
+/* Sidebar, header, dan wadah (#gpHost) untuk modul Gudang */
+/* ===== layout sidebar ===== */
+body.sbOn{padding-left:272px;}
+#sidebar{position:fixed;top:0;left:0;bottom:0;width:260px;background:#0f172a;color:#e2e8f0;z-index:1500;display:none;flex-direction:column;overflow:hidden;}
+body.sbOn #sidebar{display:flex;}
+#sidebar .sbHead{padding:16px 14px 10px;border-bottom:1px solid #1e293b;}
+#sidebar .sbHead b{display:block;font-size:.95rem;color:#fff;letter-spacing:.3px;}
+#sidebar .sbHead small{color:#94a3b8;font-size:.68rem;}
+#sbSearch{width:auto;margin:10px 12px 4px;padding:8px 12px;border-radius:10px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-size:.8rem;}
+#sbMenu{flex:1;overflow-y:auto;padding:4px 8px 16px;}
+.sbGroup{font-size:.62rem;letter-spacing:1px;color:#64748b;font-weight:bold;padding:14px 10px 4px;}
+.sbi{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:.82rem;color:#cbd5e1;margin-top:2px;}
+.sbi:hover{background:#1e293b;color:#fff;}
+.sbi.active{background:#2563eb;color:#fff;font-weight:bold;}
+.sbi .ic{width:20px;text-align:center;}
+.sbi .cnt{margin-left:auto;}
+#sbOverlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1400;}
+#menuBtn{display:none;background:#0f172a;}
+.container.wide{max-width:1100px;}
+#gpHost{display:none;font-family:Arial,sans-serif;color:#1e293b;}
+#gpHost.on{display:block;}
+#gpHost input,#gpHost select,#gpHost textarea,#gpHost button,#gpHost label,#gpHost table,#gpHost th,#gpHost td{all:revert;box-sizing:border-box;}
+#gpHost *{box-sizing:border-box;}
+.loginlink{display:block;text-align:center;margin-top:12px;font-size:.78rem;color:#1e3a8a;cursor:pointer;text-decoration:underline;}
+@media(max-width:860px){
+  body.sbOn{padding-left:12px;}
+  #sidebar{transform:translateX(-100%);transition:transform .2s;}
+  body.sbOpen #sidebar{transform:none;box-shadow:4px 0 20px rgba(0,0,0,.4);}
+  body.sbOpen #sbOverlay{display:block;}
+  body.sbOn #menuBtn{display:inline-block;}
+}

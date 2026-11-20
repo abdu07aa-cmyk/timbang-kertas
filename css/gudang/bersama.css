@@ -1,0 +1,50 @@
+/* Gaya modul Gudang: bersama */
+@keyframes fadeInUp{
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+@media (max-width: 600px){#gpHost .gm-qc .form-row{grid-template-columns: 1fr;}
+#gpHost .gm-qc .form-row-3{grid-template-columns: 1fr;}
+#gpHost .gm-qc .material-info-grid{grid-template-columns: 1fr 1fr;}
+#gpHost .gm-qc .toggle-buttons .btn{flex: 1; min-width: 80px; font-size: 11px; padding: 6px 8px;}}
+@keyframes fadeIn{
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+@keyframes fadeInUp{
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+@media (max-width: 768px){#gpHost .gm-diecut .form-row{grid-template-columns: 1fr;}
+#gpHost .gm-diecut .material-info-grid{grid-template-columns: 1fr 1fr;}}
+@media (max-width: 480px){#gpHost .gm-diecut .material-info-grid{grid-template-columns: 1fr;}}
+@keyframes fadeIn{
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+@media (max-width: 768px){#gpHost .gm-dash th,#gpHost .gm-dash td{font-size: 11px; padding: 8px 6px;}}
+@media (max-width: 480px){#gpHost .gm-dash .filter-bar input{flex: 1; min-width: 150px;}
+#gpHost .gm-dash .filter-bar select{min-width: 120px;}}
+@media (max-width: 600px){#gpHost .gm-perm th,#gpHost .gm-perm td{font-size: 10px; padding: 6px 4px;}}
+@keyframes fadeInUp{
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+@media (max-width: 600px){#gpHost .gm-pi .item-row{flex-direction: column;}
+#gpHost .gm-pi .item-row .btn-remove{width: 100%;}}
+@media (max-width: 600px){#gpHost .gm-masuk th,#gpHost .gm-masuk td{font-size: 10px; padding: 6px 4px;}
+#gpHost .gm-masuk .filter-row input{width: 100%;}
+#gpHost .gm-masuk .filter-row button{width: 100%;}
+#gpHost .gm-masuk .stok-pendukung-item{flex-direction: column; align-items: stretch;}
+#gpHost .gm-masuk .stok-pendukung-item .actions{justify-content: center;}}
+@keyframes fadeInUp{
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+@media (max-width: 600px){#gpHost .gm-masuk .form-row,#gpHost .gm-masuk .form-row-4{grid-template-columns: 1fr;}
+#gpHost .gm-masuk .form-row-3{grid-template-columns: 1fr;}
+#gpHost .gm-masuk .modal-content .row{grid-template-columns: 1fr;}
+#gpHost .gm-masuk .btn-small{font-size: 8px; padding: 2px 4px;}
+#gpHost .gm-masuk .radio-group{flex-direction: column; gap: 8px;}
+#gpHost .gm-masuk table{font-size: 9px; min-width: 1000px;}
+#gpHost .gm-masuk th,#gpHost .gm-masuk td{padding: 3px;}}
