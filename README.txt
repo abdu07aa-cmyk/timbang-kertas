@@ -1,4 +1,4 @@
-THE ROLLING PAPER - Timbangan Kertas + Gudang Pro (versi 9.25)
+THE ROLLING PAPER - Timbangan Kertas + Gudang Pro (versi 9.27)
 
 STRUKTUR FOLDER
   index.html            kerangka halaman (tampilan login, menu, wadah halaman)
@@ -20,6 +20,6 @@ CARA MEMASANG DI GITHUB
   3. Folder sql/ tidak perlu diunggah ke GitHub; itu hanya untuk dijalankan di Supabase.
 
 SETIAP ADA PEMBARUAN
-  - Nomor versi ada di index.html (?v=9.25). Naikkan bila Anda mengubah file css/js,
+  - Nomor versi ada di index.html (?v=9.27). Naikkan bila Anda mengubah file css/js,
     supaya browser tidak memakai file lama dari cache. Setelah mengunggah, refresh keras (Ctrl+F5).
   - Kalau muncul banner merah "File aplikasi tidak lengkap", ada folder css/js yang belum terunggah.

@@ -4331,6 +4331,9 @@ const NS = GP.mods.perm = {};
     function cetakBukti(id) {
         const r = allRequests.find(x => x.id === id); if (!r) return;
         const g = grupBukti(r);
+        const kk = 'bst_ket_' + bstNo(r); let ket = ''; try { ket = localStorage.getItem(kk) || ''; } catch (e) { }
+        const jawab = prompt('Keterangan yang mau dicetak di nota (boleh dikosongkan):', ket); if (jawab === null) return;
+        ket = jawab.trim(); try { localStorage.setItem(kk, ket); } catch (e) { }
         const brands = [...new Set(g.map(x => x.brand).filter(Boolean))].join(', ');
         const diterimaOleh = (g.find(x => x.diterima_oleh) || {}).diterima_oleh, diterimaAt = (g.find(x => x.diterima_at) || {}).diterima_at;
         const semuaTerima = g.every(x => x.diterima_at);
@@ -4343,7 +4346,7 @@ const NS = GP.mods.perm = {};
         const kecil = g.length > 7 ? ' style="font-size:9px"' : '';
         const hal = (label, warna) => `<div class="hal"><div class="hd"><div><b class="firma">THE ROLLING PAPER COMPANY</b><br><span class="jdl">BUKTI SERAH TERIMA BARANG KE PRODUKSI</span></div><div class="lbl" style="color:${warna};border-color:${warna};">${label}</div></div>
             <div class="nomor">No. ${bstNo(r)} &nbsp;|&nbsp; ${esc(fmtWaktu(r.processed_at))}</div>
-            <div class="info"><b>PI:</b> ${esc(r.no_pi)} &nbsp;&nbsp; <b>Brand:</b> ${esc(brands)}</div>
+            <div class="info"><b>PI:</b> ${esc(r.no_pi)} &nbsp;&nbsp; <b>Brand:</b> ${esc(brands)}</div>${ket ? '<div class="info"><b>Keterangan:</b> ' + esc(ket) + '</div>' : ''}
             <table class="items"${kecil}><thead><tr><th>No</th><th>Barang / Jenis</th><th>Diminta</th><th>Disetujui</th><th>DISERAHKAN</th><th>Keterangan</th><th>Diterima</th><th>NG/Kurang</th></tr></thead><tbody>${baris}</tbody>
             <tfoot><tr><td colspan="4" style="text-align:right"><b>Total diserahkan</b></td><td><b>${fmt(total)}</b></td><td colspan="3"></td></tr></tfoot></table>
             <div class="kond">Hitung &amp; cek kondisi saat serah terima, isi kolom <b>Diterima</b> dan <b>NG/Kurang</b>. Jika ada NG atau kekurangan, ajukan di aplikasi menu <b>Return Produksi</b> dengan menyebut <b>${bstNo(r)}</b>.</div>
@@ -4979,6 +4982,7 @@ const NS = GP.mods.masuk = {};
         }
         
         async function onItemChange() {
+            try { loadRiwayatSemua(); } catch (e) {}
             const itemId = document.getElementById('item_select').value;
             if (!itemId) {
                 document.getElementById('historyList').innerHTML = '<div class="info-text">Pilih item untuk melihat histori</div>';
@@ -5159,7 +5163,7 @@ const NS = GP.mods.masuk = {};
                     <td>${h.tanggal}</td>
                     <td><span style="font-weight:bold;color:#10b981">+${h.qty}</span></td>
                     <td>${h.keterangan || '-'}</td>
-                    <td><button class="btn-hapus" onclick="GP.mods.masuk.hapusHistory(${h.id}, ${itemId})">Hapus</button></td>
+                    <td style="white-space:nowrap"><button class="btn-edit" onclick="GP.mods.masuk.editMasuk(${h.id})">✏️ Edit</button> <button class="btn-hapus" onclick="GP.mods.masuk.hapusHistory(${h.id}, ${itemId})">Hapus</button></td>
                 </tr>`;
             }
             
@@ -5519,11 +5523,10 @@ const NS = GP.mods.masuk = {};
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-title">
-                        <span>📊 Tracking Material</span>
-                        <button class="btn-export" onclick="GP.mods.masuk.loadTracking()" style="width:auto;padding:6px 12px;font-size:12px;">🔄 Refresh</button>
-                    </div>
-                    <div id="trackList" style="overflow-x:auto;"><div class="info-text">⏳ Memuat...</div></div>
+                    <div class="card-title"><span>🕘 Riwayat Barang Masuk (terbaru)</span>
+                        <button class="btn-export" onclick="GP.mods.masuk.loadRiwayatSemua()" style="width:auto;padding:6px 12px;font-size:12px;">🔄 Refresh</button></div>
+                    <div class="info-text" style="margin-bottom:8px">Salah input? Klik ✏️ Edit untuk memperbaiki atau 🗑️ Hapus untuk membatalkan.</div>
+                    <div id="riwayatMasuk" style="overflow-x:auto;"><div class="info-text">⏳ Memuat...</div></div>
                 </div>
             `;
             
@@ -5537,11 +5540,11 @@ const NS = GP.mods.masuk = {};
             toggleBentukMasuk();
             
             await loadPiList();
-            await loadTracking();
+            await loadRiwayatSemua();
         }
 let trackData = [];
         async function loadTracking() {
-            const container = document.getElementById('trackList');
+            const container = document.getElementById('trackList'); if (!container) return;
             container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;">⏳ Memuat...</div>';
             
             const { data, error } = await sb
@@ -5842,6 +5845,44 @@ async function simpanTerima() {
   } finally { btn.disabled = false; }
 }
 
+/* ===== Riwayat Barang Masuk (semua item, bisa diedit) ===== */
+async function loadRiwayatSemua() {
+  const el = document.getElementById('riwayatMasuk'); if (!el) return;
+  const { data, error } = await sb.from('barang_masuk').select('*').order('id', { ascending: false }).limit(100);
+  if (error) { el.innerHTML = '<div class="info-text" style="color:#b91c1c">❌ ' + error.message + '</div>'; return; }
+  const rows = data || [];
+  if (!rows.length) { el.innerHTML = '<div class="info-text">Belum ada barang masuk.</div>'; return; }
+  const dids = [...new Set(rows.map(r => r.detail_id))];
+  const det = (await sb.from('pi_detail').select('id,brand,jenis,paper,size,pi_id').in('id', dids)).data || [];
+  const pids = [...new Set(det.map(d => d.pi_id))];
+  const hd = pids.length ? (await sb.from('pi_header').select('id,no_pi').in('id', pids)).data || [] : [];
+  const dm = {}; det.forEach(d => dm[d.id] = d); const hm = {}; hd.forEach(h => hm[h.id] = h.no_pi);
+  const e = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  el.innerHTML = '<div class="table-wrapper"><table style="width:100%"><thead><tr><th>Tanggal</th><th>PI</th><th>Barang</th><th>Qty</th><th>Keterangan</th><th>Aksi</th></tr></thead><tbody>' +
+    rows.map(r => { const d = dm[r.detail_id] || {}; return `<tr><td>${e(r.tanggal)}</td><td>${e(hm[d.pi_id] || '-')}</td><td>${e(d.brand)} ${e(d.jenis)} ${e(d.paper || '')} ${e(d.size || '')}</td><td><b style="color:#10b981">+${Number(r.qty || 0).toLocaleString('id-ID')}</b></td><td>${e(r.keterangan || '-')}</td><td style="white-space:nowrap"><button class="btn-edit" onclick="GP.mods.masuk.editMasuk(${r.id})">✏️ Edit</button> <button class="btn-hapus" onclick="GP.mods.masuk.hapusHistory(${r.id}, ${r.detail_id})">Hapus</button></td></tr>`; }).join('') +
+    '</tbody></table></div>';
+}
+async function editMasuk(id) {
+  const { data: r } = await sb.from('barang_masuk').select('*').eq('id', id).single();
+  if (!r) { alert('Data tidak ditemukan'); return; }
+  const dariSP = String(r.keterangan || '').startsWith('Ambil dari stok pendukung');
+  const tgl = prompt('Tanggal (YYYY-MM-DD):', r.tanggal); if (tgl === null) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tgl.trim())) { alert('Format tanggal salah'); return; }
+  let qty = r.qty;
+  if (dariSP) alert('Jumlah tidak bisa diubah karena berasal dari Stok Pendukung. Jika salah, Hapus lalu ambil ulang.');
+  else { const q = prompt('Jumlah masuk:', r.qty); if (q === null) return; qty = parseInt(q); if (!qty || qty <= 0) { alert('Jumlah tidak valid'); return; } }
+  const ket = prompt('Keterangan:', r.keterangan || ''); if (ket === null) return;
+  const { error } = await sb.from('barang_masuk').update({ tanggal: tgl.trim(), qty, keterangan: ket.trim() }).eq('id', id);
+  if (error) { alert('❌ ' + error.message); return; }
+  if (tgl.trim() !== r.tanggal) { // best-effort: samakan tanggal terima di tracking bila cocok tepat satu
+    try { const mi = (await sb.from('material_inbound').select('id').eq('pi_detail_id', r.detail_id).eq('tanggal_terima', r.tanggal)).data || [];
+      if (mi.length === 1) await sb.from('material_inbound').update({ tanggal_terima: tgl.trim() }).eq('id', mi[0].id); } catch (x) {}
+  }
+  addLog('EDIT BARANG MASUK', `#${id} qty ${r.qty}→${qty}, tgl ${r.tanggal}→${tgl.trim()}`);
+  showToast('Perubahan tersimpan' + (qty !== r.qty ? ' (stok ikut berubah; data QC/Tracking tidak ikut diubah)' : ''), 'success');
+  await onItemChange(); await loadRiwayatSemua();
+}
+
 async function init(){ await loadHalaman(); await loadTimbangan(); }
 NS.loadPiList = loadPiList;
 NS.toggleBentukMasuk = toggleBentukMasuk;
@@ -5866,6 +5907,8 @@ NS.loadTimbangan = loadTimbangan;
 NS.terimaTimbangan = terimaTimbangan;
 NS.tutupTerima = tutupTerima;
 NS.simpanTerima = simpanTerima;
+NS.loadRiwayatSemua = loadRiwayatSemua;
+NS.editMasuk = editMasuk;
 NS.mount = async function(host){
   host.innerHTML = "<div class=\"gm-masuk\"><div id=\"gpMain\">" + "" + "</div><div id=\"detailModal\" class=\"modal\"><div class=\"modal-content\"><h3 id=\"detailTitle\">\ud83d\udccb Detail Barang Masuk</h3><div id=\"detailContent\"></div><div class=\"modal-footer\"><button class=\"btn-cancel\" onclick=\"GP.mods.masuk.closeModal('detailModal')\">Tutup</button></div></div></div></div>";
   
@@ -6100,8 +6143,27 @@ async function loadHist(){
   const hd = pids.length ? (await sb.from('pi_header').select('id,no_pi').in('id', pids)).data || [] : [];
   const dm = {}; det.forEach(d => dm[d.id] = d); const hm = {}; hd.forEach(h => hm[h.id] = h.no_pi);
   el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">Tanggal</th><th>PI</th><th>Barang</th><th>Qty</th><th>Keterangan</th><th>Oleh</th>' + (GP.me.admin ? '<th></th>' : '') + '</tr></thead><tbody>' +
-    rows.map(r => { const d = dm[r.detail_id] || {}; return `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${esc(r.tanggal)}</td><td>${esc(hm[d.pi_id] || '-')}</td><td>${esc(d.brand)} ${esc(d.jenis)}</td><td>${fmt(r.qty)}</td><td>${esc(r.keterangan)}</td><td>${esc(String(r.created_by || '').split('@')[0])}</td>` + (GP.me.admin ? `<td><button onclick="GP.mods.keluar.hapus(${r.id})">🗑️</button></td>` : '') + '</tr>'; }).join('') + '</tbody></table>';
+    rows.map(r => { const d = dm[r.detail_id] || {}; return `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${esc(r.tanggal)}</td><td>${esc(hm[d.pi_id] || '-')}</td><td>${esc(d.brand)} ${esc(d.jenis)}</td><td>${fmt(r.qty)}</td><td>${esc(r.keterangan)}</td><td>${esc(String(r.created_by || '').split('@')[0])}</td>` + (GP.me.admin ? `<td style="white-space:nowrap"><button onclick="GP.mods.keluar.editar(${r.id})" title="Edit">✏️</button> <button onclick="GP.mods.keluar.hapus(${r.id})" title="Hapus">🗑️</button></td>` : '') + '</tr>'; }).join('') + '</tbody></table>';
 }
+NS.editar = async function(id){
+  const { data: r } = await sb.from('barang_keluar').select('*').eq('id', id).single();
+  if (!r) { alert('Data tidak ditemukan'); return; }
+  const auto = String(r.keterangan || '').startsWith('NG Diecut');
+  const tgl = prompt('Tanggal (YYYY-MM-DD):', r.tanggal); if (tgl === null) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(tgl.trim())) { alert('Format tanggal salah'); return; }
+  let qty = r.qty;
+  if (!auto) { const q = prompt('Jumlah (pcs):', r.qty); if (q === null) return; qty = parseInt(q); if (!qty || qty <= 0) { alert('Jumlah tidak valid'); return; } }
+  const ket = prompt('Keterangan:', r.keterangan || ''); if (ket === null) return;
+  if (qty !== r.qty) {
+    const sm = await stokMap([r.detail_id]); const sisa = (sm[r.detail_id] || 0) + Number(r.qty) - qty;
+    if (sisa < 0 && !confirm(`Stok akan menjadi ${fmt(sisa)} (minus). Tetap simpan?`)) return;
+  }
+  const { error } = await sb.from('barang_keluar').update({ tanggal: tgl.trim(), qty, keterangan: ket.trim() }).eq('id', id);
+  if (error) { alert('❌ ' + error.message); return; }
+  GP.log('EDIT BARANG KELUAR', `#${id} qty ${r.qty}→${qty}, tgl ${r.tanggal}→${tgl.trim()}`);
+  GP.toast('Perubahan tersimpan', 'success');
+  await loadItems(); await loadHist();
+};
 NS.hapus = async function(id){
   if (!confirm('Hapus catatan barang keluar ini? Stok akan bertambah kembali.')) return;
   const { error } = await sb.from('barang_keluar').delete().eq('id', id);
@@ -6262,6 +6324,8 @@ NS.batal = async function(id) {
 };
 NS.cetak = async function(id) {
   const d = await ambil(id); const its = (d.serah_hasil_item || []).slice().sort((a, b) => a.id - b.id);
+  const jawab = prompt('Keterangan yang mau dicetak di nota (boleh dikosongkan):', d.catatan || ''); if (jawab === null) return;
+  if (jawab.trim() !== (d.catatan || '')) { const r = await sb.from('serah_hasil').update({ catatan: jawab.trim() || null }).eq('id', id); if (!r.error) { d.catatan = jawab.trim() || null; gambarDocs(); } }
   const adaQc = its.some(i => i.perlu_qc);
   const baris = its.map((i, k) => `<tr><td>${k + 1}</td><td style="text-align:left">${esc(i.jenis)}</td><td><b>${fmt(i.qty_serah)}</b></td>${adaQc ? `<td>${i.perlu_qc ? (i.qty_qc_ok != null ? 'OK ' + fmt(i.qty_qc_ok) + ' / NG ' + fmt(i.qty_qc_ng) : 'perlu QC') : '—'}</td>` : ''}<td>${i.qty_diterima != null ? '<b>' + fmt(i.qty_diterima) + '</b>' : ''}</td><td class="isi"></td></tr>`).join('');
   const total = its.reduce((a, i) => a + Number(i.qty_serah || 0), 0);
@@ -6276,6 +6340,19 @@ NS.cetak = async function(id) {
   const w = window.open('', '_blank'); if (!w) return alert('Pop-up diblokir browser. Izinkan pop-up lalu coba lagi.');
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(d.no_dokumen)}</title><style>${css}</style></head><body><div class="lembar">${hal('ASLI - arsip Gudang', '#1e3a8a')}${hal('SALINAN - Leader Mesin', '#b45309')}</div></body></html>`);
   w.document.close(); setTimeout(() => w.print(), 300);
+};
+})();
+
+(function(){
+const GP = window.GP;
+const NS = GP.mods.track = {};
+NS.mount = async function(host){
+  host.innerHTML = '<div class="gm-masuk"><div id="gpMain"><div class="card"><div class="card-title"><span>🧭 Tracking Material</span>' +
+    '<button class="btn-export" onclick="GP.mods.masuk.loadTracking()" style="width:auto;padding:6px 12px;font-size:12px;">🔄 Refresh</button></div>' +
+    '<div class="info-text" style="margin-bottom:8px">Posisi tiap material: Diterima → QC1 → Diecut → QC2 → Kirim. Hanya untuk pemantauan; stok tetap dari Barang Masuk/Keluar.</div>' +
+    '<div id="trackList" style="overflow-x:auto;"><div class="info-text">⏳ Memuat...</div></div></div></div>' +
+    '<div id="detailModal" class="modal"><div class="modal-content"><h3 id="detailTitle">📋 Detail</h3><div id="detailContent"></div><div class="modal-footer"><button class="btn-cancel" onclick="GP.mods.masuk.closeModal(\'detailModal\')">Tutup</button></div></div></div></div>';
+  await GP.mods.masuk.loadTracking();
 };
 })();
 
@@ -6414,7 +6491,7 @@ NS.cetak = async function(id) {
     };
     const MENU = [
         ['UTAMA', [['gp:dash','📊','Dashboard',['admin','leader','produksi','qc']]]],
-        ['GUDANG', [['gp:pi','📝','Input PI',['admin']],['gp:masuk','📥','Barang Masuk',['admin']],['gp:keluar','📤','Barang Keluar',['admin']]]],
+        ['GUDANG', [['gp:pi','📝','Input PI',['admin']],['gp:masuk','📥','Barang Masuk',['admin']],['gp:keluar','📤','Barang Keluar',['admin']],['gp:track','🧭','Tracking Material',['admin']]]],
         ['PRODUKSI', [['gp:qc','🔍','QC Inspection',['admin','qc']],['gp:diecut','✂️','Proses Diecut',['admin','leader']],['gp:hasil','🏭','Serah Hasil Diecut',['admin','leader','qc']],['gp:perm','📋','Permintaan Produksi',['admin','produksi']],['gp:ret','↩️','Return Produksi',['admin','produksi']]]],
         ['TIMBANGAN KERTAS', [['page1','📦','Timbang',['admin']],['page2','📜','Riwayat',['admin']],['page3','📝','Permintaan Kertas',['admin']],['page4','🏭','Antrian',['leader']],['page9','🧮','Hitung',['leader']],['page5','📊','Stok Kertas',['leader']],['page8','🧾','Serah Terima',['admin','leader']],['page6','🗂️','Master',['admin','leader']],['page7','📋','Log',['admin','leader']]]]
         ,['SISTEM', [['gp:users','👥','Pengaturan Akun',['admin']]]]
