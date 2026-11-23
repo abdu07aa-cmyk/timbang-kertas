@@ -60,6 +60,7 @@ const NS = GP.mods.masuk = {};
         }
         
         async function onPiChange() {
+            try { loadRiwayatSemua(); } catch (e) {}
             const piId = document.getElementById('pi_select').value;
             const itemSelect = document.getElementById('item_select');
             
@@ -624,7 +625,7 @@ const NS = GP.mods.masuk = {};
                     </div>
                 </div>
                 <div class="card">
-                    <div class="card-title"><span>🕘 Riwayat Barang Masuk (terbaru)</span>
+                    <div class="card-title"><span>🕘 Riwayat Barang Masuk (sesuai PI terpilih)</span>
                         <button class="btn-export" onclick="GP.mods.masuk.loadRiwayatSemua()" style="width:auto;padding:6px 12px;font-size:12px;">🔄 Refresh</button></div>
                     <div class="info-text" style="margin-bottom:8px">Salah input? Klik ✏️ Edit untuk memperbaiki atau 🗑️ Hapus untuk membatalkan.</div>
                     <div id="riwayatMasuk" style="overflow-x:auto;"><div class="info-text">⏳ Memuat...</div></div>
@@ -949,10 +950,14 @@ async function simpanTerima() {
 /* ===== Riwayat Barang Masuk (semua item, bisa diedit) ===== */
 async function loadRiwayatSemua() {
   const el = document.getElementById('riwayatMasuk'); if (!el) return;
-  const { data, error } = await sb.from('barang_masuk').select('*').order('id', { ascending: false }).limit(100);
+  const piSel = document.getElementById('pi_select'); const piId = piSel ? piSel.value : '';
+  if (!piId) { el.innerHTML = '<div class="info-text">Pilih No PI untuk melihat riwayat barang masuknya.</div>'; return; }
+  const ids = ((await sb.from('pi_detail').select('id').eq('pi_id', parseInt(piId))).data || []).map(x => x.id);
+  if (!ids.length) { el.innerHTML = '<div class="info-text">PI ini belum punya item.</div>'; return; }
+  const { data, error } = await sb.from('barang_masuk').select('*').in('detail_id', ids).order('id', { ascending: false }).limit(200);
   if (error) { el.innerHTML = '<div class="info-text" style="color:#b91c1c">❌ ' + error.message + '</div>'; return; }
   const rows = data || [];
-  if (!rows.length) { el.innerHTML = '<div class="info-text">Belum ada barang masuk.</div>'; return; }
+  if (!rows.length) { el.innerHTML = '<div class="info-text">Belum ada barang masuk untuk PI ini.</div>'; return; }
   const dids = [...new Set(rows.map(r => r.detail_id))];
   const det = (await sb.from('pi_detail').select('id,brand,jenis,paper,size,pi_id').in('id', dids)).data || [];
   const pids = [...new Set(det.map(d => d.pi_id))];
