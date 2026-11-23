@@ -4,7 +4,7 @@ const sb = window.sbG, GP = window.GP;
 const NS = GP.mods.keluar = {};
 const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = n => Number(n || 0).toLocaleString('id-ID');
-let items = [];
+let items = [], histRows = [];
 NS.mount = async function(host){
   host.innerHTML = '<div class="gm-klr"><div class="card"><div class="card-title">📤 Barang Keluar</div>' +
     '<label>No PI</label><select id="klrPi"><option value="">-- Pilih No PI --</option></select>' +
@@ -13,10 +13,15 @@ NS.mount = async function(host){
     '<div style="display:flex;gap:8px;flex-wrap:wrap"><div style="flex:1;min-width:140px"><label>Tanggal</label><input type="date" id="klrTgl"></div><div style="flex:1;min-width:140px"><label>Jumlah (pcs)</label><input type="number" id="klrQty" min="1"></div></div>' +
     '<label>Keterangan / Tujuan</label><input id="klrKet" placeholder="mis. kirim ke customer, sample, dll">' +
     '<button class="btn-primary" id="klrSave" style="margin-top:12px">Simpan Barang Keluar</button><div id="klrMsg" style="margin-top:8px;font-size:13px"></div></div>' +
-    '<div class="card"><div class="card-title">Riwayat Barang Keluar</div><div id="klrList" style="overflow-x:auto"></div></div></div>';
+    '<div class="card"><div class="card-title">📋 Histori Barang Keluar</div>' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><input type="date" id="klrF1" style="flex:1;min-width:140px"><input type="date" id="klrF2" style="flex:1;min-width:140px"><button id="klrCsv" style="background:#10b981;color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer">📎 Export</button></div>' +
+    '<div id="klrList" style="overflow-x:auto"></div></div></div>';
+  { const t = new Date(), iso = t.toISOString().split('T')[0]; document.getElementById('klrF1').value = iso.slice(0, 8) + '01'; document.getElementById('klrF2').value = iso; }
+  document.getElementById('klrF1').onchange = document.getElementById('klrF2').onchange = () => loadHist();
+  document.getElementById('klrCsv').onclick = exportCsv;
   document.getElementById('klrTgl').value = new Date().toISOString().split('T')[0];
   document.getElementById('klrPi').onchange = async () => { await loadItems(); await loadHist(); };
-  document.getElementById('klrItem').onchange = showInfo;
+  document.getElementById('klrItem').onchange = () => { showInfo(); loadHist(); };
   document.getElementById('klrSave').onclick = save;
   const { data } = await sb.from('pi_header').select('id,no_pi,tanggal').eq('is_archived', false).order('id', { ascending: false });
   document.getElementById('klrPi').innerHTML += (data || []).map(p => `<option value="${p.id}">${esc(p.no_pi)}</option>`).join('');
@@ -62,19 +67,31 @@ async function loadHist(){
   const el = document.getElementById('klrList');
   const pid = document.getElementById('klrPi').value;
   if (!pid) { el.innerHTML = '<div style="padding:10px;color:#64748b">Pilih No PI untuk melihat riwayat barang keluarnya.</div>'; return; }
-  const ids = ((await sb.from('pi_detail').select('id').eq('pi_id', pid)).data || []).map(x => x.id);
+  const itemSel = document.getElementById('klrItem').value;
+  let ids = ((await sb.from('pi_detail').select('id').eq('pi_id', pid)).data || []).map(x => x.id);
   if (!ids.length) { el.innerHTML = '<div style="padding:10px;color:#64748b">PI ini belum punya item.</div>'; return; }
-  const { data, error } = await sb.from('barang_keluar').select('*').in('detail_id', ids).order('id', { ascending: false }).limit(200);
+  if (itemSel) ids = [parseInt(itemSel)];
+  let q = sb.from('barang_keluar').select('*').in('detail_id', ids).order('tanggal', { ascending: false }).order('id', { ascending: false }).limit(500);
+  const f1 = document.getElementById('klrF1').value, f2 = document.getElementById('klrF2').value;
+  if (f1) q = q.gte('tanggal', f1); if (f2) q = q.lte('tanggal', f2);
+  const { data, error } = await q;
   if (error) { el.innerHTML = '<div style="color:#b91c1c">❌ ' + esc(error.message) + '</div>'; return; }
-  const rows = data || [];
-  if (!rows.length) { el.innerHTML = '<div style="padding:10px;color:#64748b">Belum ada barang keluar untuk PI ini.</div>'; return; }
+  const rows = data || []; histRows = rows;
+  if (!rows.length) { el.innerHTML = '<div style="padding:10px;color:#64748b">Belum ada barang keluar untuk periode ini.</div>'; return; }
   const dids = [...new Set(rows.map(r => r.detail_id))];
   const det = (await sb.from('pi_detail').select('id,brand,jenis,pi_id').in('id', dids)).data || [];
   const pids = [...new Set(det.map(d => d.pi_id))];
   const hd = pids.length ? (await sb.from('pi_header').select('id,no_pi').in('id', pids)).data || [] : [];
   const dm = {}; det.forEach(d => dm[d.id] = d); const hm = {}; hd.forEach(h => hm[h.id] = h.no_pi);
-  el.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">Tanggal</th><th>PI</th><th>Barang</th><th>Qty</th><th>Keterangan</th><th>Oleh</th>' + (GP.me.admin ? '<th></th>' : '') + '</tr></thead><tbody>' +
+  const tot = rows.reduce((a, r) => a + Number(r.qty || 0), 0);
+  el.innerHTML = `<div style="margin-bottom:10px;padding:10px;background:#fee2e2;border-radius:8px;font-size:13px">📊 Total Keluar (periode): <b style="color:#b91c1c">${fmt(tot)}</b> | Jumlah Transaksi: ${rows.length}</div>` + '<table style="width:100%;border-collapse:collapse;font-size:13px"><thead><tr style="text-align:left;border-bottom:2px solid #e2e8f0"><th style="padding:6px">Tanggal</th><th>PI</th><th>Barang</th><th>Qty</th><th>Keterangan</th><th>Oleh</th>' + (GP.me.admin ? '<th></th>' : '') + '</tr></thead><tbody>' +
     rows.map(r => { const d = dm[r.detail_id] || {}; return `<tr style="border-bottom:1px solid #f1f5f9"><td style="padding:6px">${esc(r.tanggal)}</td><td>${esc(hm[d.pi_id] || '-')}</td><td>${esc(d.brand)} ${esc(d.jenis)}</td><td>${fmt(r.qty)}</td><td>${esc(r.keterangan)}</td><td>${esc(String(r.created_by || '').split('@')[0])}</td>` + (GP.me.admin ? `<td style="white-space:nowrap"><button onclick="GP.mods.keluar.editar(${r.id})" title="Edit">✏️</button> <button onclick="GP.mods.keluar.hapus(${r.id})" title="Hapus">🗑️</button></td>` : '') + '</tr>'; }).join('') + '</tbody></table>';
+}
+function exportCsv(){
+  if (!histRows.length) { alert('Tidak ada data untuk diexport'); return; }
+  const c = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const csv = ['Tanggal,Qty,Keterangan,Oleh'].concat(histRows.map(r => [r.tanggal, r.qty, r.keterangan, r.created_by].map(c).join(','))).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv' })); a.download = 'Riwayat_Barang_Keluar_' + new Date().toISOString().slice(0, 10) + '.csv'; a.click();
 }
 NS.editar = async function(id){
   const { data: r } = await sb.from('barang_keluar').select('*').eq('id', id).single();
