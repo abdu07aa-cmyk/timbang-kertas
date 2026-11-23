@@ -15,7 +15,7 @@ NS.mount = async function(host){
     '<button class="btn-primary" id="klrSave" style="margin-top:12px">Simpan Barang Keluar</button><div id="klrMsg" style="margin-top:8px;font-size:13px"></div></div>' +
     '<div class="card"><div class="card-title">Riwayat Barang Keluar</div><div id="klrList" style="overflow-x:auto"></div></div></div>';
   document.getElementById('klrTgl').value = new Date().toISOString().split('T')[0];
-  document.getElementById('klrPi').onchange = loadItems;
+  document.getElementById('klrPi').onchange = async () => { await loadItems(); await loadHist(); };
   document.getElementById('klrItem').onchange = showInfo;
   document.getElementById('klrSave').onclick = save;
   const { data } = await sb.from('pi_header').select('id,no_pi,tanggal').eq('is_archived', false).order('id', { ascending: false });
@@ -60,10 +60,14 @@ async function save(){
 }
 async function loadHist(){
   const el = document.getElementById('klrList');
-  const { data, error } = await sb.from('barang_keluar').select('*').order('id', { ascending: false }).limit(100);
+  const pid = document.getElementById('klrPi').value;
+  if (!pid) { el.innerHTML = '<div style="padding:10px;color:#64748b">Pilih No PI untuk melihat riwayat barang keluarnya.</div>'; return; }
+  const ids = ((await sb.from('pi_detail').select('id').eq('pi_id', pid)).data || []).map(x => x.id);
+  if (!ids.length) { el.innerHTML = '<div style="padding:10px;color:#64748b">PI ini belum punya item.</div>'; return; }
+  const { data, error } = await sb.from('barang_keluar').select('*').in('detail_id', ids).order('id', { ascending: false }).limit(200);
   if (error) { el.innerHTML = '<div style="color:#b91c1c">❌ ' + esc(error.message) + '</div>'; return; }
   const rows = data || [];
-  if (!rows.length) { el.innerHTML = '<div style="padding:10px;color:#64748b">Belum ada barang keluar.</div>'; return; }
+  if (!rows.length) { el.innerHTML = '<div style="padding:10px;color:#64748b">Belum ada barang keluar untuk PI ini.</div>'; return; }
   const dids = [...new Set(rows.map(r => r.detail_id))];
   const det = (await sb.from('pi_detail').select('id,brand,jenis,pi_id').in('id', dids)).data || [];
   const pids = [...new Set(det.map(d => d.pi_id))];
