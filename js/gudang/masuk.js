@@ -624,12 +624,6 @@ const NS = GP.mods.masuk = {};
                         <div class="info-text">Pilih PI dan item untuk melihat histori</div>
                     </div>
                 </div>
-                <div class="card">
-                    <div class="card-title"><span>🕘 Riwayat Barang Masuk (sesuai PI terpilih)</span>
-                        <button class="btn-export" onclick="GP.mods.masuk.loadRiwayatSemua()" style="width:auto;padding:6px 12px;font-size:12px;">🔄 Refresh</button></div>
-                    <div class="info-text" style="margin-bottom:8px">Salah input? Klik ✏️ Edit untuk memperbaiki atau 🗑️ Hapus untuk membatalkan.</div>
-                    <div id="riwayatMasuk" style="overflow-x:auto;"><div class="info-text">⏳ Memuat...</div></div>
-                </div>
             `;
             
             document.getElementById('filter_tgl_awal').addEventListener('change', () => {
