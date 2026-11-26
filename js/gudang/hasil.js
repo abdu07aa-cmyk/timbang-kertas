@@ -30,19 +30,37 @@ NS.mount = async function(host){
       '<div id="hsList" style="margin-top:10px"></div></div></div>';
   await muatPi(); await muatDocs();
 };
+const canon = x => String(x || '').trim().split(/\s+/)[0].toUpperCase();
+const nk = x => String(x == null ? '' : x).trim().toLowerCase();
+const kunci = (noPi, it) => [canon(noPi), nk(it.brand), nk(it.jenis), nk(it.paper), nk(it.size)].join('|');
+let elig = { det: new Set(), keys: new Set(), pis: new Set() };
+async function muatElig() {
+  // hanya barang yang sudah tercatat di Proses Diecut
+  elig = { det: new Set(), keys: new Set(), pis: new Set() };
+  const dp = (await sb.from('diecut_process').select('material_inbound_id').limit(5000)).data || [];
+  const mids = [...new Set(dp.map(x => x.material_inbound_id).filter(Boolean))];
+  if (!mids.length) return;
+  const mi = (await sb.from('material_inbound').select('id,pi_detail_id,no_pi,brand,jenis,paper,size').in('id', mids)).data || [];
+  mi.forEach(m => { if (m.pi_detail_id) elig.det.add(m.pi_detail_id); else { elig.keys.add(kunci(m.no_pi, m)); elig.pis.add(canon(m.no_pi)); } });
+  if (elig.det.size) { const pd = (await sb.from('pi_detail').select('id,pi_id').in('id', [...elig.det]).limit(5000)).data || []; pd.forEach(x => elig.pis.add('#' + x.pi_id)); }
+}
+const itemOk = (it, noPi) => elig.det.has(it.id) || elig.keys.has(kunci(noPi, it));
 async function muatPi() {
   const sel = document.getElementById('hsPi'); if (!sel) return;
+  await muatElig();
   const { data } = await sb.from('pi_header').select('id,no_pi,tanggal').eq('is_archived', false).order('id', { ascending: false }).limit(400);
-  piList = data || [];
-  sel.innerHTML = '<option value="">— pilih No. PI —</option>' + piList.map(p => `<option value="${p.id}">${esc(p.no_pi)}</option>`).join('');
+  piList = (data || []).filter(p => elig.pis.has('#' + p.id) || elig.pis.has(canon(p.no_pi)));
+  sel.innerHTML = (piList.length ? '<option value="">— pilih No. PI —</option>' : '<option value="">(belum ada PI yang melalui Proses Diecut)</option>') + piList.map(p => `<option value="${p.id}">${esc(p.no_pi)}</option>`).join('');
 }
 NS.pilihPi = async function() {
   const id = parseInt(document.getElementById('hsPi').value), box = document.getElementById('hsItems');
   if (!id) { items = []; box.innerHTML = ''; return; }
+  const pi = piList.find(p => p.id === id);
   const { data } = await sb.from('pi_detail').select('*').eq('pi_id', id).order('id');
-  items = data || [];
+  items = (data || []).filter(it => itemOk(it, pi ? pi.no_pi : ''));
+  if (!items.length) { box.innerHTML = '<div class="hint">Belum ada item PI ini yang tercatat di Proses Diecut.</div>'; return; }
   const terima = {}; docs.filter(d => d.status === 'DITERIMA').forEach(d => (d.serah_hasil_item || []).forEach(i => { terima[i.detail_id] = (terima[i.detail_id] || 0) + Number(i.qty_diterima || 0); }));
-  box.innerHTML = '<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Item</th><th>Qty PI</th><th>Sudah diterima</th><th>Qty diserahkan (pcs)</th><th>QC?</th></tr></thead><tbody>' +
+  box.innerHTML = '<div class="hint">Hanya item yang sudah melalui Proses Diecut yang tampil.</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Item</th><th>Qty PI</th><th>Sudah diterima</th><th>Qty diserahkan (pcs)</th><th>QC?</th></tr></thead><tbody>' +
     items.map((it, i) => `<tr><td style="text-align:left">${esc(label(it))}</td><td>${fmt(it.qty_pi)}</td><td>${fmt(terima[it.id] || 0)}</td>` +
       `<td><input type="number" min="0" id="hsQ${i}" placeholder="0" style="width:110px"></td>` +
       `<td><input type="checkbox" id="hsQc${i}" ${perluQcOtomatis(it) ? 'checked' : ''} style="width:auto"></td></tr>`).join('') + '</tbody></table></div>';
