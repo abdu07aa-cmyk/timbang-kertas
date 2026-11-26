@@ -21,6 +21,7 @@ NS.mount = async function(host){
     (bisaMesin() ? '<div class="card"><div class="card-title">🏭 Serahkan Hasil Diecut</div>' +
       '<div class="hint">Satu nota untuk satu PI, boleh banyak jenis (Filter Kraft, Filter White, Filter Tips, dll). Item bertanda <b>QC</b> (filter tips) diperiksa Leader QC dulu sebelum sampai ke Admin.</div>' +
       '<label>No. PI</label><select id="hsPi" data-ss="1" onchange="GP.mods.hasil.pilihPi()"></select>' +
+      '<label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#64748b;margin:4px 0"><input type="checkbox" style="width:auto" onchange="GP.mods.hasil.semua(this.checked)"> Tampilkan semua PI (centang jika barang yang sudah diecut tidak muncul)</label>' +
       '<div id="hsItems"></div>' +
       '<label>Mesin (opsional)</label><input id="hsMesin" placeholder="mis. Diecut 1">' +
       '<label>Catatan (opsional)</label><input id="hsCatatan" placeholder="mis. shift pagi">' +
@@ -32,30 +33,35 @@ NS.mount = async function(host){
 };
 const canon = x => String(x || '').trim().split(/\s+/)[0].toUpperCase();
 const nk = x => String(x == null ? '' : x).trim().toLowerCase();
-const kunci = (noPi, it) => [canon(noPi), nk(it.brand), nk(it.jenis), nk(it.paper), nk(it.size)].join('|');
-let elig = { det: new Set(), keys: new Set(), pis: new Set() };
+const kunci = (noPi, it) => [canon(noPi), nk(it.brand), nk(it.jenis)].join('|');
+let elig = { det: new Set(), keys: new Set(), pis: new Set() }, semua = false;
 async function muatElig() {
-  // hanya barang yang sudah tercatat di Proses Diecut
+  // barang yang sudah masuk Proses Diecut (catatan diecut ATAU status material DIECUT/QC2/KIRIM)
   elig = { det: new Set(), keys: new Set(), pis: new Set() };
   const dp = (await sb.from('diecut_process').select('material_inbound_id').limit(5000)).data || [];
   const mids = [...new Set(dp.map(x => x.material_inbound_id).filter(Boolean))];
-  if (!mids.length) return;
-  const mi = (await sb.from('material_inbound').select('id,pi_detail_id,no_pi,brand,jenis,paper,size').in('id', mids)).data || [];
-  mi.forEach(m => { if (m.pi_detail_id) elig.det.add(m.pi_detail_id); else { elig.keys.add(kunci(m.no_pi, m)); elig.pis.add(canon(m.no_pi)); } });
+  const a = (await sb.from('material_inbound').select('id,pi_id,pi_detail_id,no_pi,brand,jenis').in('status', ['DIECUT', 'QC2', 'KIRIM']).limit(5000)).data || [];
+  const b = mids.length ? (await sb.from('material_inbound').select('id,pi_id,pi_detail_id,no_pi,brand,jenis').in('id', mids)).data || [] : [];
+  const seen = new Set();
+  [...a, ...b].forEach(m => { if (seen.has(m.id)) return; seen.add(m.id);
+    if (m.pi_detail_id) elig.det.add(Number(m.pi_detail_id)); else { elig.keys.add(kunci(m.no_pi, m)); elig.pis.add(canon(m.no_pi)); }
+    if (m.pi_id) elig.pis.add('#' + m.pi_id); });
   if (elig.det.size) { const pd = (await sb.from('pi_detail').select('id,pi_id').in('id', [...elig.det]).limit(5000)).data || []; pd.forEach(x => elig.pis.add('#' + x.pi_id)); }
 }
-const itemOk = (it, noPi) => elig.det.has(it.id) || elig.keys.has(kunci(noPi, it));
+const itemOk = (it, noPi) => semua || elig.det.has(it.id) || elig.keys.has(kunci(noPi, it));
 async function muatPi() {
   const sel = document.getElementById('hsPi'); if (!sel) return;
   await muatElig();
   const { data } = await sb.from('pi_header').select('id,no_pi,tanggal').eq('is_archived', false).order('id', { ascending: false }).limit(400);
-  piList = (data || []).filter(p => elig.pis.has('#' + p.id) || elig.pis.has(canon(p.no_pi)));
+  piList = (data || []).filter(p => semua || elig.pis.has('#' + p.id) || elig.pis.has(canon(p.no_pi)));
   const dets = piList.length ? (await sb.from('pi_detail').select('id,pi_id,brand,jenis,paper,size').in('pi_id', piList.map(p => p.id)).limit(5000)).data || [] : [];
   piList.forEach(p => { p.items = dets.filter(d => d.pi_id === p.id && itemOk(d, p.no_pi)); });
   piList = piList.filter(p => p.items.length);
   const ringkas = p => { const br = [...new Set(p.items.map(i => i.brand).filter(Boolean))].join(', '), jn = [...new Set(p.items.map(i => i.jenis).filter(Boolean))].join(', '); return `${p.no_pi} — ${br ? br + ' · ' : ''}${jn}`; };
   sel.innerHTML = (piList.length ? '<option value="">— pilih No. PI —</option>' : '<option value="">(belum ada PI yang melalui Proses Diecut)</option>') + piList.map(p => `<option value="${p.id}">${esc(ringkas(p))}</option>`).join('');
+  document.getElementById('hsItems').innerHTML = ''; items = [];
 }
+NS.semua = async function(v) { semua = !!v; await muatPi(); };
 NS.pilihPi = async function() {
   const id = parseInt(document.getElementById('hsPi').value), box = document.getElementById('hsItems');
   if (!id) { items = []; box.innerHTML = ''; return; }
