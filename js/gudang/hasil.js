@@ -50,7 +50,11 @@ async function muatPi() {
   await muatElig();
   const { data } = await sb.from('pi_header').select('id,no_pi,tanggal').eq('is_archived', false).order('id', { ascending: false }).limit(400);
   piList = (data || []).filter(p => elig.pis.has('#' + p.id) || elig.pis.has(canon(p.no_pi)));
-  sel.innerHTML = (piList.length ? '<option value="">— pilih No. PI —</option>' : '<option value="">(belum ada PI yang melalui Proses Diecut)</option>') + piList.map(p => `<option value="${p.id}">${esc(p.no_pi)}</option>`).join('');
+  const dets = piList.length ? (await sb.from('pi_detail').select('id,pi_id,brand,jenis,paper,size').in('pi_id', piList.map(p => p.id)).limit(5000)).data || [] : [];
+  piList.forEach(p => { p.items = dets.filter(d => d.pi_id === p.id && itemOk(d, p.no_pi)); });
+  piList = piList.filter(p => p.items.length);
+  const ringkas = p => { const br = [...new Set(p.items.map(i => i.brand).filter(Boolean))].join(', '), jn = [...new Set(p.items.map(i => i.jenis).filter(Boolean))].join(', '); return `${p.no_pi} — ${br ? br + ' · ' : ''}${jn}`; };
+  sel.innerHTML = (piList.length ? '<option value="">— pilih No. PI —</option>' : '<option value="">(belum ada PI yang melalui Proses Diecut)</option>') + piList.map(p => `<option value="${p.id}">${esc(ringkas(p))}</option>`).join('');
 }
 NS.pilihPi = async function() {
   const id = parseInt(document.getElementById('hsPi').value), box = document.getElementById('hsItems');
