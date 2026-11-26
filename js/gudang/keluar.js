@@ -30,8 +30,8 @@ NS.mount = async function(host){
 async function stokMap(ids){
   const m = {}; ids.forEach(i => m[i] = 0);
   if (!ids.length) return m;
-  const [a, b] = await Promise.all([sb.from('barang_masuk').select('detail_id,qty').in('detail_id', ids), sb.from('barang_keluar').select('detail_id,qty').in('detail_id', ids)]);
-  (a.data || []).forEach(x => m[x.detail_id] += Number(x.qty || 0));
+  const [a, b] = await Promise.all([sb.from('barang_masuk').select('detail_id,qty,keterangan').in('detail_id', ids), sb.from('barang_keluar').select('detail_id,qty').in('detail_id', ids)]);
+  (a.data || []).filter(x => !String(x.keterangan || '').startsWith('[📄')).forEach(x => m[x.detail_id] += Number(x.qty || 0));
   (b.data || []).forEach(x => m[x.detail_id] -= Number(x.qty || 0));
   return m;
 }
