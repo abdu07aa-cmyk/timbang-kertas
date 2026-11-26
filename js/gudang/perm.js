@@ -256,11 +256,11 @@ const NS = GP.mods.perm = {};
             const ids = [...new Set(allRequests.filter(r => ['PENDING', 'DISETUJUI'].includes(r.status)).map(r => r.detail_id))];
             if (ids.length > 0) {
                 const [m, k] = await Promise.all([
-                    sb.from('barang_masuk').select('detail_id, qty').in('detail_id', ids),
+                    sb.from('barang_masuk').select('detail_id, qty, keterangan').in('detail_id', ids),
                     sb.from('barang_keluar').select('detail_id, qty').in('detail_id', ids)
                 ]);
                 ids.forEach(id => { stokMap[id] = 0; });
-                (m.data || []).forEach(x => { stokMap[x.detail_id] += x.qty || 0; });
+                (m.data || []).filter(x => !String(x.keterangan||'').startsWith('[📄')).forEach(x => { stokMap[x.detail_id] += x.qty || 0; });
                 (k.data || []).forEach(x => { stokMap[x.detail_id] -= x.qty || 0; });
             }
         }
@@ -698,11 +698,11 @@ const NS = GP.mods.perm = {};
             return;
         }
         const [m, k] = await Promise.all([
-            sb.from('barang_masuk').select('qty').eq('detail_id', r.detail_id),
+            sb.from('barang_masuk').select('qty,keterangan').eq('detail_id', r.detail_id),
             sb.from('barang_keluar').select('qty').eq('detail_id', r.detail_id)
         ]);
         let stok = 0;
-        (m.data || []).forEach(x => stok += x.qty || 0);
+        (m.data || []).filter(x => !String(x.keterangan||'').startsWith('[📄')).forEach(x => stok += x.qty || 0);
         (k.data || []).forEach(x => stok -= x.qty || 0);
         const def = Math.min(r.approved_qty || 0, Math.max(stok, 0));
         const s = prompt(`Serahkan berapa untuk "${r.brand} - ${r.jenis}" (PI ${r.no_pi})?\n\nDisetujui: ${fmt(r.approved_qty)}\nStok gudang saat ini: ${fmt(stok)}`, def > 0 ? def : r.approved_qty);
