@@ -6,23 +6,44 @@ const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp
 const fmt = n => Number(n || 0).toLocaleString('id-ID');
 let rows = [];
 const CSS = `<style>
-.gm-sp .card{background:#fff;border-radius:12px;padding:18px;margin-bottom:15px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.gm-sp .ct{font-size:16px;font-weight:600;margin-bottom:12px;color:#1e293b;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
-.gm-sp input,.gm-sp select{padding:9px;border:1px solid #ddd;border-radius:8px;font-size:14px;width:100%;margin:3px 0}
-.gm-sp .b{border:0;border-radius:8px;padding:7px 12px;cursor:pointer;color:#fff;background:#3b82f6;font-size:13px;width:auto;margin:2px}
-.gm-sp .g{background:#10b981}.gm-sp .r{background:#ef4444}.gm-sp .o{background:#f59e0b}.gm-sp .x{background:#64748b}
-.gm-sp table{width:100%;border-collapse:collapse}.gm-sp th,.gm-sp td{padding:8px;border-bottom:1px solid #e2e8f0;font-size:13px;text-align:left}
-.gm-sp th{background:#f8fafc;color:#64748b;font-weight:500}
-.gm-sp .row{display:flex;gap:8px;flex-wrap:wrap}.gm-sp .row>div{flex:1;min-width:150px}
-.gm-sp .low{background:#fef2f2}.gm-sp .tag{display:inline-block;border-radius:10px;padding:1px 8px;font-size:11px;color:#fff}
-.gm-sp .gen{background:#f59e0b}.gm-sp .hab{background:#ef4444}.gm-sp .mn{background:#f97316}
-.gm-sp .mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:3000;padding:12px}
-.gm-sp .mdl>div{background:#fff;border-radius:12px;padding:18px;width:100%;max-width:460px;max-height:90vh;overflow:auto}
-.gm-sp label{font-size:13px;color:#475569;display:block;margin-top:6px}
-</style>`;
+#gpHost .gm-sp .card{background:#fff;border-radius:12px;padding:18px;margin-bottom:15px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+#gpHost .gm-sp .ct{font-size:16px;font-weight:600;margin-bottom:12px;color:#1e293b;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+#gpHost .gm-sp input,#gpHost .gm-sp select{padding:9px;border:1px solid #ddd;border-radius:8px;font-size:14px;width:100%;margin:3px 0}
+#gpHost .gm-sp .b{border:0;border-radius:8px;padding:7px 12px;cursor:pointer;color:#fff;background:#3b82f6;font-size:13px;width:auto;margin:2px}
+#gpHost .gm-sp .g{background:#10b981}#gpHost .gm-sp .r{background:#ef4444}#gpHost .gm-sp .o{background:#f59e0b}#gpHost .gm-sp .x{background:#64748b}
+#gpHost .gm-sp table{width:100%;border-collapse:collapse}#gpHost .gm-sp th,#gpHost .gm-sp td{padding:8px;border-bottom:1px solid #e2e8f0;font-size:13px;text-align:left}
+#gpHost .gm-sp th{background:#f8fafc;color:#64748b;font-weight:500}
+#gpHost .gm-sp .row{display:flex;gap:8px;flex-wrap:wrap}#gpHost .gm-sp .row>div{flex:1;min-width:150px}
+#gpHost .gm-sp .low{background:#fef2f2}#gpHost .gm-sp .tag{display:inline-block;border-radius:10px;padding:1px 8px;font-size:11px;color:#fff}
+#gpHost .gm-sp .gen{background:#f59e0b}#gpHost .gm-sp .hab{background:#ef4444}#gpHost .gm-sp .mn{background:#f97316}
+#gpHost .gm-sp .mdl{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:3000;padding:12px}
+#gpHost .gm-sp .mdl>div{background:#fff;border-radius:12px;padding:18px;width:100%;max-width:460px;max-height:90vh;overflow:auto}
+#gpHost .gm-sp label{font-size:13px;color:#475569;display:block;margin-top:6px}
+#gpHost .gm-sp .chips{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+#gpHost .gm-sp .chip{flex:1;min-width:90px;border-radius:10px;padding:8px 10px;background:#f1f5f9;text-align:center;font-size:12px;color:#475569}
+#gpHost .gm-sp .chip b{display:block;font-size:20px;color:#1e293b}
+#gpHost .gm-sp .chip.w{background:#fff7ed}#gpHost .gm-sp .chip.w b{color:#c2410c}#gpHost .gm-sp .chip.d{background:#fef2f2}#gpHost .gm-sp .chip.d b{color:#b91c1c}
+#gpHost .gm-sp .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+#gpHost .gm-sp .it{border:1px solid #e2e8f0;border-radius:12px;padding:14px;background:#fff;border-left:6px solid #10b981}
+#gpHost .gm-sp .it.mn{border-left-color:#f97316;background:#fffaf5}#gpHost .gm-sp .it.hb{border-left-color:#ef4444;background:#fff5f5}
+#gpHost .gm-sp .it h4{font-size:16px;color:#0f172a;margin:0 0 2px;line-height:1.3}
+#gpHost .gm-sp .it .sub{font-size:13px;color:#64748b;line-height:1.5}
+#gpHost .gm-sp .it .top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#gpHost .gm-sp .it .big{text-align:right;min-width:80px}#gpHost .gm-sp .it .big b{font-size:28px;line-height:1;color:#15803d;display:block}
+#gpHost .gm-sp .it.mn .big b{color:#c2410c}#gpHost .gm-sp .it.hb .big b{color:#b91c1c}#gpHost .gm-sp .it .big span{font-size:11px;color:#64748b}
+#gpHost .gm-sp .it .act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+#gpHost .gm-sp .it .act .b{padding:12px 8px;font-size:14px;margin:0;width:100%}
+#gpHost .gm-sp .it .act2{display:flex;gap:14px;margin-top:10px;font-size:13px}
+#gpHost .gm-sp .lk{background:none;border:0;color:#2563eb;cursor:pointer;font-size:13px;padding:4px 0;width:auto}
+#gpHost .gm-sp .lk.r{color:#dc2626;background:none}
+#gpHost .gm-sp input,#gpHost .gm-sp select{font-size:16px;padding:11px}
+#gpHost .gm-sp #spQ{position:sticky;top:0;z-index:5}
+@media(max-width:600px){#gpHost .gm-sp .chip{min-width:44%}#gpHost .gm-sp .card{padding:12px}#gpHost .gm-sp .grid{grid-template-columns:1fr}#gpHost .gm-sp .mdl{align-items:flex-end;padding:0}#gpHost .gm-sp .mdl>div{border-radius:16px 16px 0 0;max-width:none;max-height:92vh}#gpHost .gm-sp .ct .b{padding:10px 14px;font-size:14px}}
+
+#gpHost .gm-sp #spQ,#gpHost .gm-sp #spF{display:block;width:100%;margin:6px 0}#gpHost .gm-sp .mdl input{display:block;width:100%}#gpHost .gm-sp .mdl .b{padding:12px 18px;font-size:15px}#gpHost .gm-sp .ct .b{padding:10px 14px;font-size:14px}</style>`;
 NS.mount = async function(host){
   host.innerHTML = CSS + '<div class="gm-sp"><div class="card"><div class="ct"><span>📦 Stok Pendukung</span><span><button class="b g" id="spAdd">➕ Tambah Stok Baru</button> <button class="b x" id="spCsv">📎 Export</button></span></div>' +
-   '<div class="row"><div><input id="spQ" placeholder="🔍 Cari brand / jenis / size / papers / lokasi"></div><div><select id="spF"><option value="">Semua</option><option value="low">Di bawah minimum</option><option value="habis">Habis (0)</option><option value="gen">GENERAL saja</option></select></div></div>' +
+   '<div class="row" style="gap:0 8px"><div style="min-width:220px"><input id="spQ" placeholder="🔍 Cari brand, jenis, size, lokasi..."></div><div><select id="spF"><option value="">Tampilkan semua</option><option value="low">Hampir habis</option><option value="habis">Habis (0)</option><option value="gen">Stok umum (GENERAL)</option></select></div></div>' +
    '<div id="spInfo" style="font-size:13px;color:#475569;margin:8px 0"></div><div id="spList" style="overflow-x:auto"></div></div>' +
    '<div class="mdl" id="spM"><div id="spMc"></div></div></div>';
   document.getElementById('spQ').oninput = render; document.getElementById('spF').onchange = render;
@@ -40,13 +61,18 @@ function filtered(){
     (!f || (f === 'low' && Number(r.stok) <= Number(r.stok_minimum || 0) && Number(r.stok) > 0) || (f === 'habis' && Number(r.stok) <= 0) || (f === 'gen' && r.brand === 'GENERAL')));
 }
 function render(){
-  const L = filtered(), tot = L.reduce((a, r) => a + Number(r.stok || 0), 0), low = rows.filter(r => Number(r.stok) <= Number(r.stok_minimum || 0)).length;
-  document.getElementById('spInfo').innerHTML = `${L.length} item · total stok <b>${fmt(tot)}</b>` + (low ? ` · <span style="color:#b91c1c">⚠️ ${low} item di/bawah minimum</span>` : '');
-  if (!L.length) { document.getElementById('spList').innerHTML = '<div style="padding:10px;color:#64748b">Belum ada stok pendukung.</div>'; return; }
-  document.getElementById('spList').innerHTML = '<table><thead><tr><th>Brand</th><th>Jenis</th><th>Size</th><th>Papers</th><th>Stok</th><th>Min</th><th>Lokasi/Box</th><th>Aksi</th></tr></thead><tbody>' +
-   L.map(r => { const s = Number(r.stok || 0), m = Number(r.stok_minimum || 0), isLow = s <= m;
-     return `<tr class="${isLow ? 'low' : ''}"><td>${esc(r.brand || '-')}${r.brand === 'GENERAL' ? ' <span class="tag gen">GENERAL</span>' : ''}</td><td>${esc(r.jenis)}</td><td>${esc(r.size || '-')}</td><td>${esc(r.papers || '-')}</td><td><b style="color:${s <= 0 ? '#b91c1c' : '#15803d'}">${fmt(s)}</b>${s <= 0 ? ' <span class="tag hab">HABIS</span>' : isLow ? ' <span class="tag mn">MIN</span>' : ''}</td><td>${fmt(m)}</td><td>${esc(r.lokasi || '-')}</td>` +
-     `<td style="white-space:nowrap"><button class="b g" onclick="GP.mods.sp.mutasi(${r.id},'MASUK')">＋</button><button class="b o" onclick="GP.mods.sp.mutasi(${r.id},'KELUAR')">－</button><button class="b x" onclick="GP.mods.sp.histori(${r.id})">🕘</button><button class="b" onclick="GP.mods.sp.edit(${r.id})">✏️</button><button class="b r" onclick="GP.mods.sp.hapus(${r.id})">🗑️</button></td></tr>`; }).join('') + '</tbody></table>';
+  const L = filtered(), tot = L.reduce((a, r) => a + Number(r.stok || 0), 0);
+  const habis = rows.filter(r => Number(r.stok) <= 0).length, low = rows.filter(r => Number(r.stok) > 0 && Number(r.stok) <= Number(r.stok_minimum || 0)).length;
+  document.getElementById('spInfo').innerHTML = `<div class="chips"><div class="chip"><b>${L.length}</b>item tampil</div><div class="chip"><b>${fmt(tot)}</b>total stok</div><div class="chip w"><b>${low}</b>hampir habis</div><div class="chip d"><b>${habis}</b>habis</div></div>`;
+  if (!L.length) { document.getElementById('spList').innerHTML = '<div style="padding:16px;color:#64748b;text-align:center">Tidak ada stok pendukung yang cocok.<br>Tekan ➕ Tambah Stok Baru untuk menambah.</div>'; return; }
+  document.getElementById('spList').innerHTML = '<div class="grid">' + L.map(r => {
+    const s = Number(r.stok || 0), m = Number(r.stok_minimum || 0), cls = s <= 0 ? 'hb' : s <= m ? 'mn' : '';
+    const badge = s <= 0 ? '<span class="tag hab">HABIS</span>' : s <= m ? '<span class="tag mn">HAMPIR HABIS</span>' : '';
+    const det = [r.size ? 'Size: ' + esc(r.size) : '', r.papers ? 'Papers: ' + esc(r.papers) : '', r.lokasi ? '📍 ' + esc(r.lokasi) : ''].filter(Boolean).join('<br>');
+    return `<div class="it ${cls}"><div class="top"><div><h4>${esc(r.jenis)}</h4><div class="sub"><b>${esc(r.brand || '-')}</b>${r.brand === 'GENERAL' ? ' <span class="tag gen">UMUM</span>' : ''} ${badge}</div></div><div class="big"><b>${fmt(s)}</b><span>stok · min ${fmt(m)}</span></div></div>` +
+      (det ? `<div class="sub" style="margin-top:8px">${det}</div>` : '') +
+      `<div class="act"><button class="b g" onclick="GP.mods.sp.mutasi(${r.id},'MASUK')">＋ Tambah</button><button class="b o" onclick="GP.mods.sp.mutasi(${r.id},'KELUAR')">－ Kurangi</button></div>` +
+      `<div class="act2"><button class="lk" onclick="GP.mods.sp.histori(${r.id})">🕘 Histori</button><button class="lk" onclick="GP.mods.sp.edit(${r.id})">✏️ Edit</button><button class="lk r" onclick="GP.mods.sp.hapus(${r.id})" style="margin-left:auto">🗑️ Hapus</button></div></div>`; }).join('') + '</div>';
 }
 function open_(html){ document.getElementById('spMc').innerHTML = html; document.getElementById('spM').style.display = 'flex'; }
 NS.tutup = function(){ document.getElementById('spM').style.display = 'none'; };
