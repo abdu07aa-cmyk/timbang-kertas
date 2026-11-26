@@ -49,7 +49,7 @@
     };
     const MENU = [
         ['UTAMA', [['gp:dash','📊','Dashboard',['admin','leader','produksi','qc']]]],
-        ['GUDANG', [['gp:pi','📝','Input PI',['admin']],['gp:masuk','📥','Barang Masuk',['admin']],['gp:keluar','📤','Barang Keluar',['admin']],['gp:track','🧭','Tracking Material',['admin']]]],
+        ['GUDANG', [['gp:pi','📝','Input PI',['admin']],['gp:masuk','📥','Barang Masuk',['admin']],['gp:keluar','📤','Barang Keluar',['admin']],['gp:sp','📦','Stok Pendukung',['admin']],['gp:track','🧭','Tracking Material',['admin']]]],
         ['PRODUKSI', [['gp:qc','🔍','QC Inspection',['admin','qc']],['gp:diecut','✂️','Proses Diecut',['admin','leader']],['gp:hasil','🏭','Serah Hasil Diecut',['admin','leader','qc']],['gp:perm','📋','Permintaan Produksi',['admin','produksi']],['gp:ret','↩️','Return Produksi',['admin','produksi']]]],
         ['TIMBANGAN KERTAS', [['page1','📦','Timbang',['admin']],['page2','📜','Riwayat',['admin']],['page3','📝','Permintaan Kertas',['admin']],['page4','🏭','Antrian',['leader']],['page9','🧮','Hitung',['leader']],['page5','📊','Stok Kertas',['leader']],['page8','🧾','Serah Terima',['admin','leader']],['page6','🗂️','Master',['admin','leader']],['page7','📋','Log',['admin','leader']]]]
         ,['SISTEM', [['gp:users','👥','Pengaturan Akun',['admin']]]]
