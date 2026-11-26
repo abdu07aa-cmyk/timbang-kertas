@@ -19,7 +19,7 @@ const NS = GP.mods.dash = {};
             
             const { data: headers } = await sb.from('pi_header').select('*').order('created_at', { ascending: false });
             const { data: details } = await sb.from('pi_detail').select('*').order('pi_id', { ascending: false }).order('id', { ascending: true });
-            const { data: masuk } = await sb.from('barang_masuk').select('*');
+            const { data: masuk0 } = await sb.from('barang_masuk').select('*'); const masuk = (masuk0 || []).filter(x => !String(x.keterangan||'').startsWith('[📄'));
             const { data: keluar } = await sb.from('barang_keluar').select('*');
             
             const { data: stok } = await sb.from('stok_pendukung').select('*');
@@ -249,7 +249,7 @@ const NS = GP.mods.dash = {};
             const { data: detailItem } = await sb.from('pi_detail').select('*, pi_header(no_pi)').eq('id', detailId).single();
             if (!detailItem) { alert('❌ Item tidak ditemukan!'); return; }
             
-            const { data: masukData } = await sb.from('barang_masuk').select('qty').eq('detail_id', detailId);
+            const { data: masukData0 } = await sb.from('barang_masuk').select('qty,keterangan').eq('detail_id', detailId); const masukData = (masukData0 || []).filter(x => !String(x.keterangan||'').startsWith('[📄'));
             const { data: keluarData } = await sb.from('barang_keluar').select('qty').eq('detail_id', detailId);
             let totalMasuk = 0, totalKeluar = 0;
             if (masukData) masukData.forEach(m => totalMasuk += m.qty);
