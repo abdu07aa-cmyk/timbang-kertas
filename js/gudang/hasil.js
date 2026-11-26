@@ -34,10 +34,10 @@ NS.mount = async function(host){
 const canon = x => String(x || '').trim().split(/\s+/)[0].toUpperCase();
 const nk = x => String(x == null ? '' : x).trim().toLowerCase();
 const kunci = (noPi, it) => [canon(noPi), nk(it.brand), nk(it.jenis)].join('|');
-let elig = { det: new Set(), keys: new Set(), pis: new Set() }, semua = false;
+let elig = { det: new Set(), keys: new Set(), pis: new Set(), mats: [], qc2: {} }, semua = false;
 async function muatElig() {
   // barang yang sudah masuk Proses Diecut (catatan diecut ATAU status material DIECUT/QC2/KIRIM)
-  elig = { det: new Set(), keys: new Set(), pis: new Set() };
+  elig = { det: new Set(), keys: new Set(), pis: new Set(), mats: [], qc2: {} };
   const dp = (await sb.from('diecut_process').select('material_inbound_id').limit(5000)).data || [];
   const mids = [...new Set(dp.map(x => x.material_inbound_id).filter(Boolean))];
   const a = (await sb.from('material_inbound').select('id,pi_id,pi_detail_id,no_pi,brand,jenis').in('status', ['DIECUT', 'QC2', 'KIRIM']).limit(5000)).data || [];
@@ -45,9 +45,11 @@ async function muatElig() {
   const seen = new Set();
   [...a, ...b].forEach(m => { if (seen.has(m.id)) return; seen.add(m.id);
     if (m.pi_detail_id) elig.det.add(Number(m.pi_detail_id)); else { elig.keys.add(kunci(m.no_pi, m)); elig.pis.add(canon(m.no_pi)); }
-    if (m.pi_id) elig.pis.add('#' + m.pi_id); });
+    if (m.pi_id) elig.pis.add('#' + m.pi_id); elig.mats.push(m); });
+  if (elig.mats.length) { const q = (await sb.from('qc_inspection').select('material_inbound_id,qty_ok').eq('qc_number', 2).in('material_inbound_id', elig.mats.map(m => m.id))).data || []; q.forEach(x => { elig.qc2[x.material_inbound_id] = (elig.qc2[x.material_inbound_id] || 0) + Number(x.qty_ok || 0); }); }
   if (elig.det.size) { const pd = (await sb.from('pi_detail').select('id,pi_id').in('id', [...elig.det]).limit(5000)).data || []; pd.forEach(x => elig.pis.add('#' + x.pi_id)); }
 }
+const qc2Of = (it, noPi) => elig.mats.filter(m => (m.pi_detail_id ? Number(m.pi_detail_id) === it.id : kunci(m.no_pi, m) === kunci(noPi, it))).reduce((a, m) => a + (elig.qc2[m.id] || 0), 0);
 const itemOk = (it, noPi) => semua || elig.det.has(it.id) || elig.keys.has(kunci(noPi, it));
 async function muatPi() {
   const sel = document.getElementById('hsPi'); if (!sel) return;
@@ -70,10 +72,12 @@ NS.pilihPi = async function() {
   items = (data || []).filter(it => itemOk(it, pi ? pi.no_pi : ''));
   if (!items.length) { box.innerHTML = '<div class="hint">Belum ada item PI ini yang tercatat di Proses Diecut.</div>'; return; }
   const terima = {}; docs.filter(d => d.status === 'DITERIMA').forEach(d => (d.serah_hasil_item || []).forEach(i => { terima[i.detail_id] = (terima[i.detail_id] || 0) + Number(i.qty_diterima || 0); }));
-  box.innerHTML = '<div class="hint">Hanya item yang sudah melalui Proses Diecut yang tampil.</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Item</th><th>Qty PI</th><th>Sudah diterima</th><th>Qty diserahkan (pcs)</th><th>QC?</th></tr></thead><tbody>' +
-    items.map((it, i) => `<tr><td style="text-align:left">${esc(label(it))}</td><td>${fmt(it.qty_pi)}</td><td>${fmt(terima[it.id] || 0)}</td>` +
-      `<td><input type="number" min="0" id="hsQ${i}" placeholder="0" style="width:110px"></td>` +
-      `<td><input type="checkbox" id="hsQc${i}" ${perluQcOtomatis(it) ? 'checked' : ''} style="width:auto"></td></tr>`).join('') + '</tbody></table></div>';
+  const sudah = {}; docs.filter(d => d.status !== 'DIBATALKAN').forEach(d => (d.serah_hasil_item || []).forEach(i => { sudah[i.detail_id] = (sudah[i.detail_id] || 0) + Number(i.qty_serah || 0); }));
+  const q2 = items.map(it => qc2Of(it, pi ? pi.no_pi : '')), sisa = items.map((it, i) => Math.max(q2[i] - (sudah[it.id] || 0), 0));
+  box.innerHTML = '<div class="hint">Hanya item yang sudah melalui Proses Diecut yang tampil. Jumlah otomatis diisi dari <b>hasil QC2 (OK)</b> dikurangi yang sudah pernah diserahkan; boleh diubah.</div><div style="overflow-x:auto"><table class="tbl"><thead><tr><th>Item</th><th>Qty PI</th><th>Hasil QC2 (OK)</th><th>Sudah diserahkan</th><th>Qty diserahkan (pcs)</th><th>QC?</th></tr></thead><tbody>' +
+    items.map((it, i) => `<tr><td style="text-align:left">${esc(label(it))}</td><td>${fmt(it.qty_pi)}</td><td>${q2[i] ? '<b style="color:#15803d">' + fmt(q2[i]) + '</b>' : '<i>belum QC2</i>'}</td><td>${fmt(sudah[it.id] || 0)}</td>` +
+      `<td><input type="number" min="0" id="hsQ${i}" placeholder="0" value="${sisa[i] > 0 ? sisa[i] : ''}" style="width:110px"></td>` +
+      `<td><input type="checkbox" id="hsQc${i}" ${q2[i] ? '' : (perluQcOtomatis(it) ? 'checked' : '')} style="width:auto"></td></tr>`).join('') + '</tbody></table></div>';
 };
 NS.serahkan = async function() {
   const piId = parseInt(document.getElementById('hsPi').value); if (!piId) return alert('Pilih No. PI dulu');
