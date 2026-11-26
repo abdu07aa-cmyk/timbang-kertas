@@ -30,7 +30,7 @@ const NS = GP.mods.masuk = {};
             if (!labelQty || !qtyInput || !upRow || !upInput) return;
             
             if (value === 'sheet') {
-                labelQty.textContent = 'Jumlah Masuk (Sheet)';
+                labelQty.textContent = 'Jumlah Masuk (Sheet) — bahan mentah, tidak menambah stok';
                 qtyInput.placeholder = 'Jumlah sheet masuk';
                 upRow.style.display = 'block';
                 upInput.required = true;
@@ -240,7 +240,7 @@ const NS = GP.mods.masuk = {};
             }
             
             let totalMasuk = 0;
-            history.forEach(h => totalMasuk += h.qty);
+            history.forEach(h => { if (!String(h.keterangan||'').startsWith('[📄')) totalMasuk += h.qty; });
             
             let html = `
                 <div class="info-text" style="margin-bottom:15px;padding:10px;background:#e0f2fe;border-radius:8px">
@@ -251,7 +251,7 @@ const NS = GP.mods.masuk = {};
                     Paper: ${item.paper || '-'}<br>
                     Size: ${item.size || '-'}<br>
                     Qty PI: ${item.qty_pi}<br>
-                    📊 Total Masuk (periode): <strong style="color:#10b981">${totalMasuk}</strong> | Jumlah Transaksi: ${history.length}
+                    📊 Total Masuk ke stok (periode): <strong style="color:#10b981">${totalMasuk}</strong> | Jumlah Transaksi: ${history.length}
                 </div>
                 <div class="table-wrapper">
                     <table style="width:100%">
@@ -263,7 +263,7 @@ const NS = GP.mods.masuk = {};
             for (const h of history) {
                 html += `<tr>
                     <td>${h.tanggal}</td>
-                    <td><span style="font-weight:bold;color:#10b981">+${h.qty}</span></td>
+                    <td>${String(h.keterangan||'').startsWith('[📄') ? '<span style="font-weight:bold;color:#64748b">'+h.qty+'</span><br><span style="font-size:10px;background:#e2e8f0;color:#475569;border-radius:8px;padding:1px 6px">bahan mentah · tidak masuk stok</span>' : '<span style="font-weight:bold;color:#10b981">+'+h.qty+'</span>'}</td>
                     <td>${h.keterangan || '-'}</td>
                     <td style="white-space:nowrap"><button class="btn-edit" onclick="GP.mods.masuk.editMasuk(${h.id})">✏️ Edit</button> <button class="btn-hapus" onclick="GP.mods.masuk.hapusHistory(${h.id}, ${itemId})">Hapus</button></td>
                 </tr>`;
@@ -972,7 +972,9 @@ async function editMasuk(id) {
   if (dariSP) alert('Jumlah tidak bisa diubah karena berasal dari Stok Pendukung. Jika salah, Hapus lalu ambil ulang.');
   else { const q = prompt('Jumlah masuk:', r.qty); if (q === null) return; qty = parseInt(q); if (!qty || qty <= 0) { alert('Jumlah tidak valid'); return; } }
   const ket = prompt('Keterangan:', r.keterangan || ''); if (ket === null) return;
-  const { error } = await sb.from('barang_masuk').update({ tanggal: tgl.trim(), qty, keterangan: ket.trim() }).eq('id', id);
+  let ketF = ket.trim(); const tag = (String(r.keterangan || '').match(/^\[📄[^\]]*\]/) || [''])[0];
+  if (tag && !ketF.startsWith('[📄')) ketF = (tag + ' ' + ketF).trim(); // baris sheet tetap ditandai bahan mentah
+  const { error } = await sb.from('barang_masuk').update({ tanggal: tgl.trim(), qty, keterangan: ketF }).eq('id', id);
   if (error) { alert('❌ ' + error.message); return; }
   if (tgl.trim() !== r.tanggal) { // best-effort: samakan tanggal terima di tracking bila cocok tepat satu
     try { const mi = (await sb.from('material_inbound').select('id').eq('pi_detail_id', r.detail_id).eq('tanggal_terima', r.tanggal)).data || [];
